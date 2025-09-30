@@ -1,0 +1,20 @@
+# Environment Variables Template for Vercel Deployment
+
+# MongoDB (REQUIRED)
+MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/fitness-tracker?retryWrites=true&w=majority
+
+# NextAuth (REQUIRED)
+NEXTAUTH_URL=https://your-app-name.vercel.app
+NEXTAUTH_SECRET=your-nextauth-secret-here
+
+# External APIs (Optional - app works with free APIs and fallbacks)
+# Nutritionix API for food data (optional)
+NUTRITIONIX_APP_ID=your-nutritionix-app-id
+NUTRITIONIX_API_KEY=your-nutritionix-api-key
+
+# OpenAI API for AI features (optional)
+OPENAI_API_KEY=your-openai-api-key
+
+# Note: Recipe search uses TheMealDB API (completely free, no key needed)
+
+# To generate NEXTAUTH_SECRET, run: openssl rand -base64 32
