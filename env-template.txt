@@ -7,14 +7,18 @@ MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/f
 NEXTAUTH_URL=https://your-app-name.vercel.app
 NEXTAUTH_SECRET=your-nextauth-secret-here
 
-# External APIs (Optional - app works with free APIs and fallbacks)
-# Nutritionix API for food data (optional)
-NUTRITIONIX_APP_ID=your-nutritionix-app-id
-NUTRITIONIX_API_KEY=your-nutritionix-api-key
+# External APIs (Optional - app works with fallbacks)
+# Edamam Recipe Search API for recipe data (optional)
+EDAMAM_APP_ID=your-edamam-recipe-app-id
+EDAMAM_API_KEY=your-edamam-recipe-app-key
+
+# Edamam Food Database API for food nutrition data (optional)
+EDAMAM_FOOD_APP_ID=your-edamam-food-app-id
+EDAMAM_FOOD_APP_KEY=your-edamam-food-app-key
 
 # OpenAI API for AI features (optional)
 OPENAI_API_KEY=your-openai-api-key
 
-# Note: Recipe search uses TheMealDB API (completely free, no key needed)
+# Note: App uses Edamam APIs with Hungarian fallback data when credentials not available
 
 # To generate NEXTAUTH_SECRET, run: openssl rand -base64 32

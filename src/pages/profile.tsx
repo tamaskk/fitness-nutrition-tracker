@@ -31,13 +31,13 @@ const ProfilePage = () => {
     <Layout>
       <div className="text-center py-12">
         <User className="mx-auto h-12 w-12 text-gray-400" />
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="mt-2 text-gray-600">Profile management coming soon!</p>
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">Profil</h1>
+        <p className="mt-2 text-gray-600">A profil kezelés hamarosan elérhető!</p>
         <div className="mt-6 text-left max-w-md mx-auto bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Current User Info</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Jelenlegi felhasználó adatai</h3>
           <div className="space-y-2">
-            <p><span className="font-medium">Email:</span> {session.user?.email}</p>
-            <p><span className="font-medium">Name:</span> {session.user?.name || 'Not set'}</p>
+            <p><span className="font-medium">E-mail:</span> {session.user?.email}</p>
+            <p><span className="font-medium">Név:</span> {session.user?.name || 'Nincs beállítva'}</p>
           </div>
         </div>
       </div>

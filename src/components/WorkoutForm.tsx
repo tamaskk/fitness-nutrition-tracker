@@ -156,7 +156,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
         <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-bold text-gray-900">Log Workout</h2>
+            <h2 className="text-xl font-bold text-gray-900">Edzés rögzítése</h2>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-600"
@@ -170,7 +170,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date
+                  Dátum
                 </label>
                 <input
                   {...register('date', { required: 'Date is required' })}
@@ -185,14 +185,14 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
               {/* Exercise Search */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Search Exercises
+                  Gyakorlatok keresése
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search for exercises..."
+                    placeholder="Gyakorlatok keresése..."
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleExerciseSearch())}
                   />
@@ -257,7 +257,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                     className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-700"
                   >
                     <Plus className="w-4 h-4" />
-                    Add Exercise
+                    Gyakorlat hozzáadása
                   </button>
                 </div>
 
@@ -281,12 +281,12 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                         {/* Exercise Name */}
                         <div className="lg:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Exercise Name
+                            Gyakorlat neve
                           </label>
                           <input
                             {...register(`exercises.${index}.name`, { required: 'Exercise name is required' })}
                             type="text"
-                            placeholder="Enter exercise name"
+                            placeholder="Add meg a gyakorlat nevét"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                           {errors.exercises?.[index]?.name && (
@@ -297,7 +297,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                         {/* Sets */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Sets
+                            Sorozatok
                           </label>
                           <input
                             {...register(`exercises.${index}.sets`, { required: 'Sets is required', min: 1 })}
@@ -310,7 +310,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                         {/* Reps */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Reps
+                            Ismétlések
                           </label>
                           <input
                             {...register(`exercises.${index}.reps`)}
@@ -323,7 +323,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                         {/* Weight */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Weight (kg)
+                            Súly (kg)
                           </label>
                           <input
                             {...register(`exercises.${index}.weightKg`)}
@@ -338,7 +338,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                       {/* Duration (for cardio exercises) */}
                       <div className="mt-3">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Duration (seconds) - for cardio exercises
+                          Időtartam (másodperc) - kardió gyakorlatokhoz
                         </label>
                         <input
                           {...register(`exercises.${index}.durationSeconds`)}
@@ -360,12 +360,12 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
               {/* Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes (optional)
+                  Megjegyzések (opcionális)
                 </label>
                 <textarea
                   {...register('notes')}
                   rows={3}
-                  placeholder="Add any notes about your workout..."
+                  placeholder="Adj hozzá megjegyzéseket az edzésedről..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -373,7 +373,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
               {/* Total Calories */}
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="text-lg font-medium text-blue-900">
-                  Total Estimated Calories: {getTotalCalories()} cal
+                  Összes becsült kalória: {getTotalCalories()} kal
                 </div>
               </div>
 
@@ -383,7 +383,7 @@ const WorkoutForm: React.FC<WorkoutFormProps> = ({
                   type="submit"
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  Log Workout
+                  Edzés rögzítése
                 </button>
               </div>
             </form>

@@ -45,6 +45,7 @@ export interface MealEntry {
 // Recipe
 export interface Recipe {
   _id?: string;
+  userId: string;
   externalId?: string;
   title: string;
   ingredients: { name: string; quantity?: string; grams?: number }[];
@@ -55,6 +56,7 @@ export interface Recipe {
   imageUrl?: string;
   prepTime?: number;
   cookTime?: number;
+  category?: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'dessert' | 'drink';
 }
 
 // Exercise
@@ -98,6 +100,7 @@ export interface ShoppingListItem {
   category?: string;
   purchased: boolean;
   addedAt: Date;
+  extraInfo?: string;
 }
 
 // Daily Summary
@@ -169,6 +172,39 @@ export interface ProfileFormData {
   weightKg?: number;
   heightCm?: number;
   dailyCalorieGoal?: number;
+}
+
+// Expense
+export interface Expense {
+  _id?: string;
+  userId: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: Date;
+  billImageUrl?: string;
+  extractedItems?: {
+    name: string;
+    price: number;
+    quantity?: number;
+  }[];
+  location?: string;
+  paymentMethod?: 'cash' | 'card' | 'transfer';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Income
+export interface Income {
+  _id?: string;
+  userId: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: Date;
+  source?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface MealFormData {

@@ -20,13 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDatabase();
 
     if (req.method === 'PUT') {
-      const { purchased, name, quantity, category } = req.body;
+      const { purchased, name, quantity, category, extraInfo } = req.body;
 
       const updateData: any = {};
       if (purchased !== undefined) updateData.purchased = purchased;
       if (name !== undefined) updateData.name = name;
       if (quantity !== undefined) updateData.quantity = quantity;
       if (category !== undefined) updateData.category = category;
+      if (extraInfo !== undefined) updateData.extraInfo = extraInfo;
 
       const item = await ShoppingListItem.findOneAndUpdate(
         { _id: id, userId: session.user.id },

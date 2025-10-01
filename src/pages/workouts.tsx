@@ -107,8 +107,8 @@ const WorkoutsPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Workouts</h1>
-            <p className="text-gray-600">Track your exercise and fitness progress</p>
+            <h1 className="text-2xl font-bold text-gray-900">Edzések</h1>
+            <p className="text-gray-600">Kövesd nyomon az edzéseid és fitness haladásod</p>
           </div>
           <div className="mt-4 sm:mt-0 flex space-x-3">
             <input
@@ -122,7 +122,7 @@ const WorkoutsPage = () => {
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Log Workout
+              Edzés rögzítése
             </button>
           </div>
         </div>
@@ -137,7 +137,7 @@ const WorkoutsPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Workouts Today</p>
+                <p className="text-sm font-medium text-gray-600">Mai edzések</p>
                 <p className="text-2xl font-bold text-gray-900">{workouts.length}</p>
               </div>
             </div>
@@ -148,7 +148,7 @@ const WorkoutsPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Exercises</p>
+                <p className="text-sm font-medium text-gray-600">Összes gyakorlat</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {workouts.reduce((sum, workout) => sum + workout.exercises.length, 0)}
                 </p>
@@ -161,7 +161,7 @@ const WorkoutsPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Calories Burned</p>
+                <p className="text-sm font-medium text-gray-600">Elégetett kalóriák</p>
                 <p className="text-2xl font-bold text-gray-900">{formatCalories(totalCaloriesBurned)}</p>
               </div>
             </div>
@@ -239,15 +239,15 @@ const WorkoutsPage = () => {
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow">
             <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No workouts logged</h3>
-            <p className="mt-2 text-gray-600">Get started by logging your first workout!</p>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Nincsenek rögzített edzések</h3>
+            <p className="mt-2 text-gray-600">Kezdj azzal, hogy rögzíted az első edzésed!</p>
             <div className="mt-6">
               <button 
                 onClick={() => setShowWorkoutForm(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Log Your First Workout
+                Első edzés rögzítése
               </button>
             </div>
           </div>

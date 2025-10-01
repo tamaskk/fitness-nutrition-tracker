@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/Layout';
 import { formatDateForAPI, getCurrentDateString } from '@/utils/dateUtils';
 import { calculateDailyBalance, formatCalories } from '@/utils/calculations';
@@ -12,7 +11,6 @@ import Link from 'next/link';
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { t } = useLanguage();
   const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -75,10 +73,10 @@ export default function Dashboard() {
   ) : null;
 
   const quickActions = [
-    { name: t('Log Meal'), href: '/meals', icon: Plus, color: 'bg-green-500' },
-    { name: t('Log Workout'), href: '/workouts', icon: Activity, color: 'bg-blue-500' },
-    { name: t('Find Recipe'), href: '/recipes', icon: Plus, color: 'bg-purple-500' },
-    { name: t('Shopping List'), href: '/shopping', icon: Plus, color: 'bg-orange-500' },
+    { name: 'Étkezés rögzítése', href: '/meals', icon: Plus, color: 'bg-green-500' },
+    { name: 'Edzés rögzítése', href: '/workouts', icon: Activity, color: 'bg-blue-500' },
+    { name: 'Recept keresése', href: '/recipes', icon: Plus, color: 'bg-purple-500' },
+    { name: 'Bevásárlólista', href: '/shopping', icon: Plus, color: 'bg-orange-500' },
   ];
 
   return (
@@ -88,9 +86,9 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {t(new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening')}, {session.user?.name || 'there'}!
+              {new Date().getHours() < 12 ? 'Jó reggelt' : new Date().getHours() < 18 ? 'Jó napot' : 'Jó estét'}, {session.user?.name || 'there'}!
             </h1>
-            <p className="text-gray-600">{t('Here\'s your fitness summary for today')}</p>
+            <p className="text-gray-600">Itt a mai fitness összefoglalód</p>
           </div>
         </div>
 
@@ -104,7 +102,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{t('Calories Consumed')}</p>
+                <p className="text-sm font-medium text-gray-600">Elfogyasztott kalóriák</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dailySummary ? formatCalories(dailySummary.totalCaloriesConsumed) : '0'}
                 </p>
@@ -120,7 +118,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{t('Calories Burned')}</p>
+                <p className="text-sm font-medium text-gray-600">Elégetett kalóriák</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dailySummary ? formatCalories(dailySummary.totalCaloriesBurned) : '0'}
                 </p>
@@ -136,7 +134,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{t('Daily Goal')}</p>
+                <p className="text-sm font-medium text-gray-600">Napi cél</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dailySummary ? formatCalories(dailySummary.calorieGoal) : '2,000'}
                 </p>
@@ -158,7 +156,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{t('Balance')}</p>
+                <p className="text-sm font-medium text-gray-600">Egyenleg</p>
                 <p className={`text-2xl font-bold ${
                   balance?.isOverGoal ? 'text-red-600' : 'text-green-600'
                 }`}>
@@ -172,11 +170,11 @@ export default function Dashboard() {
         {/* Progress Bar */}
         {dailySummary && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Daily Progress</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Napi haladás</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>Calories ({balance?.percentageOfGoal || 0}% of goal)</span>
+                  <span>Kalóriák ({balance?.percentageOfGoal || 0}% a célból)</span>
                   <span>{formatCalories(dailySummary.totalCaloriesConsumed)} / {formatCalories(dailySummary.calorieGoal)}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -194,7 +192,7 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Gyors műveletek</h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action) => (
               <Link
@@ -214,44 +212,44 @@ export default function Dashboard() {
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Today's Meals</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Mai étkezések</h3>
             {dailySummary?.mealsCount ? (
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">{dailySummary.mealsCount} meals logged</p>
+                <p className="text-sm text-gray-600">{dailySummary.mealsCount} étkezés rögzítve</p>
                 <Link href="/meals" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                  View all meals →
+                  Összes étkezés megtekintése →
                 </Link>
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No meals logged today</p>
+                <p className="text-gray-500 mb-4">Ma még nincsenek rögzített étkezések</p>
                 <Link
                   href="/meals"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Log your first meal
+                  Első étkezés rögzítése
                 </Link>
               </div>
             )}
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Today's Workouts</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Mai edzések</h3>
             {dailySummary?.workoutsCount ? (
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">{dailySummary.workoutsCount} workouts logged</p>
+                <p className="text-sm text-gray-600">{dailySummary.workoutsCount} edzés rögzítve</p>
                 <Link href="/workouts" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                  View all workouts →
+                  Összes edzés megtekintése →
                 </Link>
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No workouts logged today</p>
+                <p className="text-gray-500 mb-4">Ma még nincsenek rögzített edzések</p>
                 <Link
                   href="/workouts"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Log your first workout
+                  Első edzés rögzítése
                 </Link>
               </div>
             )}

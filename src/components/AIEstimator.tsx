@@ -110,7 +110,7 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center">
               <Brain className="w-6 h-6 text-purple-600 mr-2" />
-              <h2 className="text-xl font-bold text-gray-900">AI Nutrition Estimator</h2>
+              <h2 className="text-xl font-bold text-gray-900">AI Táplálkozási Becslő</h2>
             </div>
             <button
               onClick={handleClose}
@@ -125,13 +125,13 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Food Name *
+                  Étel neve *
                 </label>
                 <input
                   type="text"
                   value={foodName}
                   onChange={(e) => setFoodName(e.target.value)}
-                  placeholder="e.g., grilled chicken breast, homemade pizza"
+                  placeholder="pl. grillezett csirkemell, házi pizza"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -139,7 +139,7 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity
+                    Mennyiség
                   </label>
                   <input
                     type="number"
@@ -151,30 +151,30 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Unit
+                    Egység
                   </label>
                   <select
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    <option value="g">grams</option>
-                    <option value="oz">ounces</option>
-                    <option value="cup">cups</option>
-                    <option value="piece">pieces</option>
-                    <option value="serving">servings</option>
+                    <option value="g">gramm</option>
+                    <option value="oz">uncia</option>
+                    <option value="cup">csésze</option>
+                    <option value="piece">darab</option>
+                    <option value="serving">adag</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description (optional)
+                  Leírás (opcionális)
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Additional details like cooking method, brand, size..."
+                  placeholder="További részletek, mint főzési mód, márka, méret..."
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
@@ -190,7 +190,7 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
                 ) : (
                   <Sparkles className="w-4 h-4 mr-2" />
                 )}
-                {loading ? 'Estimating...' : 'Get AI Estimation'}
+                {loading ? 'Becslés...' : 'AI Becslés kérése'}
               </button>
             </div>
 

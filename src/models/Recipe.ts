@@ -4,6 +4,10 @@ import { Recipe } from '@/types';
 export interface RecipeDocument extends Omit<Recipe, '_id'>, Document {}
 
 const RecipeSchema = new Schema<RecipeDocument>({
+  userId: {
+    type: String,
+    required: true,
+  },
   externalId: {
     type: String,
     sparse: true,
@@ -58,6 +62,11 @@ const RecipeSchema = new Schema<RecipeDocument>({
     type: Number,
     min: 0,
   },
+  category: {
+    type: String,
+    enum: ['breakfast', 'lunch', 'dinner', 'snack', 'dessert', 'drink'],
+    trim: true,
+  },
 }, {
   timestamps: true,
 });
@@ -65,5 +74,10 @@ const RecipeSchema = new Schema<RecipeDocument>({
 // Index for search functionality
 RecipeSchema.index({ title: 'text', tags: 'text', 'ingredients.name': 'text' });
 
-export default mongoose.models.Recipe || mongoose.model<RecipeDocument>('Recipe', RecipeSchema);
+// Clear any existing model to ensure fresh schema
+if (mongoose.models.Recipe) {
+  delete mongoose.models.Recipe;
+}
+
+export default mongoose.model<RecipeDocument>('Recipe', RecipeSchema);
 

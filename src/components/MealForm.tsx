@@ -7,6 +7,7 @@ import { getMealTypeColor } from '@/utils/calculations';
 import BarcodeScanner from './BarcodeScanner';
 import ImageAnalyzer from './ImageAnalyzer';
 import AIEstimator from './AIEstimator';
+import toast from 'react-hot-toast';
 
 interface MealFormProps {
   isOpen: boolean;
@@ -84,25 +85,34 @@ const MealForm: React.FC<MealFormProps> = ({
 
     setLoading(true);
     try {
-      // Mock food search - in real app, this would call a nutrition API
+      // Use Edamam Food Database API for nutrition data
+      const response = await fetch(`/api/food/search?q=${encodeURIComponent(searchQuery)}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to search foods');
+      }
+      
+      const foods = await response.json();
+      setSearchResults(foods);
+      
+      if (foods.length === 0) {
+        toast.error('Nem találtunk ételt ezzel a névvel');
+      }
+    } catch (error) {
+      console.error('Food search error:', error);
+      toast.error('Hiba történt az étel keresésekor');
+      
+      // Fallback to mock data
       const mockFoods = [
-        { id: 1, name: 'Chicken Breast', caloriesPer100g: 165, proteinPer100g: 31, carbsPer100g: 0, fatPer100g: 3.6 },
-        { id: 2, name: 'Brown Rice', caloriesPer100g: 111, proteinPer100g: 2.6, carbsPer100g: 23, fatPer100g: 0.9 },
-        { id: 3, name: 'Broccoli', caloriesPer100g: 34, proteinPer100g: 2.8, carbsPer100g: 7, fatPer100g: 0.4 },
-        { id: 4, name: 'Salmon Fillet', caloriesPer100g: 208, proteinPer100g: 25, carbsPer100g: 0, fatPer100g: 12 },
-        { id: 5, name: 'Greek Yogurt', caloriesPer100g: 59, proteinPer100g: 10, carbsPer100g: 3.6, fatPer100g: 0.4 },
-        { id: 6, name: 'Banana', caloriesPer100g: 89, proteinPer100g: 1.1, carbsPer100g: 23, fatPer100g: 0.3 },
-        { id: 7, name: 'Almonds', caloriesPer100g: 579, proteinPer100g: 21, carbsPer100g: 22, fatPer100g: 50 },
-        { id: 8, name: 'Sweet Potato', caloriesPer100g: 86, proteinPer100g: 1.6, carbsPer100g: 20, fatPer100g: 0.1 },
+        { id: 1, name: 'Csirkemell', caloriesPer100g: 165, proteinPer100g: 31, carbsPer100g: 0, fatPer100g: 3.6, fiberPer100g: 0, brand: null, category: 'Hús', image: null },
+        { id: 2, name: 'Barna rizs', caloriesPer100g: 111, proteinPer100g: 2.6, carbsPer100g: 23, fatPer100g: 0.9, fiberPer100g: 1.8, brand: null, category: 'Gabona', image: null },
+        { id: 3, name: 'Brokkoli', caloriesPer100g: 34, proteinPer100g: 2.8, carbsPer100g: 7, fatPer100g: 0.4, fiberPer100g: 2.6, brand: null, category: 'Zöldség', image: null },
       ];
-
+      
       const filtered = mockFoods.filter(food => 
         food.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      
       setSearchResults(filtered);
-    } catch (error) {
-      console.error('Food search error:', error);
     } finally {
       setLoading(false);
     }
@@ -149,7 +159,7 @@ const MealForm: React.FC<MealFormProps> = ({
         <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-bold text-gray-900">Add Meal</h2>
+            <h2 className="text-xl font-bold text-gray-900">Étkezés hozzáadása</h2>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-600"
@@ -163,7 +173,7 @@ const MealForm: React.FC<MealFormProps> = ({
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date
+                  Dátum
                 </label>
                 <input
                   {...register('date', { required: 'Date is required' })}
@@ -178,17 +188,17 @@ const MealForm: React.FC<MealFormProps> = ({
               {/* Meal Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Meal Type
+                  Étkezés típusa
                 </label>
                 <select
                   {...register('mealType', { required: 'Meal type is required' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="breakfast">Breakfast</option>
-                  <option value="lunch">Lunch</option>
-                  <option value="dinner">Dinner</option>
-                  <option value="snack">Snack</option>
-                  <option value="drink">Drink</option>
+                  <option value="breakfast">Reggeli</option>
+                  <option value="lunch">Ebéd</option>
+                  <option value="dinner">Vacsora</option>
+                  <option value="snack">Uzsonna</option>
+                  <option value="drink">Ital</option>
                 </select>
                 {errors.mealType && (
                   <p className="mt-1 text-sm text-red-600">{errors.mealType.message}</p>
@@ -198,7 +208,7 @@ const MealForm: React.FC<MealFormProps> = ({
               {/* Smart Food Input Options */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Add Food Using:
+                  Étel hozzáadása:
                 </label>
                 
                 {/* Smart Input Buttons */}
@@ -209,7 +219,7 @@ const MealForm: React.FC<MealFormProps> = ({
                     className="flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 border border-blue-200"
                   >
                     <QrCode className="w-4 h-4 mr-2" />
-                    Barcode
+                    Vonalkód
                   </button>
                   <button
                     type="button"
@@ -217,7 +227,7 @@ const MealForm: React.FC<MealFormProps> = ({
                     className="flex items-center justify-center px-3 py-2 bg-purple-50 text-purple-700 rounded-md hover:bg-purple-100 border border-purple-200"
                   >
                     <Camera className="w-4 h-4 mr-2" />
-                    Photo
+                    Fotó
                   </button>
                   <button
                     type="button"
@@ -225,7 +235,7 @@ const MealForm: React.FC<MealFormProps> = ({
                     className="flex items-center justify-center px-3 py-2 bg-green-50 text-green-700 rounded-md hover:bg-green-100 border border-green-200"
                   >
                     <Brain className="w-4 h-4 mr-2" />
-                    AI Estimate
+                    AI Becslés
                   </button>
                   <button
                     type="button"
@@ -233,8 +243,12 @@ const MealForm: React.FC<MealFormProps> = ({
                     disabled={loading || !searchQuery.trim()}
                     className="flex items-center justify-center px-3 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 border border-gray-200 disabled:opacity-50"
                   >
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
+                    {loading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                    ) : (
+                      <Search className="w-4 h-4 mr-2" />
+                    )}
+                    {loading ? 'Keresés...' : 'Keresés'}
                   </button>
                 </div>
 
@@ -244,7 +258,7 @@ const MealForm: React.FC<MealFormProps> = ({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search for food or enter manually..."
+                    placeholder="Keress ételt vagy add meg kézzel..."
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleFoodSearch())}
                   />
@@ -262,7 +276,12 @@ const MealForm: React.FC<MealFormProps> = ({
                       >
                         <div className="font-medium">{food.name}</div>
                         <div className="text-sm text-gray-600">
-                          {food.caloriesPer100g} cal/100g
+                          {food.caloriesPer100g} kal/100g
+                          {food.brand && <span className="ml-2 text-gray-500">({food.brand})</span>}
+                          {food.category && <span className="ml-2 text-blue-600">• {food.category}</span>}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Fehérje: {food.proteinPer100g}g • Szénhidrát: {food.carbsPer100g}g • Zsír: {food.fatPer100g}g
                         </div>
                       </button>
                     ))}
@@ -273,12 +292,12 @@ const MealForm: React.FC<MealFormProps> = ({
               {/* Food Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Food Name
+                  Étel neve
                 </label>
                 <input
                   {...register('name', { required: 'Food name is required' })}
                   type="text"
-                  placeholder="Enter food name or select from search"
+                  placeholder="Add meg az étel nevét vagy válassz a keresésből"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.name && (
@@ -289,7 +308,7 @@ const MealForm: React.FC<MealFormProps> = ({
               {/* Quantity */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quantity (grams)
+                  Mennyiség (gramm)
                 </label>
                 <input
                   {...register('quantityGrams', { 
@@ -309,7 +328,7 @@ const MealForm: React.FC<MealFormProps> = ({
               {/* Calories */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Calories
+                  Kalóriák
                 </label>
                 <input
                   {...register('calories', { 
@@ -337,7 +356,7 @@ const MealForm: React.FC<MealFormProps> = ({
                   type="submit"
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  Add Meal
+                  Étkezés hozzáadása
                 </button>
               </div>
             </form>

@@ -15,6 +15,8 @@ const ShoppingPage = () => {
   const [newItemQuantity, setNewItemQuantity] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'purchased'>('all');
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [editingExtraInfo, setEditingExtraInfo] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -36,7 +38,7 @@ const ShoppingPage = () => {
       }
     } catch (error) {
       console.error('Error fetching shopping items:', error);
-      toast.error('Failed to load shopping list');
+      toast.error('Nem sikerült a bevásárlólista betöltése');
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ const ShoppingPage = () => {
     e.preventDefault();
     
     if (!newItemName.trim()) {
-      toast.error('Item name is required');
+      toast.error('A tétel neve kötelező');
       return;
     }
 
@@ -69,14 +71,14 @@ const ShoppingPage = () => {
         throw new Error('Failed to add item');
       }
 
-      toast.success('Item added to shopping list!');
+      toast.success('Tétel hozzáadva a bevásárlólistához!');
       setNewItemName('');
       setNewItemQuantity('');
       setShowAddForm(false);
       fetchItems(); // Refresh the list
     } catch (error) {
       console.error('Error adding item:', error);
-      toast.error('Failed to add item');
+      toast.error('Nem sikerült a tétel hozzáadása');
     }
   };
 
@@ -97,12 +99,12 @@ const ShoppingPage = () => {
       fetchItems(); // Refresh the list
     } catch (error) {
       console.error('Error updating item:', error);
-      toast.error('Failed to update item');
+      toast.error('Nem sikerült a tétel frissítése');
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) {
+    if (!confirm('Biztosan törölni szeretnéd ezt a tételt?')) {
       return;
     }
 
@@ -115,11 +117,11 @@ const ShoppingPage = () => {
         throw new Error('Failed to delete item');
       }
 
-      toast.success('Item deleted!');
+      toast.success('Tétel törölve!');
       fetchItems(); // Refresh the list
     } catch (error) {
       console.error('Error deleting item:', error);
-      toast.error('Failed to delete item');
+      toast.error('Nem sikerült a tétel törlése');
     }
   };
 
@@ -127,11 +129,11 @@ const ShoppingPage = () => {
     const purchasedItems = items.filter(item => item.purchased);
     
     if (purchasedItems.length === 0) {
-      toast.error('No purchased items to clear');
+      toast.error('Nincsenek megvásárolt tételek a törléshez');
       return;
     }
 
-    if (!confirm(`Are you sure you want to remove ${purchasedItems.length} purchased items?`)) {
+    if (!confirm(`Biztosan eltávolítod a ${purchasedItems.length} megvásárolt tételt?`)) {
       return;
     }
 
@@ -142,12 +144,97 @@ const ShoppingPage = () => {
         )
       );
       
-      toast.success('Purchased items cleared!');
+      toast.success('Megvásárolt tételek törölve!');
       fetchItems();
     } catch (error) {
       console.error('Error clearing purchased items:', error);
-      toast.error('Failed to clear purchased items');
+      toast.error('Nem sikerült a megvásárolt tételek törlése');
     }
+  };
+
+  const handleSelectAll = async () => {
+    const pendingItems = filteredItems.filter(item => !item.purchased);
+    
+    if (pendingItems.length === 0) {
+      toast.error('Nincsenek függőben lévő tételek a kijelöléshez');
+      return;
+    }
+
+    try {
+      await Promise.all(
+        pendingItems.map(item => 
+          fetch(`/api/shopping/items/${item._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ purchased: true }),
+          })
+        )
+      );
+      
+      toast.success(`${pendingItems.length} tétel megvásároltként jelölve!`);
+      fetchItems();
+    } catch (error) {
+      console.error('Error selecting all items:', error);
+      toast.error('Nem sikerült az összes tétel kijelölése');
+    }
+  };
+
+  const handleToggleExpanded = (itemId: string) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(itemId)) {
+      newExpanded.delete(itemId);
+    } else {
+      newExpanded.add(itemId);
+    }
+    setExpandedItems(newExpanded);
+  };
+
+  const handleUpdateExtraInfo = async (itemId: string, extraInfo: string) => {
+    try {
+      const response = await fetch(`/api/shopping/items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extraInfo }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Nem sikerült az extra információ frissítése');
+      }
+
+      // Update local state
+      setItems(prevItems => 
+        prevItems.map(item => 
+          item._id === itemId ? { ...item, extraInfo } : item
+        )
+      );
+      
+      // Clear editing state
+      setEditingExtraInfo(prev => {
+        const newState = { ...prev };
+        delete newState[itemId];
+        return newState;
+      });
+      
+      toast.success('Extra információ frissítve!');
+    } catch (error) {
+      console.error('Error updating extra info:', error);
+      toast.error('Nem sikerült az extra információ frissítése');
+    }
+  };
+
+  const handleStartEditingExtraInfo = (itemId: string, currentExtraInfo: string = '') => {
+    setEditingExtraInfo(prev => ({
+      ...prev,
+      [itemId]: currentExtraInfo
+    }));
+  };
+
+  const handleCancelEditingExtraInfo = (itemId: string) => {
+    setEditingExtraInfo(prev => {
+      const newState = { ...prev };
+      delete newState[itemId];
+      return newState;
+    });
   };
 
   if (status === 'loading' || loading) {
@@ -177,8 +264,8 @@ const ShoppingPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Shopping List</h1>
-            <p className="text-gray-600">Manage your grocery and shopping items</p>
+            <h1 className="text-2xl font-bold text-gray-900">Bevásárlólista</h1>
+            <p className="text-gray-600">Kezeld a bevásárlási és élelmiszer tételeidet</p>
           </div>
           <div className="mt-4 sm:mt-0 flex space-x-3">
             {purchasedCount > 0 && (
@@ -186,7 +273,7 @@ const ShoppingPage = () => {
                 onClick={handleClearPurchased}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
-                Clear Purchased ({purchasedCount})
+                Megvásároltak törlése ({purchasedCount})
               </button>
             )}
             <button 
@@ -194,7 +281,7 @@ const ShoppingPage = () => {
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Item
+              Tétel hozzáadása
             </button>
           </div>
         </div>
@@ -209,7 +296,7 @@ const ShoppingPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Items</p>
+                <p className="text-sm font-medium text-gray-600">Összes tétel</p>
                 <p className="text-2xl font-bold text-gray-900">{items.length}</p>
               </div>
             </div>
@@ -220,7 +307,7 @@ const ShoppingPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pending</p>
+                <p className="text-sm font-medium text-gray-600">Függőben</p>
                 <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
               </div>
             </div>
@@ -231,7 +318,7 @@ const ShoppingPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Purchased</p>
+                <p className="text-sm font-medium text-gray-600">Megvásárolva</p>
                 <p className="text-2xl font-bold text-gray-900">{purchasedCount}</p>
               </div>
             </div>
@@ -242,9 +329,9 @@ const ShoppingPage = () => {
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8">
             {[
-              { key: 'all', label: 'All Items', count: items.length },
-              { key: 'pending', label: 'Pending', count: pendingCount },
-              { key: 'purchased', label: 'Purchased', count: purchasedCount },
+              { key: 'all', label: 'Összes tétel', count: items.length },
+              { key: 'pending', label: 'Függőben', count: pendingCount },
+              { key: 'purchased', label: 'Megvásárolva', count: purchasedCount },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -264,31 +351,31 @@ const ShoppingPage = () => {
         {/* Add Item Form */}
         {showAddForm && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Item</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Új tétel hozzáadása</h3>
             <form onSubmit={handleAddItem} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Item Name *
+                    Tétel neve *
                   </label>
                   <input
                     type="text"
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
-                    placeholder="Enter item name"
+                    placeholder="Tétel neve"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity
+                    Mennyiség
                   </label>
                   <input
                     type="text"
                     value={newItemQuantity}
                     onChange={(e) => setNewItemQuantity(e.target.value)}
-                    placeholder="e.g., 2 lbs, 1 bottle"
+                    placeholder="pl. 2 kg, 1 üveg"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -298,7 +385,7 @@ const ShoppingPage = () => {
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
-                  Add Item
+                  Tétel hozzáadása
                 </button>
                 <button
                   type="button"
@@ -309,7 +396,7 @@ const ShoppingPage = () => {
                   }}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
                 >
-                  Cancel
+                  Mégse
                 </button>
               </div>
             </form>
@@ -319,65 +406,167 @@ const ShoppingPage = () => {
         {/* Shopping Items */}
         {filteredItems.length > 0 ? (
           <div className="bg-white rounded-lg shadow">
-            <div className="divide-y divide-gray-200">
-              {filteredItems.map((item) => (
-                <div key={item._id} className="p-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => handleTogglePurchased(item._id!, !item.purchased)}
-                        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          item.purchased
-                            ? 'bg-green-500 border-green-500 text-white'
-                            : 'border-gray-300 hover:border-green-500'
-                        }`}
-                      >
-                        {item.purchased && <Check className="w-3 h-3" />}
-                      </button>
-                      <div className="flex-1">
-                        <h4 className={`font-medium ${
-                          item.purchased ? 'text-gray-500 line-through' : 'text-gray-900'
-                        }`}>
-                          {item.name}
-                        </h4>
-                        {item.quantity && (
-                          <p className={`text-sm ${
-                            item.purchased ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {item.quantity}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        item.purchased 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-orange-100 text-orange-800'
-                      }`}>
-                        {item.purchased ? 'Purchased' : 'Pending'}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteItem(item._id!)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+            {/* Select All Header */}
+            {filter === 'pending' && filteredItems.length > 0 && (
+              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleSelectAll}
+                      className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 hover:border-green-500 flex items-center justify-center"
+                    >
+                      <Check className="w-3 h-3 text-gray-400" />
+                    </button>
+                    <span className="text-sm font-medium text-gray-700">
+                      Összes kijelölése ({filteredItems.length} tétel)
+                    </span>
                   </div>
                 </div>
-              ))}
+              </div>
+            )}
+            
+            <div className="divide-y divide-gray-200">
+              {filteredItems.map((item) => {
+                const isExpanded = expandedItems.has(item._id!);
+                const isEditingExtraInfo = editingExtraInfo[item._id!] !== undefined;
+                
+                return (
+                  <div key={item._id} className={`transition-all duration-200 ${isExpanded ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-1">
+                          <button
+                            onClick={() => handleTogglePurchased(item._id!, !item.purchased)}
+                            className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
+                              item.purchased
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : 'border-gray-300 hover:border-green-500'
+                            }`}
+                          >
+                            {item.purchased && <Check className="w-3 h-3" />}
+                          </button>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className={`font-medium ${
+                                item.purchased ? 'text-gray-500 line-through' : 'text-gray-900'
+                              }`}>
+                                {item.name}
+                              </h4>
+                              {item.extraInfo && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Info
+                                </span>
+                              )}
+                            </div>
+                            {item.quantity && (
+                              <p className={`text-sm ${
+                                item.purchased ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
+                                {item.quantity}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleToggleExpanded(item._id!)}
+                            className="text-gray-400 hover:text-gray-600 p-1"
+                            title="Extra információ"
+                          >
+                            <svg 
+                              className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            item.purchased 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {item.purchased ? 'Megvásárolva' : 'Függőben'}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteItem(item._id!)}
+                            className="text-red-500 hover:text-red-700 p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Expanded Content */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 border-t border-gray-100 bg-white">
+                        <div className="pt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Extra információ
+                          </label>
+                          {isEditingExtraInfo ? (
+                            <div className="space-y-2">
+                              <textarea
+                                value={editingExtraInfo[item._id!]}
+                                onChange={(e) => setEditingExtraInfo(prev => ({
+                                  ...prev,
+                                  [item._id!]: e.target.value
+                                }))}
+                                placeholder="Pl. konkrét márka, méret, megjegyzés..."
+                                rows={3}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleUpdateExtraInfo(item._id!, editingExtraInfo[item._id!])}
+                                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                                >
+                                  Mentés
+                                </button>
+                                <button
+                                  onClick={() => handleCancelEditingExtraInfo(item._id!)}
+                                  className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                                >
+                                  Mégse
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {item.extraInfo ? (
+                                <div className="p-3 bg-gray-50 rounded-md">
+                                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.extraInfo}</p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500 italic">Nincs extra információ</p>
+                              )}
+                              <button
+                                onClick={() => handleStartEditingExtraInfo(item._id!, item.extraInfo)}
+                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                              >
+                                {item.extraInfo ? 'Szerkesztés' : 'Hozzáadás'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow">
             <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
-              {filter === 'all' ? 'No items in your shopping list' : 
-               filter === 'pending' ? 'No pending items' : 'No purchased items'}
+              {filter === 'all' ? 'Nincsenek tételek a bevásárlólistában' : 
+               filter === 'pending' ? 'Nincsenek függőben lévő tételek' : 'Nincsenek megvásárolt tételek'}
             </h3>
             <p className="mt-2 text-gray-600">
-              {filter === 'all' && 'Get started by adding your first item!'}
+              {filter === 'all' && 'Kezdd el az első tétel hozzáadásával!'}
             </p>
             {filter === 'all' && (
               <div className="mt-6">
@@ -386,7 +575,7 @@ const ShoppingPage = () => {
                   className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Item
+                  Első tétel hozzáadása
                 </button>
               </div>
             )}

@@ -2,7 +2,6 @@ import React from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Home, 
   Utensils, 
@@ -13,7 +12,7 @@ import {
   LogOut,
   Menu,
   X,
-  Languages
+  DollarSign
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -23,24 +22,20 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const { language, setLanguage, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const navigation = [
-    { name: t('Dashboard'), href: '/', icon: Home },
-    { name: t('Meals'), href: '/meals', icon: Utensils },
-    { name: t('Recipes'), href: '/recipes', icon: Book },
-    { name: t('Workouts'), href: '/workouts', icon: Dumbbell },
-    { name: t('Shopping'), href: '/shopping', icon: ShoppingCart },
-    { name: t('Profile'), href: '/profile', icon: User },
+    { name: 'Irányítópult', href: '/', icon: Home },
+    { name: 'Étkezések', href: '/meals', icon: Utensils },
+    { name: 'Receptek', href: '/recipes', icon: Book },
+    { name: 'Edzések', href: '/workouts', icon: Dumbbell },
+    { name: 'Bevásárlás', href: '/shopping', icon: ShoppingCart },
+    { name: 'Pénzügyek', href: '/finance', icon: DollarSign },
+    { name: 'Profil', href: '/profile', icon: User },
   ];
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/login' });
-  };
-
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'hu' : 'en');
   };
 
   if (!session) {
@@ -86,18 +81,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
           <div className="border-t p-4 space-y-2">
             <button
-              onClick={toggleLanguage}
-              className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
-            >
-              <Languages className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-              {language === 'en' ? 'Magyar' : 'English'}
-            </button>
-            <button
               onClick={handleSignOut}
               className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
             >
               <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-              {t('Sign out')}
+              Kijelentkezés
             </button>
           </div>
         </div>
@@ -139,18 +127,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div className="space-y-2">
               <button
-                onClick={toggleLanguage}
-                className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
-              >
-                <Languages className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                {language === 'en' ? 'Magyar' : 'English'}
-              </button>
-              <button
                 onClick={handleSignOut}
                 className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
               >
                 <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                {t('Sign out')}
+                Kijelentkezés
               </button>
             </div>
           </div>

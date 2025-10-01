@@ -31,6 +31,10 @@ const ShoppingListItemSchema = new Schema<ShoppingListItemDocument>({
     type: Date,
     default: Date.now,
   },
+  extraInfo: {
+    type: String,
+    trim: true,
+  },
 });
 
 // Index for efficient queries
