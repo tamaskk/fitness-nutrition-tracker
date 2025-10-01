@@ -73,7 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Parse the form data
     const form = new IncomingForm({
-      uploadDir: path.join(process.cwd(), 'public', 'uploads', 'bills'),
       keepExtensions: true,
       maxFileSize: 10 * 1024 * 1024, // 10MB limit
     });
@@ -86,22 +85,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'No image provided' });
     }
 
-    // Generate a unique filename
-    const timestamp = Date.now();
-    const randomId = Math.floor(Math.random() * 1000000000);
-    const fileExtension = path.extname(billImage.originalFilename || '');
-    const newFilename = `bill-${timestamp}-${randomId}${fileExtension}`;
-    const newFilePath = path.join(process.cwd(), 'public', 'uploads', 'bills', newFilename);
+    // For deployment environments, use the temporary file directly
+    // The file is already in a temporary location that we can access
+    const imageUrl = billImage.filepath;
 
-    // Move the file to the final location
-    fs.renameSync(billImage.filepath, newFilePath);
-
-    // Create the image URL for analysis
-    const imageUrl = `/uploads/bills/${newFilename}`;
-    const fullImageUrl = `${req.headers.origin || 'http://localhost:3000'}${imageUrl}`;
-
-    // Analyze the image
-    const result = await analyzeBillImageDirect(fullImageUrl);
+    // Analyze the image using the temporary file path
+    const result = await analyzeBillImageDirect(imageUrl);
+    
+    // Clean up the temporary file
+    try {
+      if (fs.existsSync(billImage.filepath)) {
+        fs.unlinkSync(billImage.filepath);
+      }
+    } catch (cleanupError) {
+      console.warn('Failed to cleanup temporary file:', cleanupError);
+    }
     
     if (result.success) {
       return res.status(200).json({ 
