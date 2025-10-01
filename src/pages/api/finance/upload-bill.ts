@@ -1,22 +1,25 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from "openai";
-import { analyzeBillImage as analyzeBillImageDirect } from './analyze-bill-direct';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
-import path from 'path';
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function analyzeBillImage(imageUrl: string) {
+export async function analyzeBillImage(imagePath: string) {
   try {
+    // Read the image file and convert to base64
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64Image = imageBuffer.toString('base64');
+    const mimeType = 'image/jpeg'; // Assuming JPEG, could be made dynamic
+
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini", // Using the latest mini model
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are a receipt OCR and parser. Extract structured data.",
+          content: "You are a receipt OCR and parser. Extract structured data from Hungarian receipts. Return JSON with the exact structure specified.",
         },
         {
           role: "user",
@@ -31,17 +34,30 @@ export async function analyzeBillImage(imageUrl: string) {
                 items: [
                   { name: string, price: number, quantity: number | string }
                 ],
-                totalAmount: number
-              }`
+                totalAmount: number,
+                confidence: number
+              }
+              
+              Important rules:
+              - Extract the total amount from lines containing "ÖSSZESEN", "TOTAL", "ÖSSZEG", or "FIZETENDŐ"
+              - Extract merchant name from the top of the receipt (LIDL, TESCO, SPAR, etc.)
+              - Extract date in YYYY-MM-DD format
+              - For items, extract name and price from each line
+              - Set quantity to 1 if not specified
+              - Currency should be "HUF" for Hungarian receipts
+              - Confidence should be 0.8-0.95 for good analysis`
             },
             {
               type: "image_url",
-              image_url: { url: imageUrl },
+              image_url: { 
+                url: `data:${mimeType};base64,${base64Image}` 
+              },
             }
           ],
         },
       ],
-      response_format: { type: "json_object" }, // force structured JSON
+      response_format: { type: "json_object" },
+      max_tokens: 2000,
     });
 
     const content = response.choices[0].message.content;
@@ -50,10 +66,26 @@ export async function analyzeBillImage(imageUrl: string) {
     }
 
     const result = JSON.parse(content);
-    return { success: true, analysis: result };
+    
+    // Validate and clean the result
+    const cleanedResult = {
+      totalAmount: result.totalAmount || 0,
+      merchant: result.merchant || 'Ismeretlen',
+      date: result.date || new Date().toISOString().split('T')[0],
+      items: Array.isArray(result.items) ? result.items.map((item: any) => ({
+        name: item.name || 'Ismeretlen tétel',
+        price: item.price || 0,
+        quantity: item.quantity || 1
+      })) : [],
+      currency: result.currency || 'HUF',
+      confidence: Math.min(Math.max(result.confidence || 0.8, 0), 1),
+      note: 'OpenAI Vision API elemzés'
+    };
+
+    return { success: true, analysis: cleanedResult };
 
   } catch (err) {
-    console.error("GPT receipt analysis failed:", err);
+    console.error("OpenAI Vision analysis failed:", err);
     const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
     return { success: false, message: errorMessage };
   }
@@ -89,8 +121,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // The file is already in a temporary location that we can access
     const imageUrl = billImage.filepath;
 
-    // Analyze the image using the temporary file path
-    const result = await analyzeBillImageDirect(imageUrl);
+    // Analyze the image using OpenAI Vision API
+    const result = await analyzeBillImage(imageUrl);
     
     // Clean up the temporary file
     try {
