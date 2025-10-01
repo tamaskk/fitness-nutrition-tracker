@@ -12,6 +12,12 @@ export interface ExpenseDocument extends Document {
     price: number;
     quantity?: number;
   }[];
+  billItems?: {
+    name: string;
+    price: number;
+    quantity?: number;
+  }[];
+  isBill?: boolean;
   location?: string;
   paymentMethod?: 'cash' | 'card' | 'transfer';
   createdAt: Date;
@@ -65,6 +71,27 @@ const ExpenseSchema = new Schema<ExpenseDocument>({
       default: 1,
     },
   }],
+  billItems: [{
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    quantity: {
+      type: Number,
+      min: 1,
+      default: 1,
+    },
+  }],
+  isBill: {
+    type: Boolean,
+    default: false,
+  },
   location: {
     type: String,
     trim: true,

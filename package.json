@@ -9,10 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/multer": "^2.0.0",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "date-fns": "^2.30.0",
+    "formidable": "^3.5.4",
     "lucide-react": "^0.460.0",
     "mongoose": "^8.0.3",
     "multer": "^2.0.2",
@@ -23,7 +25,8 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.48.2",
     "react-hot-toast": "^2.4.1",
-    "recharts": "^2.15.4"
+    "recharts": "^2.15.4",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -188,6 +188,12 @@ export interface Expense {
     price: number;
     quantity?: number;
   }[];
+  billItems?: {
+    name: string;
+    price: number;
+    quantity?: number;
+  }[];
+  isBill?: boolean;
   location?: string;
   paymentMethod?: 'cash' | 'card' | 'transfer';
   createdAt?: Date;

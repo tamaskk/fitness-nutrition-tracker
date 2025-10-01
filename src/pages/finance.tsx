@@ -59,6 +59,13 @@ const FinancePage = () => {
   const [billImage, setBillImage] = useState<File | null>(null);
   const [ocrData, setOcrData] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [showBillItems, setShowBillItems] = useState(false);
+  const [billItems, setBillItems] = useState<any[]>([]);
+  const [expandedExpenses, setExpandedExpenses] = useState<Set<number>>(new Set());
+  const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingItems, setEditingItems] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -99,7 +106,13 @@ const FinancePage = () => {
 
       if (expensesRes.ok) {
         const expensesData = await expensesRes.json();
-        setExpenses(expensesData);
+        // Sort expenses by creation date (newest first)
+        const sortedExpenses = expensesData.sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt || a.date);
+          const dateB = new Date(b.createdAt || b.date);
+          return dateB.getTime() - dateA.getTime();
+        });
+        setExpenses(sortedExpenses);
       }
 
       if (incomeRes.ok) {
@@ -124,21 +137,52 @@ const FinancePage = () => {
 
     try {
       const endpoint = formType === 'expense' ? '/api/expenses' : '/api/income';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      
+      // If we have bill items and this is an expense, save as one grouped expense
+      if (billItems.length > 0 && formType === 'expense') {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: formData.amount,
+            category: formData.category,
+            description: formData.description,
+            date: formData.date,
+            location: formData.location,
+            paymentMethod: formData.paymentMethod,
+            billItems: billItems, // Include bill items in the expense
+            isBill: true, // Mark as bill expense
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to save');
+        if (!response.ok) {
+          throw new Error('Failed to save bill expense');
+        }
+
+        toast.success(`Számla mentve (${billItems.length} tétel)!`);
+      } else {
+        // Save single expense/income
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save');
+        }
+
+        toast.success(`${formType === 'expense' ? 'Kiadás' : 'Bevétel'} hozzáadva!`);
       }
 
-      toast.success(`${formType === 'expense' ? 'Kiadás' : 'Bevétel'} hozzáadva!`);
       setShowAddForm(false);
       resetForm();
+      setBillItems([]);
+      setOcrData(null);
       fetchData();
     } catch (error) {
       console.error('Error saving:', error);
@@ -156,6 +200,91 @@ const FinancePage = () => {
       paymentMethod: 'cash',
       source: '',
     });
+    setBillItems([]);
+    setOcrData(null);
+    setShowBillItems(false);
+  };
+
+  const toggleExpenseExpansion = (index: number) => {
+    const newExpanded = new Set(expandedExpenses);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedExpenses(newExpanded);
+  };
+
+  const handleEditExpense = (expense: any) => {
+    setEditingExpense(expense);
+    setEditingItems(expense.billItems ? [...expense.billItems] : []);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    if (!confirm('Biztosan törölni szeretnéd ezt a kiadást?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/expenses?id=${expenseId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete expense');
+      }
+
+      toast.success('Kiadás törölve!');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast.error('Nem sikerült a törlés');
+    }
+  };
+
+  const handleSaveEditedExpense = async () => {
+    if (!editingExpense) return;
+
+    try {
+      // Calculate new total from items
+      const newTotal = editingItems.reduce((sum, item) => sum + (item.price || 0), 0);
+
+      const response = await fetch(`/api/expenses?id=${editingExpense._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: newTotal,
+          billItems: editingItems,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update expense');
+      }
+
+      toast.success('Kiadás frissítve!');
+      setShowEditModal(false);
+      setEditingExpense(null);
+      setEditingItems([]);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      toast.error('Nem sikerült a frissítés');
+    }
+  };
+
+  const handleDeleteItem = (itemIndex: number) => {
+    const newItems = editingItems.filter((_, index) => index !== itemIndex);
+    setEditingItems(newItems);
+  };
+
+  const handleUpdateItem = (itemIndex: number, field: string, value: any) => {
+    const newItems = [...editingItems];
+    newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
+    setEditingItems(newItems);
   };
 
   const handleAddClick = (type: 'expense' | 'income') => {
@@ -172,14 +301,26 @@ const FinancePage = () => {
     }
 
     setUploading(true);
+    setOcrProgress(0);
     try {
       const formData = new FormData();
       formData.append('billImage', billImage);
+
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setOcrProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 10;
+        });
+      }, 500);
 
       const response = await fetch('/api/finance/upload-bill', {
         method: 'POST',
         body: formData,
       });
+
+      clearInterval(progressInterval);
+      setOcrProgress(100);
 
       if (!response.ok) {
         throw new Error('Upload failed');
@@ -187,6 +328,11 @@ const FinancePage = () => {
 
       const result = await response.json();
       setOcrData(result.ocrData);
+      
+      // Set bill items for individual saving
+      if (result.ocrData.items && result.ocrData.items.length > 0) {
+        setBillItems(result.ocrData.items);
+      }
       
       // Pre-fill form with OCR data
       setFormData(prev => ({
@@ -198,13 +344,15 @@ const FinancePage = () => {
       }));
       
       toast.success('Számla feltöltve és elemzve!');
-      setShowBillUpload(false);
-      setShowAddForm(true);
+      // Don't close the modal immediately - let user see the results
+      // setShowBillUpload(false);
+      // setShowAddForm(true);
     } catch (error) {
       console.error('Error uploading bill:', error);
       toast.error('Nem sikerült a számla feltöltése');
     } finally {
       setUploading(false);
+      setOcrProgress(0);
     }
   };
 
@@ -299,38 +447,39 @@ const FinancePage = () => {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Pénzügyek</h1>
             <p className="text-gray-600">Kövesd a kiadásaidat és bevételeidet</p>
           </div>
-          <div className="mt-4 sm:mt-0 flex space-x-3">
-            {/* Period Navigation */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3">
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={goToPreviousPeriod}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                  title="Előző időszak"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                
-                <div className="flex flex-col items-center min-w-[140px]">
-                  <div className="text-lg font-semibold text-gray-900 mb-1">
-                    {getPeriodDisplay()}
-                  </div>
-                  <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
-                    className="text-sm text-gray-600 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer"
-                  >
-                    <option value="week">Heti</option>
-                    <option value="month">Havi</option>
-                    <option value="year">Éves</option>
-                  </select>
+          
+          {/* Period Navigation */}
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={goToPreviousPeriod}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                title="Előző időszak"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <div className="flex flex-col items-center flex-1 mx-4">
+                <div className="text-lg font-semibold text-gray-900 mb-1 text-center">
+                  {getPeriodDisplay()}
                 </div>
-                
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
+                  className="text-sm text-gray-600 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer"
+                >
+                  <option value="week">Heti</option>
+                  <option value="month">Havi</option>
+                  <option value="year">Éves</option>
+                </select>
+              </div>
+              
+              <div className="flex items-center space-x-1">
                 <button
                   onClick={goToNextPeriod}
                   className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
@@ -338,8 +487,6 @@ const FinancePage = () => {
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
-                
-                <div className="w-px h-8 bg-gray-200"></div>
                 
                 <button
                   onClick={goToCurrentPeriod}
@@ -350,73 +497,88 @@ const FinancePage = () => {
                 </button>
               </div>
             </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button 
               onClick={() => setShowBillUpload(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
             >
-              <Camera className="w-4 h-4 mr-2" />
-              Számla fotó
+              <Camera className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Számla fotó</span>
+              <span className="sm:hidden">Számla</span>
             </button>
             <button 
               onClick={() => handleAddClick('expense')}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Kiadás
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Kiadás</span>
+              <span className="sm:hidden">Kiadás</span>
             </button>
             <button 
               onClick={() => handleAddClick('income')}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Bevétel
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Bevétel</span>
+              <span className="sm:hidden">Bevétel</span>
+            </button>
+            <button 
+              onClick={() => setShowAddForm(true)}
+              className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 sm:col-span-1 col-span-2"
+            >
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Tétel hozzáadása</span>
+              <span className="sm:hidden">További tétel</span>
             </button>
           </div>
         </div>
 
         {/* Summary Cards */}
         {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                    <TrendingDown className="w-5 h-5 text-red-600" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-full flex items-center justify-center">
+                    <TrendingDown className="w-3 h-3 sm:w-5 sm:h-5 text-red-600" />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Összes kiadás</p>
-                  <p className="text-2xl font-bold text-gray-900">{summary.totalExpenses.toLocaleString()} Ft</p>
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Összes kiadás</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{summary.totalExpenses.toLocaleString()} Ft</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-3 h-3 sm:w-5 sm:h-5 text-green-600" />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Összes bevétel</p>
-                  <p className="text-2xl font-bold text-gray-900">{summary.totalIncome.toLocaleString()} Ft</p>
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Összes bevétel</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{summary.totalIncome.toLocaleString()} Ft</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
                     summary.balance >= 0 ? 'bg-green-100' : 'bg-red-100'
                   }`}>
-                    <DollarSign className={`w-5 h-5 ${
+                    <DollarSign className={`w-3 h-3 sm:w-5 sm:h-5 ${
                       summary.balance >= 0 ? 'text-green-600' : 'text-red-600'
                     }`} />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Egyenleg</p>
-                  <p className={`text-2xl font-bold ${
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Egyenleg</p>
+                  <p className={`text-lg sm:text-2xl font-bold truncate ${
                     summary.balance >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
                     {summary.balance.toLocaleString()} Ft
@@ -424,16 +586,16 @@ const FinancePage = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-blue-600" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Calendar className="w-3 h-3 sm:w-5 sm:h-5 text-blue-600" />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Időszak</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Időszak</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
                     {getPeriodDisplay()}
                   </p>
                 </div>
@@ -444,7 +606,7 @@ const FinancePage = () => {
 
         {/* Tabs */}
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-2 sm:space-x-8 overflow-x-auto">
             {[
               { key: 'overview', label: 'Áttekintés', icon: BarChart3 },
               { key: 'expenses', label: 'Kiadások', icon: TrendingDown },
@@ -453,14 +615,15 @@ const FinancePage = () => {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-1 sm:gap-2 whitespace-nowrap ${
                   activeTab === tab.key
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {tab.label}
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
               </button>
             ))}
           </nav>
@@ -468,11 +631,11 @@ const FinancePage = () => {
 
         {/* Tab Content */}
         {activeTab === 'overview' && summary && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Expenses by Category */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Kiadások kategóriánként</h3>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <RechartsPieChart>
                   <Pie
                     data={Object.entries(summary.expensesByCategory).map(([category, amount]) => ({
@@ -497,9 +660,9 @@ const FinancePage = () => {
             </div>
 
             {/* Income by Category */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Bevételek kategóriánként</h3>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <RechartsPieChart>
                   <Pie
                     data={Object.entries(summary.incomeByCategory).map(([category, amount]) => ({
@@ -525,14 +688,142 @@ const FinancePage = () => {
           </div>
         )}
 
+        {/* Expenses Tab Content */}
+        {activeTab === 'expenses' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Kiadások</h3>
+              {expenses.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Nincsenek kiadások</p>
+              ) : (
+                <div className="space-y-3">
+                  {expenses.map((expense, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between p-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900">{expense.description}</p>
+                            {((expense as any).isBill || expense.description.includes('Sml számla') || expense.description.includes('számla')) && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Számla
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600">{expense.category} • {expense.location}</p>
+                          <p className="text-xs text-gray-500">{new Date(expense.date).toLocaleDateString('hu-HU')}</p>
+                        </div>
+                        <div className="text-right flex items-center gap-2">
+                          <div>
+                            <p className="font-bold text-red-600">{expense.amount.toLocaleString()} Ft</p>
+                            <p className="text-xs text-gray-500">{expense.paymentMethod}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {(((expense as any).isBill && (expense as any).billItems && (expense as any).billItems.length > 0) || 
+                             (expense.description.includes('Sml számla') || expense.description.includes('számla'))) && (
+                              <button
+                                onClick={() => toggleExpenseExpansion(index)}
+                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                                title={expandedExpenses.has(index) ? 'Összezár' : 'Részletek'}
+                              >
+                                {expandedExpenses.has(index) ? (
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                )}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleEditExpense(expense)}
+                              className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded"
+                              title="Szerkesztés"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => expense._id && handleDeleteExpense(expense._id)}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded"
+                              title="Törlés"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      {(((expense as any).isBill && (expense as any).billItems && (expense as any).billItems.length > 0) || 
+                        (expense.description.includes('Sml számla') || expense.description.includes('számla'))) && expandedExpenses.has(index) && (
+                        <div className="px-3 pb-3 border-t border-gray-200">
+                          <div className="mt-3 bg-white p-3 rounded border">
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">
+                              Számla tételek ({(expense as any).billItems ? (expense as any).billItems.length : 0} db)
+                            </h4>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                              {(expense as any).billItems && (expense as any).billItems.length > 0 ? (
+                                (expense as any).billItems.map((item: any, itemIndex: number) => (
+                                  <div key={itemIndex} className="flex justify-between text-xs py-1">
+                                    <span className="flex-1 truncate">{item.name}</span>
+                                    <span className="ml-2 font-medium">{item.price} Ft</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-xs text-gray-500 py-2">
+                                  Ez a számla a régi formátumban van mentve. Az egyes tételek nem érhetők el.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Income Tab Content */}
+        {activeTab === 'income' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Bevételek</h3>
+              {income.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Nincsenek bevételek</p>
+              ) : (
+                <div className="space-y-3">
+                  {income.map((incomeItem, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{incomeItem.description}</p>
+                        <p className="text-sm text-gray-600">{incomeItem.category} • {incomeItem.source}</p>
+                        <p className="text-xs text-gray-500">{new Date(incomeItem.date).toLocaleDateString('hu-HU')}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">{incomeItem.amount.toLocaleString()} Ft</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Bill Upload Modal */}
         {showBillUpload && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowBillUpload(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div className="p-6">
+              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div className="p-4 sm:p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Számla fotó feltöltése</h3>
                   <form onSubmit={handleBillUpload} className="space-y-4">
                     <div>
@@ -575,12 +866,28 @@ const FinancePage = () => {
                           <p><strong>Bizalmi szint:</strong> {Math.round(ocrData.confidence * 100)}%</p>
                           {ocrData.items && ocrData.items.length > 0 && (
                             <div>
-                              <p><strong>Tételek:</strong></p>
-                              <ul className="list-disc list-inside ml-2">
-                                {ocrData.items.map((item: any, index: number) => (
-                                  <li key={index}>{item.name} - {item.price} {ocrData.currency || 'HUF'}</li>
-                                ))}
-                              </ul>
+                              <div className="flex items-center justify-between mb-2">
+                                <p><strong>Tételek ({ocrData.items.length} db):</strong></p>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowBillItems(!showBillItems)}
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                                >
+                                  {showBillItems ? 'Összezár' : 'Részletek'}
+                                </button>
+                              </div>
+                              {showBillItems && (
+                                <div className="bg-white p-3 rounded border max-h-40 overflow-y-auto">
+                                  <ul className="space-y-1">
+                                    {ocrData.items.map((item: any, index: number) => (
+                                      <li key={index} className="flex justify-between text-xs">
+                                        <span className="flex-1 truncate">{item.name}</span>
+                                        <span className="ml-2 font-medium">{item.price} {ocrData.currency || 'HUF'}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -594,18 +901,40 @@ const FinancePage = () => {
                           setShowBillUpload(false);
                           setBillImage(null);
                           setOcrData(null);
+                          setBillItems([]);
+                          setShowBillItems(false);
                         }}
                         className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                       >
                         Mégse
                       </button>
-                      <button
-                        type="submit"
-                        disabled={!billImage || uploading}
-                        className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {uploading ? 'Feldolgozás...' : 'Elemzés'}
-                      </button>
+                      {ocrData ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowBillUpload(false);
+                            setShowAddForm(true);
+                          }}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >
+                          Folytatás
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={!billImage || uploading}
+                          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {uploading ? (
+                            <div className="flex items-center justify-center">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                              {ocrProgress < 50 ? 'OCR elemzés...' : 'GPT elemzés...'} {Math.round(ocrProgress)}%
+                            </div>
+                          ) : (
+                            'Elemzés'
+                          )}
+                        </button>
+                      )}
                     </div>
                   </form>
                 </div>
@@ -620,11 +949,20 @@ const FinancePage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowAddForm(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div className="p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    {formType === 'expense' ? 'Új kiadás' : 'Új bevétel'}
-                  </h3>
+              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div className="p-4 sm:p-6">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {formType === 'expense' ? 'Új kiadás' : 'Új bevétel'}
+                    </h3>
+                    {billItems.length > 0 && formType === 'expense' && (
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-800">
+                          <strong>{billItems.length} tétel</strong> kerül mentésre a számláról
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -736,6 +1074,101 @@ const FinancePage = () => {
                       </button>
                     </div>
                   </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Bill Modal */}
+        {showEditModal && editingExpense && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-screen items-center justify-center p-4">
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowEditModal(false)} />
+              
+              <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Számla szerkesztése: {editingExpense.description}
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {/* Bill Items */}
+                    <div>
+                      <h4 className="text-md font-medium text-gray-900 mb-3">
+                        Számla tételek ({editingItems.length} db)
+                      </h4>
+                      <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3">
+                        {editingItems.map((item, index) => (
+                          <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
+                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="Tétel neve"
+                            />
+                            <input
+                              type="number"
+                              value={item.price}
+                              onChange={(e) => handleUpdateItem(index, 'price', parseFloat(e.target.value) || 0)}
+                              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="Ár"
+                            />
+                            <span className="text-sm text-gray-600">Ft</span>
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => handleUpdateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                              className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="Db"
+                            />
+                            <button
+                              onClick={() => handleDeleteItem(index)}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded"
+                              title="Tétel törlése"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Total Calculation */}
+                    <div className="bg-blue-50 p-3 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-gray-900">Új összeg:</span>
+                        <span className="font-bold text-lg text-blue-600">
+                          {editingItems.reduce((sum, item) => sum + (item.price || 0), 0).toLocaleString()} Ft
+                        </span>
+                      </div>
+                      {editingExpense.amount !== editingItems.reduce((sum, item) => sum + (item.price || 0), 0) && (
+                        <div className="text-sm text-gray-600 mt-1">
+                          Eredeti összeg: {editingExpense.amount.toLocaleString()} Ft
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditModal(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    >
+                      Mégse
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveEditedExpense}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      Mentés
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

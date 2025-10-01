@@ -1,42 +1,63 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
-import multer from 'multer';
-import { promises as fs } from 'fs';
+import OpenAI from "openai";
+import { analyzeBillImage as analyzeBillImageDirect } from './analyze-bill-direct';
+import { IncomingForm } from 'formidable';
+import fs from 'fs';
 import path from 'path';
 
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, path.join(process.cwd(), 'public', 'uploads', 'bills'));
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, `bill-${uniqueSuffix}${path.extname(file.originalname)}`);
-    },
-  }),
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  },
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Create uploads directory if it doesn't exist
-const ensureUploadsDir = async () => {
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'bills');
+export async function analyzeBillImage(imageUrl: string) {
   try {
-    await fs.access(uploadsDir);
-  } catch {
-    await fs.mkdir(uploadsDir, { recursive: true });
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini", // Using the latest mini model
+      messages: [
+        {
+          role: "system",
+          content: "You are a receipt OCR and parser. Extract structured data.",
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Please analyze this receipt image and return JSON with fields:
+              {
+                merchant: string,
+                date: string | null,
+                currency: "HUF",
+                items: [
+                  { name: string, price: number, quantity: number | string }
+                ],
+                totalAmount: number
+              }`
+            },
+            {
+              type: "image_url",
+              image_url: { url: imageUrl },
+            }
+          ],
+        },
+      ],
+      response_format: { type: "json_object" }, // force structured JSON
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('No content received from OpenAI');
+    }
+
+    const result = JSON.parse(content);
+    return { success: true, analysis: result };
+
+  } catch (err) {
+    console.error("GPT receipt analysis failed:", err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+    return { success: false, message: errorMessage };
   }
-};
+}
 
 export const config = {
   api: {
@@ -46,106 +67,60 @@ export const config = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    await ensureUploadsDir();
-
-    // Handle file upload
-    await new Promise((resolve, reject) => {
-      upload.single('billImage')(req, res, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(true);
-        }
-      });
+    // Parse the form data
+    const form = new IncomingForm({
+      uploadDir: path.join(process.cwd(), 'public', 'uploads', 'bills'),
+      keepExtensions: true,
+      maxFileSize: 10 * 1024 * 1024, // 10MB limit
     });
 
-    const file = (req as any).file;
-    if (!file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+    const [fields, files] = await form.parse(req);
+    
+    const billImage = Array.isArray(files.billImage) ? files.billImage[0] : files.billImage;
+    
+    if (!billImage) {
+      return res.status(400).json({ error: 'No image provided' });
     }
 
-    const fileUrl = `/uploads/bills/${file.filename}`;
+    // Generate a unique filename
+    const timestamp = Date.now();
+    const randomId = Math.floor(Math.random() * 1000000000);
+    const fileExtension = path.extname(billImage.originalFilename || '');
+    const newFilename = `bill-${timestamp}-${randomId}${fileExtension}`;
+    const newFilePath = path.join(process.cwd(), 'public', 'uploads', 'bills', newFilename);
+
+    // Move the file to the final location
+    fs.renameSync(billImage.filepath, newFilePath);
+
+    // Create the image URL for analysis
+    const imageUrl = `/uploads/bills/${newFilename}`;
+    const fullImageUrl = `${req.headers.origin || 'http://localhost:3000'}${imageUrl}`;
+
+    // Analyze the image
+    const result = await analyzeBillImageDirect(fullImageUrl);
     
-    // Analyze the bill with ChatGPT
-    try {
-      const analysisResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/finance/analyze-bill`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}${fileUrl}`
-        }),
+    if (result.success) {
+      return res.status(200).json({ 
+        success: true, 
+        ocrData: result.analysis 
       });
-
-      if (analysisResponse.ok) {
-        const analysisResult = await analysisResponse.json();
-        res.status(200).json({
-          success: true,
-          fileUrl,
-          ocrData: analysisResult.analysis,
-        });
-      } else {
-        const errorData = await analysisResponse.json();
-        console.log('Analysis failed:', errorData);
-        
-        // Fallback to mock data if analysis fails
-        const mockOcrData = {
-          totalAmount: Math.floor(Math.random() * 10000) + 1000,
-          items: [
-            { name: 'Tej 1L', price: 350, quantity: 1 },
-            { name: 'Kenyér', price: 280, quantity: 1 },
-            { name: 'Tojás 10db', price: 450, quantity: 1 },
-            { name: 'Alma 1kg', price: 320, quantity: 1 },
-          ],
-          merchant: 'Tesco',
-          date: new Date().toISOString(),
-          confidence: 0.3,
-          note: 'OpenAI API nem elérhető - minta adatok'
-        };
-
-        res.status(200).json({
-          success: true,
-          fileUrl,
-          ocrData: mockOcrData,
-        });
-      }
-    } catch (analysisError) {
-      console.error('Analysis error:', analysisError);
-      
-      // Fallback to mock data
-      const mockOcrData = {
-        totalAmount: Math.floor(Math.random() * 10000) + 1000,
-        items: [
-          { name: 'Tej 1L', price: 350, quantity: 1 },
-          { name: 'Kenyér', price: 280, quantity: 1 },
-          { name: 'Tojás 10db', price: 450, quantity: 1 },
-          { name: 'Alma 1kg', price: 320, quantity: 1 },
-        ],
-        merchant: 'Tesco',
-        date: new Date().toISOString(),
-        confidence: 0.3,
-        note: 'OpenAI API hiba - minta adatok'
-      };
-
-      res.status(200).json({
-        success: true,
-        fileUrl,
-        ocrData: mockOcrData,
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        error: result.message 
       });
     }
 
   } catch (error) {
-    console.error('Bill upload error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Upload bill error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return res.status(500).json({ 
+      success: false, 
+      error: errorMessage 
+    });
   }
 }
