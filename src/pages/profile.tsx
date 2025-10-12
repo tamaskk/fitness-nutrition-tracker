@@ -270,12 +270,7 @@ const ProfilePage = () => {
     if (hasNotifications) {
       console.log(`Feature ${feature} has completed onboarding (notifications set to: ${answers.notifications})`);
       return true;
-    }
-    
-    console.log(`Has answers for ${feature}:`, hasAnswers);
-    console.log(`Has notifications for ${feature}:`, hasNotifications);
-    console.log(`Final result for ${feature}:`, hasAnyAnswer);
-    
+    }    
     return hasAnyAnswer;
   };
 
