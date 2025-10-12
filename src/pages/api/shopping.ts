@@ -37,6 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         quantity: item.quantity || '',
         category: item.category || 'general',
         purchased: false,
+        extraInfo: item.extraInfo || '',
+        preferredStore: item.preferredStore || '',
       }));
 
       const createdItems = await ShoppingListItem.insertMany(shoppingItems);

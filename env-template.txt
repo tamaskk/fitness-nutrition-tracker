@@ -7,6 +7,9 @@ MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/f
 NEXTAUTH_URL=https://your-app-name.vercel.app
 NEXTAUTH_SECRET=your-nextauth-secret-here
 
+# Admin Access (REQUIRED for admin features)
+ADMIN_EMAIL=your-admin-email@example.com
+
 # External APIs (Optional - app works with fallbacks)
 # Edamam Recipe Search API for recipe data (optional)
 EDAMAM_APP_ID=your-edamam-recipe-app-id

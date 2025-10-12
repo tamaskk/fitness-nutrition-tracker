@@ -3,13 +3,25 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { ShoppingListItem } from '@/types';
-import { Plus, ShoppingCart, Trash2, Check, X } from 'lucide-react';
+import { Plus, ShoppingCart, Trash2, Check, X, Store } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Expand the shopping list item type with a suggestion field
+export interface ShoppingListItemWithSuggestion extends ShoppingListItem {
+  suggestion?: {
+    name: string;
+    shop: string;
+    price: number;
+    unit: string;
+    imageUrl: string;
+  }[] | null;
+  suggestionState: 'pending' | 'success' | 'error' | 'empty';
+}
 
 const ShoppingPage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [items, setItems] = useState<ShoppingListItem[]>([]);
+  const [items, setItems] = useState<ShoppingListItemWithSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [newItemName, setNewItemName] = useState('');
   const [newItemQuantity, setNewItemQuantity] = useState('');
@@ -17,6 +29,7 @@ const ShoppingPage = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'purchased'>('all');
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [editingExtraInfo, setEditingExtraInfo] = useState<{ [key: string]: string }>({});
+  const [editingPreferredStore, setEditingPreferredStore] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -152,6 +165,70 @@ const ShoppingPage = () => {
     }
   };
 
+  const getSuggestionShoppingList = async (item: ShoppingListItem) => {
+    try {
+      // mark as pending
+      setItems(prevItems => 
+        prevItems.map(prev => 
+          prev._id === item._id ? { ...prev, suggestion: null, suggestionState: 'pending' } : prev
+        )
+      );
+
+      const response = await fetch(`/api/price-monitor/search?q=${item.name}&limit=3&offset=0&order=relevance`);
+      if (response.ok) {
+        const data = await response.json();
+        const products = Array.isArray(data?.products) ? data.products : [];
+
+        // transform API products -> lightweight suggestion entries
+        const suggestions = products.slice(0, 6).map((p: any) => {
+          // choose best (lowest) price across chain stores, fallback to minUnitPrice
+          let bestPrice = typeof p.minUnitPrice === 'number' ? p.minUnitPrice : undefined;
+          let bestShop = '';
+          if (Array.isArray(p.pricesOfChainStores) && p.pricesOfChainStores.length > 0) {
+            p.pricesOfChainStores.forEach((store: any) => {
+              const firstPrice = Array.isArray(store?.prices) && store.prices.length > 0 ? store.prices[0] : null;
+              const amount = firstPrice?.amount;
+              if (typeof amount === 'number') {
+                if (bestPrice === undefined || amount < bestPrice) {
+                  bestPrice = amount;
+                  bestShop = store?.name || '';
+                }
+              }
+            });
+          }
+          return {
+            name: p.name,
+            shop: bestShop || (Array.isArray(p.pricesOfChainStores) && p.pricesOfChainStores[0]?.name) || '',
+            price: bestPrice ?? 0,
+            unit: p.unitTitle || p.unit || '',
+            imageUrl: p.imageUrl || '',
+          };
+        }).filter((s: any) => s.name && s.price);
+
+        setItems(prevItems => 
+          prevItems.map(prev => 
+            prev._id === item._id 
+              ? { 
+                  ...prev, 
+                  suggestion: suggestions.length > 0 ? suggestions : null, 
+                  suggestionState: suggestions.length > 0 ? 'success' : 'empty' 
+                }
+              : prev
+          )
+        );
+      }
+    }
+    catch (error) {
+      console.error('Error getting suggestion shopping list:', error);
+      setItems(prevItems => 
+        prevItems.map(prev => 
+          prev._id === item._id ? { ...prev, suggestionState: 'error' } : prev
+        )
+      );
+      toast.error('Nem sikerült a tétel ajánlása');
+    }
+  };
+
   const handleSelectAll = async () => {
     const pendingItems = filteredItems.filter(item => !item.purchased);
     
@@ -237,6 +314,54 @@ const ShoppingPage = () => {
     });
   };
 
+  const handleUpdatePreferredStore = async (itemId: string, preferredStore: string) => {
+    try {
+      const response = await fetch(`/api/shopping/items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferredStore }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Nem sikerült a preferált bolt frissítése');
+      }
+
+      // Update local state
+      setItems(prevItems => 
+        prevItems.map(item => 
+          item._id === itemId ? { ...item, preferredStore } : item
+        )
+      );
+      
+      // Clear editing state
+      setEditingPreferredStore(prev => {
+        const newState = { ...prev };
+        delete newState[itemId];
+        return newState;
+      });
+      
+      toast.success('Preferált bolt frissítve!');
+    } catch (error) {
+      console.error('Error updating preferred store:', error);
+      toast.error('Nem sikerült a preferált bolt frissítése');
+    }
+  };
+
+  const handleStartEditingPreferredStore = (itemId: string, currentPreferredStore: string = '') => {
+    setEditingPreferredStore(prev => ({
+      ...prev,
+      [itemId]: currentPreferredStore
+    }));
+  };
+
+  const handleCancelEditingPreferredStore = (itemId: string) => {
+    setEditingPreferredStore(prev => {
+      const newState = { ...prev };
+      delete newState[itemId];
+      return newState;
+    });
+  };
+
   if (status === 'loading' || loading) {
     return (
       <Layout>
@@ -249,14 +374,14 @@ const ShoppingPage = () => {
 
   if (!session) return null;
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item: ShoppingListItemWithSuggestion) => {
     if (filter === 'pending') return !item.purchased;
     if (filter === 'purchased') return item.purchased;
     return true;
   });
 
-  const pendingCount = items.filter(item => !item.purchased).length;
-  const purchasedCount = items.filter(item => item.purchased).length;
+  const pendingCount = items.filter((item: ShoppingListItemWithSuggestion) => !item.purchased).length;
+  const purchasedCount = items.filter((item: ShoppingListItemWithSuggestion) => item.purchased).length;
 
   return (
     <Layout>
@@ -407,7 +532,7 @@ const ShoppingPage = () => {
         {filteredItems.length > 0 ? (
           <div className="bg-white rounded-lg shadow">
             {/* Select All Header */}
-            {filter === 'pending' && filteredItems.length > 0 && (
+            {(((filter === 'pending') || (filter === 'all' && expandedItems.size > 0)) && filteredItems.length > 0) && (
               <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -418,7 +543,7 @@ const ShoppingPage = () => {
                       <Check className="w-3 h-3 text-gray-400" />
                     </button>
                     <span className="text-sm font-medium text-gray-700">
-                      Összes kijelölése ({filteredItems.length} tétel)
+                      Összes kijelölése ({filteredItems.filter(i => !i.purchased).length} tétel)
                     </span>
                   </div>
                 </div>
@@ -426,12 +551,13 @@ const ShoppingPage = () => {
             )}
             
             <div className="divide-y divide-gray-200">
-              {filteredItems.map((item) => {
+              {filteredItems.map((item: ShoppingListItemWithSuggestion) => {
                 const isExpanded = expandedItems.has(item._id!);
                 const isEditingExtraInfo = editingExtraInfo[item._id!] !== undefined;
+                const isEditingPreferredStore = editingPreferredStore[item._id!] !== undefined;
                 
                 return (
-                  <div key={item._id} className={`transition-all duration-200 ${isExpanded ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                  <div key={item._id} className={`transition-all duration-200 ${isExpanded ? 'bg-blue-50' : 'hover:bg-gray-50'} w-full text-left`}>
                     <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-1">
@@ -457,6 +583,12 @@ const ShoppingPage = () => {
                                   Info
                                 </span>
                               )}
+                              {item.preferredStore && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <Store className="w-3 h-3 mr-1" />
+                                  {item.preferredStore}
+                                </span>
+                              )}
                             </div>
                             {item.quantity && (
                               <p className={`text-sm ${
@@ -469,7 +601,10 @@ const ShoppingPage = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => handleToggleExpanded(item._id!)}
+                            onClick={() => {
+                              handleToggleExpanded(item._id!);
+                              getSuggestionShoppingList(item);
+                            }}
                             className="text-gray-400 hover:text-gray-600 p-1"
                             title="Extra információ"
                           >
@@ -502,54 +637,203 @@ const ShoppingPage = () => {
                     {/* Expanded Content */}
                     {isExpanded && (
                       <div className="px-4 pb-4 border-t border-gray-100 bg-white">
-                        <div className="pt-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Extra információ
-                          </label>
-                          {isEditingExtraInfo ? (
-                            <div className="space-y-2">
-                              <textarea
-                                value={editingExtraInfo[item._id!]}
-                                onChange={(e) => setEditingExtraInfo(prev => ({
-                                  ...prev,
-                                  [item._id!]: e.target.value
-                                }))}
-                                placeholder="Pl. konkrét márka, méret, megjegyzés..."
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              />
-                              <div className="flex gap-2">
+                        <div className="pt-4 space-y-6">
+                          {/* Preferred Store Section */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Preferált bolt
+                            </label>
+                            {isEditingPreferredStore ? (
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  value={editingPreferredStore[item._id!]}
+                                  onChange={(e) => setEditingPreferredStore(prev => ({
+                                    ...prev,
+                                    [item._id!]: e.target.value
+                                  }))}
+                                  placeholder="pl. Tesco, Spar, Auchan..."
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleUpdatePreferredStore(item._id!, editingPreferredStore[item._id!])}
+                                    className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                                  >
+                                    Mentés
+                                  </button>
+                                  <button
+                                    onClick={() => handleCancelEditingPreferredStore(item._id!)}
+                                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                                  >
+                                    Mégse
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {item.preferredStore ? (
+                                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded-md">
+                                    <Store className="w-4 h-4 text-green-600" />
+                                    <span className="text-sm text-green-700 font-medium">{item.preferredStore}</span>
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500 italic">Nincs preferált bolt megadva</p>
+                                )}
                                 <button
-                                  onClick={() => handleUpdateExtraInfo(item._id!, editingExtraInfo[item._id!])}
-                                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                                  onClick={() => handleStartEditingPreferredStore(item._id!, item.preferredStore)}
+                                  className="text-green-600 hover:text-green-700 text-sm font-medium"
                                 >
-                                  Mentés
-                                </button>
-                                <button
-                                  onClick={() => handleCancelEditingExtraInfo(item._id!)}
-                                  className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
-                                >
-                                  Mégse
+                                  {item.preferredStore ? 'Szerkesztés' : 'Hozzáadás'}
                                 </button>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              {item.extraInfo ? (
-                                <div className="p-3 bg-gray-50 rounded-md">
-                                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.extraInfo}</p>
+                            )}
+                          </div>
+
+                          {/* Extra Info Section */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Extra információ
+                            </label>
+                            {isEditingExtraInfo ? (
+                              <div className="space-y-2">
+                                <textarea
+                                  value={editingExtraInfo[item._id!]}
+                                  onChange={(e) => setEditingExtraInfo(prev => ({
+                                    ...prev,
+                                    [item._id!]: e.target.value
+                                  }))}
+                                  placeholder="Pl. konkrét márka, méret, megjegyzés..."
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleUpdateExtraInfo(item._id!, editingExtraInfo[item._id!])}
+                                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                                  >
+                                    Mentés
+                                  </button>
+                                  <button
+                                    onClick={() => handleCancelEditingExtraInfo(item._id!)}
+                                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                                  >
+                                    Mégse
+                                  </button>
                                 </div>
-                              ) : (
-                                <p className="text-sm text-gray-500 italic">Nincs extra információ</p>
-                              )}
-                              <button
-                                onClick={() => handleStartEditingExtraInfo(item._id!, item.extraInfo)}
-                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                              >
-                                {item.extraInfo ? 'Szerkesztés' : 'Hozzáadás'}
-                              </button>
-                            </div>
-                          )}
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {item.extraInfo ? (
+                                  <div className="p-3 bg-gray-50 rounded-md">
+                                    {(() => {
+                                      try {
+                                        const productInfo = JSON.parse(item.extraInfo);
+                                        if (productInfo.productId) {
+                                          // This is a price monitor product with full data
+                                          return (
+                                            <div className="space-y-2">
+                                              <div className="flex items-center gap-2">
+                                                <img 
+                                                  src={productInfo.imageUrl} 
+                                                  alt={item.name}
+                                                  className="w-12 h-12 object-cover rounded"
+                                                  onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                  }}
+                                                />
+                                                <div className="flex-1">
+                                                  <p className="text-sm font-medium text-gray-900">
+                                                    {item.name}
+                                                  </p>
+                                                  <p className="text-xs text-gray-600">
+                                                    ID: {productInfo.productId}
+                                                  </p>
+                                                  <p className="text-xs text-gray-600">
+                                                    Kategória: {productInfo.categoryPath}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div>
+                                                  <span className="font-medium">Egység:</span> <span className='text-gray-500'>{productInfo.unitTitle}</span>
+                                                </div>
+                                                <div>
+                                                  <span className="font-medium">Csomagolás:</span> <span className='text-gray-500'>{productInfo.packaging}</span>
+                                                </div>
+                                                <div>
+                                                  <span className="font-medium">Min. ár:</span> <span className='text-gray-500'>{new Intl.NumberFormat('hu-HU').format(productInfo.minUnitPrice)} Ft</span>
+                                                </div>
+                                                <div>
+                                                  <span className="font-medium">Hozzáadva:</span> <span className='text-gray-500'>{new Date(productInfo.addedAt).toLocaleDateString('hu-HU')}</span>
+                                                </div>
+                                              </div>
+                                              {productInfo.selectedStore && (
+                                                <div className="text-xs">
+                                                  <span className="font-medium">Kiválasztott bolt:</span> <span className='text-gray-500'>{productInfo.selectedStore}</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        } else {
+                                          // This is regular extra info
+                                          return (
+                                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.extraInfo}</p>
+                                          );
+                                        }
+                                      } catch (e) {
+                                        // Not JSON, display as regular text
+                                        return (
+                                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{item.extraInfo}</p>
+                                        );
+                                      }
+                                    })()}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500 italic">Nincs extra információ</p>
+                                )}
+                                <button
+                                  onClick={() => handleStartEditingExtraInfo(item._id!, item.extraInfo)}
+                                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                >
+                                  {item.extraInfo ? 'Szerkesztés' : 'Hozzáadás'}
+                                </button>
+                                <div className='mt-5'>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Boltok ahol ajánlatos vásárolni</label>
+                                  {item.suggestionState === 'success' && item.suggestion && item.suggestion.length > 0 && (
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {item.suggestion.map((suggestion) => (
+                                        <div key={suggestion.shop}>
+                                          <img src={suggestion.imageUrl} alt={suggestion.name} className="w-full h-24 object-cover rounded" />
+                                          <p className="text-sm font-medium text-gray-900">{suggestion.name}</p>
+                                          <p className="text-sm text-gray-600">{suggestion.shop}</p>
+                                          <p className="text-sm text-gray-600">{suggestion.price} Ft</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {item.suggestionState === 'pending' && (
+                                    <div className="text-sm text-gray-500 italic">Ajánlatot kérünk a tételhez</div>
+                                  )}
+                                  {item.suggestionState === 'error' && (
+                                    <div className="text-sm text-gray-500 italic">Hiba történt az ajánlat kérésekor</div>
+                                  )}
+                                  {item.suggestionState === 'empty' && (
+                                    <div className="text-sm text-gray-500 italic">Nincs ajánlat a tételhez</div>
+                                  )}
+
+                                  <button
+                                    onClick={() => {
+                                      router.push(`/price-monitor?q=${item.name}`);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                  >
+                                    Több ajánlat kérése
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}

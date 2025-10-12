@@ -26,6 +26,8 @@ const RecipesPage = () => {
   const [titleFilter, setTitleFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'category' | 'date'>('date');
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [recipeOffset, setRecipeOffset] = useState(0);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -71,102 +73,64 @@ const RecipesPage = () => {
   };
 
   const handleIngredientsSelected = async (ingredients: string[]) => {
+    setSelectedIngredients(ingredients);
+    setRecipeOffset(0);
+    await generateOpenAIRecipes(ingredients, 0);
+  };
+
+  const generateOpenAIRecipes = async (ingredients: string[], offset: number) => {
     setIngredientLoading(true);
     try {
-      // Search for recipes using the selected ingredients
-      const { searchRecipesByIngredient, getMockRecipes } = await import('@/utils/recipeApi');
-      
-      let recipesByIngredient: { [key: string]: any[] } = {};
-      
-      // Search for recipes with each ingredient separately
-      for (const ingredient of ingredients.slice(0, 5)) { // Increase to 5 ingredients for more variety
-        try {
-          const ingredientRecipes = await searchRecipesByIngredient(ingredient);
-          recipesByIngredient[ingredient] = ingredientRecipes;
-        } catch (error) {
-          console.error(`Error searching for ${ingredient}:`, error);
-          recipesByIngredient[ingredient] = [];
-        }
+      const response = await fetch('/api/recipes/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ingredients: ingredients,
+          count: 10,
+          offset: offset
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate recipes');
       }
+
+      const data = await response.json();
       
-      // Find recipes that contain ALL selected ingredients
-      let recipesWithAllIngredients: any[] = [];
-      
-      if (ingredients.length === 1) {
-        // If only one ingredient, just use those recipes
-        recipesWithAllIngredients = recipesByIngredient[ingredients[0]] || [];
-      } else {
-        // Find intersection of all ingredient recipe lists
-        const firstIngredient = ingredients[0];
-        const firstRecipes = recipesByIngredient[firstIngredient] || [];
-        
-        recipesWithAllIngredients = firstRecipes.filter(recipe => {
-          // Check if this recipe contains all other ingredients
-          return ingredients.slice(1).every(ingredient => {
-            const ingredientRecipes = recipesByIngredient[ingredient] || [];
-            return ingredientRecipes.some(r => r.uri === recipe.uri);
-          });
-        });
-        
-        // If no recipes contain all ingredients, fall back to recipes with most ingredients
-        if (recipesWithAllIngredients.length === 0) {
-          // Count how many ingredients each recipe contains
-          const allRecipes = Object.values(recipesByIngredient).flat();
-          const recipeScores: { [uri: string]: { recipe: any, score: number } } = {};
-          
-          allRecipes.forEach(recipe => {
-            if (!recipeScores[recipe.uri]) {
-              recipeScores[recipe.uri] = { recipe, score: 0 };
-            }
-            recipeScores[recipe.uri].score++;
-          });
-          
-          // Sort by score (most ingredients first) and take top recipes
-          recipesWithAllIngredients = Object.values(recipeScores)
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 24) // Increase to 24 recipes for more variety
-            .map(item => item.recipe);
-        }
-      }
-      
-      // If no results from API, use mock recipes
-      if (recipesWithAllIngredients.length === 0) {
-        const mockRecipes = getMockRecipes(ingredients.join(' '));
-        setRecipes(mockRecipes.slice(0, 8));
-        toast('No recipes found with those ingredients, showing similar recipes', { icon: 'ℹ️' });
-      } else {
-        setRecipes(recipesWithAllIngredients.slice(0, 24)); // Show more recipes
-        if (ingredients.length > 1) {
-          const perfectMatches = recipesWithAllIngredients.filter(recipe => {
-            // Check if recipe actually contains all ingredients in its ingredient list
-            const recipeIngredients = recipe.ingredients || [];
-            return ingredients.every(ingredient => 
-              recipeIngredients.some((recipeIng: any) => {
-                const ingText = (recipeIng.text || recipeIng.name || '').toLowerCase();
-                return ingText.includes(ingredient.toLowerCase());
-              })
-            );
-          });
-          
-          if (perfectMatches.length > 0) {
-            toast.success(`Found ${perfectMatches.length} recipes containing all your ingredients!`);
-          } else {
-            toast.success(`Found ${recipesWithAllIngredients.length} recipes with some of your ingredients!`);
-          }
+      if (data.success) {
+        if (offset === 0) {
+          // First batch - replace recipes
+          setRecipes(data.recipes);
         } else {
-          toast.success(`Found ${recipesWithAllIngredients.length} recipes with ${ingredients[0]}!`);
+          // Additional batches - append recipes
+          setRecipes(prev => [...prev, ...data.recipes]);
         }
+        
+        toast.success(`Generated ${data.recipes.length} recipes using: ${ingredients.join(', ')}`);
+      } else {
+        throw new Error(data.error || 'Failed to generate recipes');
       }
     } catch (error) {
-      console.error('Error searching recipes by ingredients:', error);
-      toast.error('Failed to search recipes');
+      console.error('Error generating recipes with OpenAI:', error);
+      toast.error('Failed to generate recipes with AI');
       
       // Fallback to mock recipes
       const { getMockRecipes } = await import('@/utils/recipeApi');
-      setRecipes(getMockRecipes(ingredients[0] || ''));
+      const mockRecipes = getMockRecipes(ingredients.join(' '));
+      setRecipes(mockRecipes.slice(0, 10));
     } finally {
       setIngredientLoading(false);
     }
+  };
+
+  const handleLoadMoreRecipes = async () => {
+    if (selectedIngredients.length === 0) return;
+    
+    const newOffset = recipeOffset + 10;
+    setRecipeOffset(newOffset);
+    await generateOpenAIRecipes(selectedIngredients, newOffset);
   };
 
   const handleAIRecipeGenerated = async (recipe: any) => {
@@ -383,21 +347,39 @@ const RecipesPage = () => {
       console.log('Saving recipe:', recipe);
       const isRecipeModel = 'title' in recipe;
       
+      // Helper function to map Hungarian categories to English
+      const mapCategory = (category: string): string => {
+        const categoryMap: { [key: string]: string } = {
+          'reggeli': 'breakfast',
+          'ebéd': 'lunch',
+          'vacsora': 'dinner',
+          'uzsonna': 'snack',
+          'desszert': 'dessert',
+          'ital': 'drink'
+        };
+        return categoryMap[category] || category;
+      };
+      
       const recipeData = {
         userId: session?.user?.id, // Add userId from session
         title: isRecipeModel ? recipe.title : recipe.label,
-        ingredients: isRecipeModel ? recipe.ingredients : recipe.ingredients.map((ing: any) => ({
+        ingredients: isRecipeModel ? recipe.ingredients.map((ing: any) => ({
+          name: ing.name,
+          quantity: ing.amount ? `${ing.amount} ${ing.unit || ''}`.trim() : '',
+          grams: null, // AI recipes don't have weight data
+        })) : recipe.ingredients.map((ing: any) => ({
           name: ing.text,
           quantity: ing.measure,
           grams: ing.weight,
         })),
-        steps: isRecipeModel ? recipe.steps : [], // Add steps field for API compatibility
+        steps: isRecipeModel ? (recipe.instructions || recipe.steps || []) : [], // Use instructions for AI recipes
         caloriesPerServing: isRecipeModel ? recipe.caloriesPerServing : Math.round(recipe.calories),
         servings: isRecipeModel ? recipe.servings : recipe.yield,
         tags: isRecipeModel ? recipe.tags : [...(recipe.cuisineType || []), ...(recipe.mealType || [])],
         imageUrl: isRecipeModel ? recipe.imageUrl : recipe.image,
         prepTime: isRecipeModel ? recipe.prepTime : Math.round(recipe.totalTime / 2),
         cookTime: isRecipeModel ? recipe.cookTime : Math.round(recipe.totalTime / 2),
+        category: isRecipeModel ? mapCategory(recipe.category) : null,
       };
 
       console.log('Recipe data to save:', recipeData);
@@ -626,23 +608,51 @@ const RecipesPage = () => {
 
         {/* Recipe Grid */}
         {filteredAndSortedRecipes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredAndSortedRecipes.map((recipe, index) => (
-              <RecipeCard
-                key={recipe.uri || recipe._id || index}
-                recipe={recipe}
-                onViewDetails={handleViewRecipe}
-                onSaveRecipe={handleSaveRecipe}
-                onEditRecipe={handleEditRecipe}
-                onDeleteRecipe={handleDeleteRecipe}
-                showEditDeleteButtons={activeTab === 'saved'}
-                onAddToMeal={() => {
-                  setSelectedRecipe(recipe);
-                  setShowModal(true);
-                }}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+              {filteredAndSortedRecipes.map((recipe, index) => (
+                <RecipeCard
+                  key={recipe.uri || recipe._id || index}
+                  recipe={recipe}
+                  onViewDetails={handleViewRecipe}
+                  onSaveRecipe={handleSaveRecipe}
+                  onEditRecipe={handleEditRecipe}
+                  onDeleteRecipe={handleDeleteRecipe}
+                  showEditDeleteButtons={activeTab === 'saved'}
+                  onAddToMeal={() => {
+                    setSelectedRecipe(recipe);
+                    setShowModal(true);
+                  }}
+                />
+              ))}
+            </div>
+            
+            {/* Load More Button - Only show for ingredients tab with AI recipes */}
+            {activeTab === 'ingredients' && selectedIngredients.length > 0 && (
+              <div className="text-center mt-8">
+                <button
+                  onClick={handleLoadMoreRecipes}
+                  disabled={ingredientLoading}
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {ingredientLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Receptek generálása...
+                    </>
+                  ) : (
+                    <>
+                      <ChefHat className="w-4 h-4 mr-2" />
+                      Következő 10 recept
+                    </>
+                  )}
+                </button>
+                <p className="text-sm text-gray-500 mt-2">
+                  Minden recept tartalmazza: {selectedIngredients.join(', ')}
+                </p>
+              </div>
+            )}
+          </>
         ) : recipes.length > 0 && (titleFilter.trim() || categoryFilter) ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-2">

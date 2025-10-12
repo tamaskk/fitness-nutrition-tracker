@@ -1,200 +1,215 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
-
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  const { prompt } = req.body;
-
-  if (!prompt || typeof prompt !== 'string') {
-    return res.status(400).json({ message: 'Prompt is required' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `Te egy professzionális szakács és recept alkotó vagy. Készíts részletes, praktikus recepteket a felhasználói kérések alapján. 
-
-MINDIG magyar nyelven válaszolj, és MINDIG JSON objektumot adj vissza ebben a pontos formátumban:
-{
-  "title": "Recept neve",
-  "description": "Rövid leírás az ételről",
-  "servings": 4,
-  "prepTime": 15,
-  "cookTime": 30,
-  "totalTime": 45,
-  "difficulty": "Könnyű|Közepes|Nehéz",
-  "cuisine": "konyha típusa",
-  "mealType": "reggeli|ebéd|vacsora|uzsonna",
-  "ingredients": [
-    {
-      "name": "hozzávaló neve",
-      "quantity": "mennyiség",
-      "notes": "opcionális előkészítési megjegyzések"
+    const session = await getServerSession(req, res, authOptions);
+    if (!session?.user?.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
-  ],
-  "instructions": [
-    "1. lépés utasítás",
-    "2. lépés utasítás"
-  ],
-  "nutritionEstimate": {
-    "calories": 350,
-    "protein": 25,
-    "carbs": 30,
-    "fat": 15,
-    "fiber": 5
-  },
-  "tips": [
-    "Hasznos főzési tipp 1",
-    "Hasznos főzési tipp 2"
-  ],
-  "tags": ["címke1", "címke2", "címke3"]
-}
 
-Győződj meg róla, hogy a recept praktikus, általános hozzávalókat használ, és világos, lépésről lépésre szóló utasításokat tartalmaz. Adj reális táplálkozási becsléseket és hasznos főzési tippeket. MINDEN szöveget magyar nyelven írj!`
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.7,
-      }),
+    const { ingredients, count = 10, offset = 0 } = req.body;
+
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+      return res.status(400).json({ error: 'Ingredients array is required' });
+    }
+
+    // Limit count to prevent JSON parsing issues
+    const safeCount = Math.min(count, 5);
+
+    const ingredientsList = ingredients.join(', ');
+    
+    const prompt = `Te egy professzionális szakács és receptfejlesztő vagy. Generálj ${safeCount} különböző, kreatív és finom receptet, amelyek MINDEN alábbi hozzávalót HASZNÁLNAK: ${ingredientsList}.
+
+Minden recepthez add meg:
+1. Kreatív és vonzó címet (magyarul)
+2. Rövid leírást (1-2 mondat, magyarul)
+3. Teljes hozzávalólistát pontos mennyiségekkel és mértékegységekkel (magyarul)
+4. Részletes, lépésről lépésre főzési utasításokat (magyarul)
+5. Becsült főzési időt
+6. Adagok számát
+7. Nehézségi szintet (Könnyű/Közepes/Nehéz)
+8. Kategóriát (reggeli/ebéd/vacsora/uzsonna/desszert)
+9. Kalória/adag számítást
+
+FONTOS: Minden hozzávalóhoz add meg a pontos mennyiséget és mértékegységet (pl. "300 g csirkemell", "2 db édesburgonya", "3 db tojás", "1 teáskanál só").
+
+Követelmények:
+- MINDEN recept HASZNÁLJA az összes megadott hozzávalót: ${ingredientsList}
+- Legyél kreatív és változatos - ne ismételd a hasonló recepteket
+- Adj gyakorlati főzési tippeket
+- Az utasítások legyenek világosak és könnyen követhetők
+- Figyelembe vedd a magyar konyha ízvilágát és preferenciáit
+- Adj reális főzési időket és adagméretet
+- Számítsd ki a kalória/adag értéket minden recepthez
+- MINDEN szöveg legyen magyarul
+
+Válasz JSON tömb formátumban, pontosan ezzel a struktúrával:
+[
+  {
+    "title": "Recept címe",
+    "description": "Rövid leírás a receptről",
+    "ingredients": [
+      {"name": "hozzávaló neve", "amount": "mennyiség", "unit": "mértékegység"}
+    ],
+    "instructions": [
+      "1. lépés: részletes utasítás",
+      "2. lépés: részletes utasítás",
+      "3. lépés: részletes utasítás"
+    ],
+    "cookingTime": "30 perc",
+    "servings": 4,
+    "difficulty": "Könnyű",
+    "category": "vacsora",
+    "caloriesPerServing": 350,
+    "tags": ["címke1", "címke2"]
+  }
+]
+
+PÉLDA hozzávalólista:
+"ingredients": [
+  {"name": "csirkemell", "amount": "300", "unit": "g"},
+  {"name": "édesburgonya", "amount": "2", "unit": "db"},
+  {"name": "tojás", "amount": "3", "unit": "db"},
+  {"name": "só", "amount": "1", "unit": "teáskanál"},
+  {"name": "bors", "amount": "0.5", "unit": "teáskanál"},
+  {"name": "vaj", "amount": "2", "unit": "evőkanál"}
+]
+
+Generálj pontosan ${safeCount} különböző receptet. Legyenek változatosak és érdekesek, miközben minden egyes recept használja az összes megadott hozzávalót.`;
+
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "Te egy professzionális szakács és receptfejlesztő vagy. Mindig érvényes JSON tömböket adj vissza a megadott struktúrával. Minden szöveg legyen magyarul. Számítsd ki a kalória/adag értéket minden recepthez. MINDEN hozzávalóhoz add meg a pontos mennyiséget és mértékegységet (pl. '300 g csirkemell', '2 db édesburgonya'). FONTOS: A JSON válaszban ne használj sortöréseket a szövegekben, és minden idézőjelet escape-elj (\\\")."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 3000, // Reduced to prevent truncation
+      temperature: 0.7, // Slightly lower for more consistent formatting
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('No content received from OpenAI');
     }
 
-    const data = await response.json();
-    const recipeContent = data.choices[0]?.message?.content;
+    console.log('OpenAI response content length:', content.length);
+    console.log('OpenAI response preview:', content.substring(0, 500));
 
-    if (!recipeContent) {
-      throw new Error('No recipe content received from AI');
-    }
-
-    // Parse the JSON response
-    let recipe;
+    let result;
     try {
-      recipe = JSON.parse(recipeContent);
+      result = JSON.parse(content);
     } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', recipeContent);
-      throw new Error('Invalid recipe format received from AI');
+      console.error('JSON parsing error:', parseError);
+      console.error('Content that failed to parse:', content);
+      
+      // Try to fix common JSON issues
+      let fixedContent = content;
+      
+      // Remove any trailing commas
+      fixedContent = fixedContent.replace(/,(\s*[}\]])/g, '$1');
+      
+      // Try to find and fix unterminated strings
+      const stringMatches = fixedContent.match(/"[^"]*$/);
+      if (stringMatches) {
+        console.log('Found unterminated string, attempting to fix...');
+        fixedContent = fixedContent.replace(/"[^"]*$/, '"');
+      }
+      
+      // Try parsing again
+      try {
+        result = JSON.parse(fixedContent);
+        console.log('Successfully parsed after fixing JSON');
+      } catch (secondError) {
+        console.error('Still failed to parse after fixes:', secondError);
+        throw new Error(`Invalid JSON response from OpenAI: ${parseError.message}`);
+      }
     }
-
-    // Validate the recipe structure
-    if (!recipe.title || !recipe.ingredients || !recipe.instructions) {
-      throw new Error('Incomplete recipe received from AI');
-    }
-
-    // Add metadata for our app
-    const formattedRecipe = {
-      ...recipe,
-      uri: `ai-generated-${Date.now()}`,
-      label: recipe.title,
-      image: null, // AI doesn't generate images
-      imageUrl: null, // For recipe model compatibility
-      calories: recipe.nutritionEstimate?.calories || 0,
-      caloriesPerServing: recipe.nutritionEstimate?.calories || 0, // Add this for RecipeCard compatibility
-      yield: recipe.servings || 4,
-      steps: recipe.instructions,
-      cuisineType: [recipe.cuisine?.toLowerCase() || 'international'],
-      mealType: [recipe.mealType?.toLowerCase() || 'main'],
-      tags: recipe.tags || [],
-      isAIGenerated: true,
-      generatedAt: new Date().toISOString(),
-    };
-
-    res.status(200).json(formattedRecipe);
-  } catch (error) {
-    console.error('Error generating recipe:', error);
     
-    // Return a fallback recipe if AI fails
-    const fallbackRecipe = {
-      uri: `fallback-${Date.now()}`,
-      title: 'Egyszerű tészta fokhagymával és olajjal',
-      label: 'Egyszerű tészta fokhagymával és olajjal',
-      description: 'Klasszikus olasz tészta étel, ami gyors és finom',
-      image: null,
-      servings: 4,
-      prepTime: 5,
-      cookTime: 15,
-      totalTime: 20,
-      difficulty: 'Könnyű',
-      cuisine: 'Olasz',
-      mealType: 'vacsora',
-      ingredients: [
-        { name: 'Spagetti', quantity: '400g', notes: '' },
-        { name: 'Fokhagyma', quantity: '4 gerezd', notes: 'aprítva' },
-        { name: 'Olívaolaj', quantity: '1/3 csésze', notes: 'extra szűz' },
-        { name: 'Pirospaprika pehely', quantity: '1/2 tk', notes: 'opcionális' },
-        { name: 'Parmezán sajt', quantity: '1/2 csésze', notes: 'reszelt' },
-        { name: 'Friss petrezselyem', quantity: '2 ek', notes: 'aprítva' },
-        { name: 'Só', quantity: 'ízlés szerint', notes: '' },
-        { name: 'Fekete bors', quantity: 'ízlés szerint', notes: 'frissen őrölt' }
-      ],
-      instructions: [
-        'Forrald fel a sós vizet egy nagy lábasban és főzd meg a spagettit a csomagoláson található utasítás szerint',
-        'Amíg a tészta fő, melegítsd fel az olívaolajat egy nagy serpenyőben közepes lángon',
-        'Add hozzá az aprított fokhagymát és a pirospaprika pelyhet, főzd 1-2 percig, amíg illatos lesz',
-        'Tarts meg 1 csésze tésztavizet, majd szűrd le a tésztát',
-        'Add a leszűrt tésztát a fokhagymás olajos serpenyőbe',
-        'Keverd össze tésztavízzel, szükség szerint, hogy selymes szószt készíts',
-        'Vedd le a tűzről, add hozzá a parmezánt és a petrezselymet',
-        'Ízesítsd sóval és borssal, azonnal tálald'
-      ],
-      steps: [
-        'Forrald fel a sós vizet egy nagy lábasban és főzd meg a spagettit a csomagoláson található utasítás szerint',
-        'Amíg a tészta fő, melegítsd fel az olívaolajat egy nagy serpenyőben közepes lángon',
-        'Add hozzá az aprított fokhagymát és a pirospaprika pelyhet, főzd 1-2 percig, amíg illatos lesz',
-        'Tarts meg 1 csésze tésztavizet, majd szűrd le a tésztát',
-        'Add a leszűrt tésztát a fokhagymás olajos serpenyőbe',
-        'Keverd össze tésztavízzel, szükség szerint, hogy selymes szószt készíts',
-        'Vedd le a tűzről, add hozzá a parmezánt és a petrezselymet',
-        'Ízesítsd sóval és borssal, azonnal tálald'
-      ],
-      imageUrl: null, // For recipe model compatibility
-      calories: 420,
-      caloriesPerServing: 420, // Add this for RecipeCard compatibility
-      yield: 4,
-      nutritionEstimate: {
-        calories: 420,
-        protein: 12,
-        carbs: 65,
-        fat: 14,
-        fiber: 3
-      },
-      tips: [
-        'Ne hagyd megbarnulni a fokhagymát, mert keserű lesz',
-        'Tarts meg egy kevés tésztavizet - a keményítő segít krémes szószt készíteni',
-        'Használj jó minőségű olívaolajat a legjobb ízért'
-      ],
-      cuisineType: ['olasz'],
-      mealType: ['vacsora'],
-      tags: ['tészta', 'olasz', 'gyors', 'vegetáriánus'],
-      isAIGenerated: true,
-      isFallback: true,
-      generatedAt: new Date().toISOString(),
+    // Handle both array and object responses
+    let recipes = Array.isArray(result) ? result : result.recipes || [];
+    
+    // Ensure we have the right number of recipes
+    if (recipes.length > safeCount) {
+      recipes = recipes.slice(0, safeCount);
+    }
+
+    // Helper function to convert time string to number
+    const parseTimeToMinutes = (timeValue: any): number => {
+      if (typeof timeValue === 'number') {
+        return timeValue;
+      }
+      if (typeof timeValue === 'string') {
+        // Extract number from strings like "50 perc", "30 minutes", "1 óra"
+        const match = timeValue.match(/(\d+)/);
+        return match ? parseInt(match[1]) : 30; // Default to 30 minutes
+      }
+      return 30; // Default to 30 minutes
     };
 
-    res.status(200).json(fallbackRecipe);
+    // Add metadata to each recipe
+    const recipesWithMetadata = recipes.map((recipe: any, index: number) => ({
+      ...recipe,
+      id: `ai-${Date.now()}-${index}`,
+      source: 'openai',
+      generatedAt: new Date().toISOString(),
+      requiredIngredients: ingredients,
+      externalId: `ai-recipe-${Date.now()}-${index}`,
+      imageUrl: null, // AI doesn't generate images
+      prepTime: parseTimeToMinutes(recipe.cookingTime),
+      cookTime: parseTimeToMinutes(recipe.cookingTime),
+      totalTime: parseTimeToMinutes(recipe.cookingTime),
+      caloriesPerServing: recipe.caloriesPerServing || 0,
+      nutrition: {
+        calories: recipe.caloriesPerServing || 0,
+        protein: null,
+        carbs: null,
+        fat: null,
+        fiber: null
+      },
+      userId: session.user.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      // Ensure Hungarian content
+      title: recipe.title || 'Recept',
+      description: recipe.description || 'Finom recept',
+      category: recipe.category || 'vacsora',
+      difficulty: recipe.difficulty || 'Könnyű',
+      instructions: recipe.instructions || ['Nincs elérhető utasítás ehhez a recepthez.'],
+      ingredients: recipe.ingredients || []
+    }));
+
+    res.status(200).json({
+      success: true,
+      recipes: recipesWithMetadata,
+      totalGenerated: recipesWithMetadata.length,
+      ingredients: ingredients,
+      offset: offset
+    });
+
+  } catch (error) {
+    console.error('OpenAI recipe generation error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ 
+      success: false, 
+      error: errorMessage 
+    });
   }
 }

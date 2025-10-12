@@ -7,12 +7,14 @@ import { calculateDailyBalance, formatCalories } from '@/utils/calculations';
 import { DailySummary } from '@/types';
 import { Plus, Target, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import Link from 'next/link';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const { preferences } = useUserPreferences();
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -72,12 +74,17 @@ export default function Dashboard() {
     dailySummary.calorieGoal
   ) : null;
 
-  const quickActions = [
-    { name: 'Étkezés rögzítése', href: '/meals', icon: Plus, color: 'bg-green-500' },
-    { name: 'Edzés rögzítése', href: '/workouts', icon: Activity, color: 'bg-blue-500' },
-    { name: 'Recept keresése', href: '/recipes', icon: Plus, color: 'bg-purple-500' },
-    { name: 'Bevásárlólista', href: '/shopping', icon: Plus, color: 'bg-orange-500' },
+  const allQuickActions = [
+    { name: 'Étkezés rögzítése', href: '/meals', icon: Plus, color: 'bg-green-500', feature: 'mealPlans' },
+    { name: 'Edzés rögzítése', href: '/workouts', icon: Activity, color: 'bg-blue-500', feature: 'trainings' },
+    { name: 'Recept keresése', href: '/recipes', icon: Plus, color: 'bg-purple-500', feature: 'recipes' },
+    { name: 'Bevásárlólista', href: '/shopping', icon: Plus, color: 'bg-orange-500', feature: 'shoppingList' },
   ];
+
+  // Filter quick actions based on enabled features
+  const quickActions = allQuickActions.filter(action => {
+    return preferences?.[action.feature as keyof typeof preferences] === true;
+  });
 
   return (
     <Layout>
@@ -193,67 +200,82 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Gyors műveletek</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action) => (
-              <Link
-                key={action.name}
-                href={action.href}
-                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
-              >
-                <div className={`w-12 h-12 ${action.color} rounded-full flex items-center justify-center mb-2`}>
-                  <action.icon className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-sm font-medium text-gray-900">{action.name}</span>
-              </Link>
-            ))}
-          </div>
+          {quickActions.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.name}
+                  href={action.href}
+                  className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
+                >
+                  <div className={`w-12 h-12 ${action.color} rounded-full flex items-center justify-center mb-2`}>
+                    <action.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{action.name}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 mb-4">Nincsenek engedélyezett funkciók</p>
+              <p className="text-sm text-gray-400">
+                Menj a <Link href="/profile" className="text-blue-600 hover:text-blue-500">Profil</Link> oldalra, hogy engedélyezd a kívánt funkciókat.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Mai étkezések</h3>
-            {dailySummary?.mealsCount ? (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">{dailySummary.mealsCount} étkezés rögzítve</p>
-                <Link href="/meals" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                  Összes étkezés megtekintése →
-                </Link>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">Ma még nincsenek rögzített étkezések</p>
-                <Link
-                  href="/meals"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Első étkezés rögzítése
-                </Link>
-              </div>
-            )}
-          </div>
+          {/* Meals Card - Only show if mealPlans is enabled */}
+          {preferences?.mealPlans && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Mai étkezések</h3>
+              {dailySummary?.mealsCount ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">{dailySummary.mealsCount} étkezés rögzítve</p>
+                  <Link href="/meals" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                    Összes étkezés megtekintése →
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">Ma még nincsenek rögzített étkezések</p>
+                  <Link
+                    href="/meals"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Első étkezés rögzítése
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Mai edzések</h3>
-            {dailySummary?.workoutsCount ? (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">{dailySummary.workoutsCount} edzés rögzítve</p>
-                <Link href="/workouts" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                  Összes edzés megtekintése →
-                </Link>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">Ma még nincsenek rögzített edzések</p>
-                <Link
-                  href="/workouts"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Első edzés rögzítése
-                </Link>
-              </div>
-            )}
-          </div>
+          {/* Workouts Card - Only show if trainings is enabled */}
+          {preferences?.trainings && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Mai edzések</h3>
+              {dailySummary?.workoutsCount ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">{dailySummary.workoutsCount} edzés rögzítve</p>
+                  <Link href="/workouts" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                    Összes edzés megtekintése →
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">Ma még nincsenek rögzített edzések</p>
+                  <Link
+                    href="/workouts"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Első edzés rögzítése
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
     </div>
     </Layout>

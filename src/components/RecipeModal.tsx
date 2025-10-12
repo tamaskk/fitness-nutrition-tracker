@@ -40,7 +40,9 @@ const RecipeModal: React.FC<RecipeModalProps> = ({
   useEffect(() => {
     if (recipe) {
       setCurrentRecipe(recipe);
-      setCurrentLanguage('en');
+      // Set language to Hungarian for AI-generated recipes, English for others
+      const isAIGenerated = 'source' in recipe && recipe.source === 'openai';
+      setCurrentLanguage(isAIGenerated ? 'hu' : 'en');
     }
   }, [recipe]);
 
@@ -51,7 +53,7 @@ const RecipeModal: React.FC<RecipeModalProps> = ({
   const title = isRecipeModel ? currentRecipe.title : currentRecipe.label;
   const image = isRecipeModel ? currentRecipe.imageUrl : currentRecipe.image;
   const ingredients = isRecipeModel ? currentRecipe.ingredients : currentRecipe.ingredients;
-  const steps = isRecipeModel ? currentRecipe.steps : (currentRecipe.steps || []);
+  const steps = isRecipeModel ? (currentRecipe.instructions || currentRecipe.steps || []) : (currentRecipe.steps || []);
   const calories = isRecipeModel ? currentRecipe.caloriesPerServing : Math.round(currentRecipe.calories || 0);
   const defaultServings = isRecipeModel ? currentRecipe.servings : currentRecipe.yield;
   const totalTime = isRecipeModel ? 

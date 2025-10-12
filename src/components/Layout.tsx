@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -12,8 +12,11 @@ import {
   LogOut,
   Menu,
   X,
-  DollarSign
+  DollarSign,
+  TrendingUp,
+  Shield
 } from 'lucide-react';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,16 +25,35 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { preferences } = useUserPreferences();
 
-  const navigation = [
-    { name: 'Irányítópult', href: '/', icon: Home },
-    { name: 'Étkezések', href: '/meals', icon: Utensils },
-    { name: 'Receptek', href: '/recipes', icon: Book },
-    { name: 'Edzések', href: '/workouts', icon: Dumbbell },
-    { name: 'Bevásárlás', href: '/shopping', icon: ShoppingCart },
-    { name: 'Pénzügyek', href: '/finance', icon: DollarSign },
-    { name: 'Profil', href: '/profile', icon: User },
+  // All possible navigation items
+  const allNavigation = [
+    { name: 'Irányítópult', href: '/', icon: Home, key: 'dashboard' },
+    { name: 'Étkezések', href: '/meals', icon: Utensils, key: 'mealPlans' },
+    { name: 'Receptek', href: '/recipes', icon: Book, key: 'recipes' },
+    { name: 'Edzések', href: '/training', icon: Dumbbell, key: 'trainings' },
+    { name: 'Bevásárlás', href: '/shopping', icon: ShoppingCart, key: 'shoppingList' },
+    { name: 'Árfigyelő', href: '/price-monitor', icon: TrendingUp, key: 'priceMonitor' },
+    { name: 'Pénzügyek', href: '/finance', icon: DollarSign, key: 'finance' },
+    { name: 'Profil', href: '/profile', icon: User, key: 'profile' },
+  ];
+
+  // Filter navigation based on user preferences
+  const navigation = allNavigation.filter(item => {
+    // Always show dashboard and profile
+    if (item.key === 'dashboard' || item.key === 'profile') {
+      return true;
+    }
+    // Show other items only if the feature is enabled
+    const isEnabled = preferences?.[item.key as keyof typeof preferences] === true;
+    console.log(`Navigation item ${item.name} (${item.key}): ${isEnabled ? 'SHOW' : 'HIDE'}`);
+    return isEnabled;
+  });
+
+  const adminNavigation = [
+    { name: 'Admin Dashboard', href: '/admin', icon: Shield },
   ];
 
   const handleSignOut = () => {
@@ -78,6 +100,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
               );
             })}
+            {session.user?.isAdmin && (
+              <div className="border-t pt-4 mt-4">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+                  Admin
+                </div>
+                {adminNavigation.map((item) => {
+                  const isActive = router.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                        isActive
+                          ? 'bg-red-100 text-red-700'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className={`mr-3 h-5 w-5 ${
+                        isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500'
+                      }`} />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </nav>
           <div className="border-t p-4 space-y-2">
             <button
@@ -117,6 +166,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
               );
             })}
+            {session.user?.isAdmin && (
+              <div className="border-t pt-4 mt-4">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+                  Admin
+                </div>
+                {adminNavigation.map((item) => {
+                  const isActive = router.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                        isActive
+                          ? 'bg-red-100 text-red-700'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon className={`mr-3 h-5 w-5 ${
+                        isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500'
+                      }`} />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </nav>
           <div className="border-t p-4">
             <div className="flex items-center mb-4">

@@ -85,7 +85,7 @@ A comprehensive web application for tracking daily calorie intake, logging meals
 6. **Initialize the database (optional)**
    ```bash
    # After setting up MongoDB, initialize with demo data
-   curl -X POST http://localhost:3001/api/init
+   curl -X POST http://localhost:3000/api/init
    ```
 
 7. **Run the development server**
@@ -94,7 +94,7 @@ A comprehensive web application for tracking daily calorie intake, logging meals
    ```
 
 8. **Open your browser**
-   Navigate to [http://localhost:3001](http://localhost:3001) (or the port shown in terminal)
+   Navigate to [http://localhost:3000](http://localhost:3000) (or the port shown in terminal)
 
 ## Project Structure
 

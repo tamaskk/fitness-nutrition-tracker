@@ -50,6 +50,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       res.status(201).json(income);
+    } else if (req.method === 'PUT') {
+      const { id } = req.query;
+      const { amount, category, description, date, source } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ message: 'Income ID is required' });
+      }
+
+      const updateData: any = {};
+      if (amount !== undefined) updateData.amount = parseFloat(amount);
+      if (category !== undefined) updateData.category = category;
+      if (description !== undefined) updateData.description = description;
+      if (date !== undefined) updateData.date = new Date(date);
+      if (source !== undefined) updateData.source = source;
+
+      const income = await Income.findOneAndUpdate(
+        { _id: id, userId: session.user.id },
+        updateData,
+        { new: true }
+      );
+
+      if (!income) {
+        return res.status(404).json({ message: 'Income not found' });
+      }
+
+      res.status(200).json(income);
+    } else if (req.method === 'DELETE') {
+      const { id } = req.query;
+
+      if (!id) {
+        return res.status(400).json({ message: 'Income ID is required' });
+      }
+
+      const income = await Income.findOneAndDelete({
+        _id: id,
+        userId: session.user.id
+      });
+
+      if (!income) {
+        return res.status(404).json({ message: 'Income not found' });
+      }
+
+      res.status(200).json({ message: 'Income deleted successfully' });
     } else {
       res.status(405).json({ message: 'Method not allowed' });
     }

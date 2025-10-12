@@ -20,7 +20,6 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    
     try {
       const result = await signIn('credentials', {
         email: data.email,

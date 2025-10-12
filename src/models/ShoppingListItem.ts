@@ -35,6 +35,10 @@ const ShoppingListItemSchema = new Schema<ShoppingListItemDocument>({
     type: String,
     trim: true,
   },
+  preferredStore: {
+    type: String,
+    trim: true,
+  },
 });
 
 // Index for efficient queries

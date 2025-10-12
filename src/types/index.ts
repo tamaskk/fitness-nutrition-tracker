@@ -2,12 +2,67 @@
 export interface User {
   _id: string;
   email: string;
-  name?: string;
+  firstName: string;
+  lastName: string;
+  country: string; // TCountryCode from countries-list
+  language: 'en' | 'de' | 'fr' | 'nl' | 'hu' | 'es' | 'pt';
   passwordHash: string;
-  age?: number;
-  gender?: 'male' | 'female' | 'other';
-  weightKg?: number;
-  heightCm?: number;
+  preferences: {
+    mealPlans: boolean;
+    recipes: boolean;
+    trainings: boolean;
+    shoppingList: boolean;
+    priceMonitor: boolean;
+    finance: boolean;
+  };
+  onboardingAnswers: {
+    mealPlans: {
+      goal?: string;
+      cookingTime?: string;
+      dietaryRestrictions?: string;
+      notifications?: 'email' | 'in-app' | 'both' | 'none';
+    };
+    recipes: {
+      recipeType?: string;
+      cookingFrequency?: string;
+      priority?: string;
+      notifications?: 'email' | 'in-app' | 'both' | 'none';
+    };
+    trainings: {
+      fitnessGoal?: string;
+      trainingLocation?: string;
+      trainingFrequency?: string;
+      notifications?: 'email' | 'in-app' | 'both' | 'none';
+    };
+    shoppingList: {
+      planningStyle?: string;
+      shoppingPriority?: string;
+      shoppingFrequency?: string;
+      notifications?: 'email' | 'in-app' | 'both' | 'none';
+    };
+    priceMonitor: {
+      productsToTrack?: string;
+      priceComparisonPriority?: string;
+      priceCheckFrequency?: string;
+      notifications?: 'email' | 'in-app' | 'both' | 'none';
+    };
+    finance: {
+      financialGoal?: string;
+      currentManagement?: string;
+      toolImportance?: string;
+      notifications?: 'email' | 'in-app' | 'both' | 'none';
+    };
+  };
+  birthday: Date;
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  weight?: {
+    value?: number;
+    unit?: 'kg' | 'lbs';
+  };
+  height?: {
+    value?: number;
+    unit?: 'cm' | 'ft';
+  };
   dailyCalorieGoal?: number;
   createdAt: Date;
 }
@@ -101,6 +156,7 @@ export interface ShoppingListItem {
   purchased: boolean;
   addedAt: Date;
   extraInfo?: string;
+  preferredStore?: string;
 }
 
 // Daily Summary
@@ -162,7 +218,68 @@ export interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  country: string; // TCountryCode from countries-list
+  language: 'en' | 'de' | 'fr' | 'nl' | 'hu' | 'es' | 'pt';
+  birthday: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  weight?: {
+    value?: number;
+    unit?: 'kg' | 'lbs';
+  };
+  height?: {
+    value?: number;
+    unit?: 'cm' | 'ft';
+  };
+}
+
+export interface PreferencesFormData {
+  mealPlans: boolean;
+  recipes: boolean;
+  trainings: boolean;
+  shoppingList: boolean;
+  priceMonitor: boolean;
+  finance: boolean;
+}
+
+export interface OnboardingAnswersFormData {
+  mealPlans: {
+    goal: string;
+    cookingTime: string;
+    dietaryRestrictions: string;
+    notifications: 'email' | 'in-app' | 'both' | 'none';
+  };
+  recipes: {
+    recipeType: string;
+    cookingFrequency: string;
+    priority: string;
+    notifications: 'email' | 'in-app' | 'both' | 'none';
+  };
+  trainings: {
+    fitnessGoal: string;
+    trainingLocation: string;
+    trainingFrequency: string;
+    notifications: 'email' | 'in-app' | 'both' | 'none';
+  };
+  shoppingList: {
+    planningStyle: string;
+    shoppingPriority: string;
+    shoppingFrequency: string;
+    notifications: 'email' | 'in-app' | 'both' | 'none';
+  };
+  priceMonitor: {
+    productsToTrack: string;
+    priceComparisonPriority: string;
+    priceCheckFrequency: string;
+    notifications: 'email' | 'in-app' | 'both' | 'none';
+  };
+  finance: {
+    financialGoal: string;
+    currentManagement: string;
+    toolImportance: string;
+    notifications: 'email' | 'in-app' | 'both' | 'none';
+  };
 }
 
 export interface ProfileFormData {
@@ -228,5 +345,52 @@ export interface WorkoutFormData {
     durationSeconds?: number;
     weightKg?: number;
   }[];
+}
+
+// Admin Types
+export interface AdminUser {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  language: 'en' | 'de' | 'fr' | 'nl' | 'hu' | 'es' | 'pt';
+  preferences: {
+    mealPlans: boolean;
+    recipes: boolean;
+    trainings: boolean;
+    shoppingList: boolean;
+    priceMonitor: boolean;
+    finance: boolean;
+  };
+  birthday: Date;
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  weight?: {
+    value?: number;
+    unit?: 'kg' | 'lbs';
+  };
+  height?: {
+    value?: number;
+    unit?: 'cm' | 'ft';
+  };
+  dailyCalorieGoal?: number;
+  createdAt: Date;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  newUsersThisMonth: number;
+  activeUsersThisWeek: number;
+  averageAge?: number;
+  genderDistribution: {
+    male: number;
+    female: number;
+    other: number;
+  };
+}
+
+export interface AdminLoginFormData {
+  email: string;
+  password: string;
 }
 

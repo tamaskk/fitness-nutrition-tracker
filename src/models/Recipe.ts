@@ -64,7 +64,7 @@ const RecipeSchema = new Schema<RecipeDocument>({
   },
   category: {
     type: String,
-    enum: ['breakfast', 'lunch', 'dinner', 'snack', 'dessert', 'drink'],
+    enum: ['breakfast', 'lunch', 'dinner', 'snack', 'dessert', 'drink', 'reggeli', 'ebéd', 'vacsora', 'uzsonna', 'desszert', 'ital'],
     trim: true,
   },
 }, {

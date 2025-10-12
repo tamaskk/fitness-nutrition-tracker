@@ -9,10 +9,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { email, password, name } = req.body;
+    const { email, password, firstName, lastName, country, language, birthday, gender, weight, height } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    console.log('Signup API received data:', { email, firstName, lastName, country, language, birthday, gender, weight, height });
+
+    if (!email || !password || !firstName || !lastName || !country || !language || !birthday) {
+      console.log('Missing required fields:', { 
+        hasEmail: !!email, 
+        hasPassword: !!password, 
+        hasFirstName: !!firstName, 
+        hasLastName: !!lastName, 
+        hasCountry: !!country, 
+        hasLanguage: !!language,
+        hasBirthday: !!birthday
+      });
+      return res.status(400).json({ message: 'All required fields are required' });
     }
 
     if (password.length < 6) {
@@ -30,20 +41,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = await User.create({
+    // Create user with default preferences
+    const userData = {
       email,
       passwordHash,
-      name,
+      firstName,
+      lastName,
+      country,
+      language,
+      ...(birthday && { birthday: new Date(birthday) }),
+      ...(gender && { gender }),
+      ...(weight && { weight }),
+      ...(height && { height }),
+      preferences: {
+        mealPlans: false,
+        recipes: false,
+        trainings: false,
+        shoppingList: false,
+        priceMonitor: false,
+        finance: false,
+      },
+      onboardingAnswers: {
+        mealPlans: {},
+        recipes: {},
+        trainings: {},
+        shoppingList: {},
+        priceMonitor: {},
+        finance: {},
+      },
       dailyCalorieGoal: 2000, // Default calorie goal
-    });
+    };
+
+    console.log('Creating user with data:', userData);
+    const user = await User.create(userData);
+    console.log('User created successfully:', user.toObject());
 
     res.status(201).json({
       message: 'User created successfully',
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
       },
     });
   } catch (error) {

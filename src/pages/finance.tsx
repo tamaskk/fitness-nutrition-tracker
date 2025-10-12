@@ -66,6 +66,8 @@ const FinancePage = () => {
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItems, setEditingItems] = useState<any[]>([]);
+  const [editingIncome, setEditingIncome] = useState<any>(null);
+  const [showIncomeEditModal, setShowIncomeEditModal] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -140,13 +142,14 @@ const FinancePage = () => {
       
       // If we have bill items and this is an expense, save as one grouped expense
       if (billItems.length > 0 && formType === 'expense') {
+        const itemsTotal = billItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            amount: formData.amount,
+            amount: itemsTotal || formData.amount,
             category: formData.category,
             description: formData.description,
             date: formData.date,
@@ -203,6 +206,22 @@ const FinancePage = () => {
     setBillItems([]);
     setOcrData(null);
     setShowBillItems(false);
+  };
+
+  // Add-form bill item helpers
+  const addBillItem = () => {
+    setBillItems([...billItems, { name: '', price: 0, quantity: 1 }]);
+  };
+
+  const updateBillItem = (index: number, field: string, value: any) => {
+    const newItems = [...billItems];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setBillItems(newItems);
+  };
+
+  const deleteBillItem = (index: number) => {
+    const newItems = billItems.filter((_, i) => i !== index);
+    setBillItems(newItems);
   };
 
   const toggleExpenseExpansion = (index: number) => {
@@ -285,6 +304,65 @@ const FinancePage = () => {
     const newItems = [...editingItems];
     newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
     setEditingItems(newItems);
+  };
+
+  const handleEditIncome = (income: any) => {
+    setEditingIncome(income);
+    setShowIncomeEditModal(true);
+  };
+
+  const handleDeleteIncome = async (incomeId: string) => {
+    if (!confirm('Biztosan törölni szeretnéd ezt a bevételeket?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/income?id=${incomeId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete income');
+      }
+
+      toast.success('Bevétel törölve!');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting income:', error);
+      toast.error('Nem sikerült a törlés');
+    }
+  };
+
+  const handleSaveEditedIncome = async () => {
+    if (!editingIncome) return;
+
+    try {
+      const response = await fetch(`/api/income?id=${editingIncome._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: editingIncome.amount,
+          category: editingIncome.category,
+          description: editingIncome.description,
+          date: editingIncome.date,
+          source: editingIncome.source,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update income');
+      }
+
+      toast.success('Bevétel frissítve!');
+      setShowIncomeEditModal(false);
+      setEditingIncome(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating income:', error);
+      toast.error('Nem sikerült a frissítés');
+    }
   };
 
   const handleAddClick = (type: 'expense' | 'income') => {
@@ -500,7 +578,7 @@ const FinancePage = () => {
           </div>
           
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button 
               onClick={() => setShowBillUpload(true)}
               className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
@@ -524,14 +602,6 @@ const FinancePage = () => {
               <Plus className="w-4 h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Bevétel</span>
               <span className="sm:hidden">Bevétel</span>
-            </button>
-            <button 
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 sm:col-span-1 col-span-2"
-            >
-              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Tétel hozzáadása</span>
-              <span className="sm:hidden">További tétel</span>
             </button>
           </div>
         </div>
@@ -799,14 +869,38 @@ const FinancePage = () => {
               ) : (
                 <div className="space-y-3">
                   {income.map((incomeItem, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{incomeItem.description}</p>
-                        <p className="text-sm text-gray-600">{incomeItem.category} • {incomeItem.source}</p>
-                        <p className="text-xs text-gray-500">{new Date(incomeItem.date).toLocaleDateString('hu-HU')}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600">{incomeItem.amount.toLocaleString()} Ft</p>
+                    <div key={index} className="bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between p-3">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{incomeItem.description}</p>
+                          <p className="text-sm text-gray-600">{incomeItem.category} • {incomeItem.source}</p>
+                          <p className="text-xs text-gray-500">{new Date(incomeItem.date).toLocaleDateString('hu-HU')}</p>
+                        </div>
+                        <div className="text-right flex items-center gap-2">
+                          <div>
+                            <p className="font-bold text-green-600">{incomeItem.amount.toLocaleString()} Ft</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleEditIncome(incomeItem)}
+                              className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded"
+                              title="Szerkesztés"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => incomeItem._id && handleDeleteIncome(incomeItem._id)}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded"
+                              title="Törlés"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1042,6 +1136,76 @@ const FinancePage = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
+
+                      {/* Manual bill items editor */}
+                      <div className="pt-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Tételek
+                          </label>
+                          <button
+                            type="button"
+                            onClick={addBillItem}
+                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                          >
+                            Tétel hozzáadása
+                          </button>
+                        </div>
+                        {billItems.length > 0 && (
+                          <div className="space-y-2 max-h-64 overflow-y-auto border rounded-md p-2">
+                            {/* Add here a header to know that name price and quantity are editable */}
+                            <div className="flex items-center justify-start gap-2 p-2 bg-gray-50 rounded w-[100%]">
+                              <span className="text-sm font-medium mr-40 text-gray-900">Név</span>
+                              <span className="text-sm font-medium mr-20 text-gray-900">Ár</span>
+                              <span className="text-sm font-medium text-gray-900">Db</span>
+                            </div>
+                            {billItems.map((item, index) => (
+                              <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                <input
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => updateBillItem(index, 'name', e.target.value)}
+                                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Tétel neve"
+                                />
+                                <input
+                                  type="number"
+                                  value={item.price}
+                                  onChange={(e) => updateBillItem(index, 'price', parseFloat(e.target.value) || 0)}
+                                  className="w-20 px-2 py-1 ml-4 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Ár"
+                                />
+                                <span className="text-sm text-gray-600">Ft</span>
+                                <input
+                                  type="number"
+                                  value={item.quantity}
+                                  onChange={(e) => updateBillItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Db"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => deleteBillItem(index)}
+                                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded"
+                                  title="Tétel törlése"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {billItems.length > 0 && (
+                          <div className="mt-2 bg-blue-50 p-2 rounded-md flex justify-between items-center">
+                            <span className="text-sm font-medium text-gray-900">Tételek összege:</span>
+                            <span className="text-sm font-bold text-blue-600">
+                              {billItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0).toLocaleString()} Ft
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       </>
                     )}
                     {formType === 'income' && (
@@ -1165,6 +1329,105 @@ const FinancePage = () => {
                       type="button"
                       onClick={handleSaveEditedExpense}
                       className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      Mentés
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Income Modal */}
+        {showIncomeEditModal && editingIncome && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-screen items-center justify-center p-4">
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowIncomeEditModal(false)} />
+              
+              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Bevétel szerkesztése
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Összeg (Ft) *
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editingIncome.amount}
+                        onChange={(e) => setEditingIncome({ ...editingIncome, amount: parseFloat(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Kategória *
+                      </label>
+                      <input
+                        type="text"
+                        value={editingIncome.category}
+                        onChange={(e) => setEditingIncome({ ...editingIncome, category: e.target.value })}
+                        placeholder="pl. Fizetés, Freelance, Befektetés"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Leírás *
+                      </label>
+                      <input
+                        type="text"
+                        value={editingIncome.description}
+                        onChange={(e) => setEditingIncome({ ...editingIncome, description: e.target.value })}
+                        placeholder="Rövid leírás"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Dátum
+                      </label>
+                      <input
+                        type="date"
+                        value={new Date(editingIncome.date).toISOString().split('T')[0]}
+                        onChange={(e) => setEditingIncome({ ...editingIncome, date: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Forrás
+                      </label>
+                      <input
+                        type="text"
+                        value={editingIncome.source || ''}
+                        onChange={(e) => setEditingIncome({ ...editingIncome, source: e.target.value })}
+                        placeholder="pl. Munkahely, Freelance"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowIncomeEditModal(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    >
+                      Mégse
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveEditedIncome}
+                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                     >
                       Mentés
                     </button>

@@ -92,17 +92,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log('Session user ID:', session.user.id);
 
+      // Helper function to convert time string to number
+      const parseTimeToMinutes = (timeValue: any): number => {
+        if (typeof timeValue === 'number') {
+          return timeValue;
+        }
+        if (typeof timeValue === 'string') {
+          // Extract number from strings like "50 perc", "30 minutes", "1 óra"
+          const match = timeValue.match(/(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        }
+        return 0;
+      };
+
       const recipeData = {
         userId: session.user.id,
         title,
         ingredients,
         steps: steps || [],
-        caloriesPerServing,
+        caloriesPerServing: caloriesPerServing || 0,
         servings: servings || 1,
         tags: tags || [],
         imageUrl,
-        prepTime,
-        cookTime,
+        prepTime: parseTimeToMinutes(prepTime),
+        cookTime: parseTimeToMinutes(cookTime),
         category,
       };
 
@@ -163,6 +176,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'Title and ingredients are required' });
       }
 
+      // Helper function to convert time string to number
+      const parseTimeToMinutes = (timeValue: any): number => {
+        if (typeof timeValue === 'number') {
+          return timeValue;
+        }
+        if (typeof timeValue === 'string') {
+          // Extract number from strings like "50 perc", "30 minutes", "1 óra"
+          const match = timeValue.match(/(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        }
+        return 0;
+      };
+
       console.log('Updating recipe with ID:', id);
       console.log('Update data:', req.body);
 
@@ -175,12 +201,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           title,
           ingredients,
           steps: steps || [],
-          caloriesPerServing,
+          caloriesPerServing: caloriesPerServing || 0,
           servings: servings || 1,
           tags: tags || [],
           imageUrl,
-          prepTime,
-          cookTime,
+          prepTime: parseTimeToMinutes(prepTime),
+          cookTime: parseTimeToMinutes(cookTime),
           category,
         },
         { new: true, runValidators: true }

@@ -3,8 +3,10 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, Utensils } from 'lucide-react';
+import { Eye, EyeOff, Utensils, User, Mail, Lock, Globe, Languages } from 'lucide-react';
 import { RegisterFormData } from '@/types';
+import { countries, languages } from 'countries-list';
+import type { TCountryCode, TLanguageCode } from 'countries-list';
 
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,23 +27,42 @@ const SignupPage = () => {
     setIsLoading(true);
     
     try {
+      const signupData = {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        country: data.country,
+        language: data.language,
+        ...(data.birthday && { birthday: data.birthday }),
+        ...(data.gender && { gender: data.gender }),
+        ...(data.weight && { weight: data.weight }),
+        ...(data.height && { height: data.height }),
+      };
+
+      console.log('Sending signup data:', signupData);
+
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          name: data.name,
-        }),
+        body: JSON.stringify(signupData),
       });
 
       const result = await response.json();
+      console.log('Signup response:', result);
 
       if (response.ok) {
-        toast.success('Account created successfully! Please sign in.');
-        router.push('/login');
+        // Store registration data in sessionStorage for onboarding flow
+        sessionStorage.setItem('registrationData', JSON.stringify({
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        }));
+        
+        toast.success('Account created successfully! Let\'s set up your preferences.');
+        router.push('/onboarding/preferences');
       } else {
         toast.error(result.message || 'Something went wrong');
       }
@@ -71,33 +92,58 @@ const SignupPage = () => {
 
         <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full name
-              </label>
-              <div className="mt-1">
-                <input
-                  {...register('name', {
-                    required: 'Name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Name must be at least 2 characters',
-                    },
-                  })}
-                  type="text"
-                  autoComplete="name"
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your full name"
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-                )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  First name <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1">
+                  <input
+                    {...register('firstName', {
+                      required: 'First name is required',
+                      minLength: {
+                        value: 2,
+                        message: 'First name must be at least 2 characters',
+                      },
+                    })}
+                    type="text"
+                    autoComplete="given-name"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="First name"
+                  />
+                  {errors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  Last name <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1">
+                  <input
+                    {...register('lastName', {
+                      required: 'Last name is required',
+                      minLength: {
+                        value: 2,
+                        message: 'Last name must be at least 2 characters',
+                      },
+                    })}
+                    type="text"
+                    autoComplete="family-name"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Last name"
+                  />
+                  {errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                  )}
+                </div>
               </div>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email address <span className="text-red-500">*</span>
               </label>
               <div className="mt-1">
                 <input
@@ -119,9 +165,163 @@ const SignupPage = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                  Country <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1">
+                  <select
+                    {...register('country', {
+                      required: 'Country is required',
+                    })}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select country</option>
+                    {Object.entries(countries)
+                      .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+                      .map(([code, country]) => (
+                        <option key={code} value={code}>
+                          {country.name}
+                        </option>
+                      ))}
+                  </select>
+                  {errors.country && (
+                    <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label htmlFor="language" className="block text-sm font-medium text-gray-700">
+                  Language <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1">
+                  <select
+                    {...register('language', {
+                      required: 'Language is required',
+                    })}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="en">English</option>
+                    <option value="de">German</option>
+                    <option value="fr">French</option>
+                    <option value="nl">Dutch</option>
+                    <option value="hu">Hungarian</option>
+                    <option value="es">Spanish</option>
+                    <option value="pt">Portuguese</option>
+                  </select>
+                  {errors.language && (
+                    <p className="mt-1 text-sm text-red-600">{errors.language.message}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Birthday and Gender */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="birthday" className="block text-sm font-medium text-gray-700">
+                  Birthday <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1">
+                  <input
+                    {...register('birthday', {
+                      required: 'Birthday is required',
+                    })}
+                    type="date"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  {errors.birthday && (
+                    <p className="mt-1 text-sm text-red-600">{errors.birthday.message}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                  Gender
+                </label>
+                <div className="mt-1">
+                  <select
+                    {...register('gender')}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Weight and Height */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Weight
+                </label>
+                <div className="flex space-x-2">
+                  <div className="flex-1">
+                    <input
+                      {...register('weight.value', {
+                        min: { value: 1, message: 'Weight must be at least 1' },
+                        max: { value: 1000, message: 'Weight must be less than 1000' },
+                      })}
+                      type="number"
+                      placeholder="Enter weight"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="w-20">
+                    <select
+                      {...register('weight.unit')}
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="kg">kg</option>
+                      <option value="lbs">lbs</option>
+                    </select>
+                  </div>
+                </div>
+                {errors.weight?.value && (
+                  <p className="mt-1 text-sm text-red-600">{errors.weight.value.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Height
+                </label>
+                <div className="flex space-x-2">
+                  <div className="flex-1">
+                    <input
+                      {...register('height.value', {
+                        min: { value: 1, message: 'Height must be at least 1' },
+                        max: { value: 300, message: 'Height must be less than 300' },
+                      })}
+                      type="number"
+                      placeholder="Enter height"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="w-20">
+                    <select
+                      {...register('height.unit')}
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="cm">cm</option>
+                      <option value="ft">ft</option>
+                    </select>
+                  </div>
+                </div>
+                {errors.height?.value && (
+                  <p className="mt-1 text-sm text-red-600">{errors.height.value.message}</p>
+                )}
+              </div>
+            </div>
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="mt-1 relative">
                 <input
@@ -156,7 +356,7 @@ const SignupPage = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm password
+                Confirm password <span className="text-red-500">*</span>
               </label>
               <div className="mt-1 relative">
                 <input
