@@ -137,8 +137,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       res.status(405).json({ message: 'Method not allowed' });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Exercises API error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    
+    // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern)[0];
+      if (duplicateField === 'name') {
+        return res.status(400).json({ 
+          message: 'Már létezik gyakorlat ezzel a névvel. Kérjük, válassz másik nevet.' 
+        });
+      }
+      return res.status(400).json({ 
+        message: 'Ezt a gyakorlatot már hozzáadtad.' 
+      });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+      return res.status(400).json({ 
+        message: 'Validációs hiba: ' + validationErrors.join(', ') 
+      });
+    }
+    
+    res.status(500).json({ message: 'Belső szerver hiba történt' });
   }
 }

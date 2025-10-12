@@ -87,6 +87,9 @@ const ExerciseSchema = new Schema<ExerciseDocument>({
 // Index for search functionality
 ExerciseSchema.index({ userId: 1, name: 'text' });
 
+// Compound unique index to ensure uniqueness per user but allow same names across users
+ExerciseSchema.index({ userId: 1, name: 1 }, { unique: true });
+
 // Clear any existing model to ensure fresh schema
 if (mongoose.models.Exercise) {
   delete mongoose.models.Exercise;

@@ -4,11 +4,17 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Shield, ArrowLeft } from 'lucide-react';
-import { AdminLoginFormData } from '@/types';
 import Link from 'next/link';
+
+interface AdminLoginFormData {
+  email: string;
+  password: string;
+  adminPassword: string;
+}
 
 const AdminLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -16,32 +22,37 @@ const AdminLoginPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<AdminLoginFormData>();
+  } = useForm<AdminLoginFormData>({
+    defaultValues: {
+      email: '',
+      password: '',
+      adminPassword: '',
+    },
+  });
 
   const onSubmit = async (data: AdminLoginFormData) => {
     setIsLoading(true);
     try {
-      const result = await signIn('credentials', {
+      console.log('Admin login form data:', data);
+      
+      // Use NextAuth directly with isAdmin field
+      const authResult = await signIn('credentials', {
         email: data.email,
         password: data.password,
+        adminPassword: data.adminPassword,
+        isAdmin: true,
         redirect: false,
         callbackUrl: '/admin',
       });
-
-      if (result?.error) {
+      
+      if (authResult?.error) {
         toast.error('Invalid admin credentials');
       } else {
-        // Check if user is admin
-        const session = await getSession();
-        if (session?.user?.isAdmin) {
-          toast.success('Admin login successful!');
-          router.push('/admin');
-        } else {
-          toast.error('Access denied. Admin privileges required.');
-          await signIn('credentials', { redirect: false, email: '', password: '' });
-        }
+        toast.success('Admin login successful!');
+        router.push('/admin');
       }
     } catch (error) {
+      console.error('Admin login error:', error);
       toast.error('Something went wrong');
     } finally {
       setIsLoading(false);
@@ -93,7 +104,7 @@ const AdminLoginPage = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Admin Password
+                User Password
               </label>
               <div className="mt-1 relative">
                 <input
@@ -107,7 +118,7 @@ const AdminLoginPage = () => {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
-                  placeholder="Enter admin password"
+                  placeholder="Enter your account password"
                 />
                 <button
                   type="button"
@@ -122,6 +133,36 @@ const AdminLoginPage = () => {
                 </button>
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-700">
+                Admin Password
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  {...register('adminPassword', {
+                    required: 'Admin password is required',
+                  })}
+                  type={showAdminPassword ? 'text' : 'password'}
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  placeholder="Enter admin access password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowAdminPassword(!showAdminPassword)}
+                >
+                  {showAdminPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+                {errors.adminPassword && (
+                  <p className="mt-1 text-sm text-red-600">{errors.adminPassword.message}</p>
                 )}
               </div>
             </div>

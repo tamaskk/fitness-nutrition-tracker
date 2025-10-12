@@ -212,6 +212,7 @@ export interface RecipeAPIResponse {
 export interface LoginFormData {
   email: string;
   password: string;
+  adminPassword?: string;
 }
 
 export interface RegisterFormData {
@@ -392,5 +393,73 @@ export interface AdminStats {
 export interface AdminLoginFormData {
   email: string;
   password: string;
+}
+
+// Notification Types
+export interface Chat {
+  _id: string;
+  participants: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }[];
+  messages: {
+    _id: string;
+    senderId: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+    };
+    content: string;
+    timestamp: string;
+    readBy: string[];
+  }[];
+  lastMessage?: {
+    content: string;
+    timestamp: string;
+    senderId: string;
+  };
+  unreadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Notification {
+  _id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  isRead: boolean;
+  actionUrl?: string;
+  actionText?: string;
+  sentBy: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  createdAt: string;
+  readAt?: string;
+}
+
+export interface Update {
+  _id: string;
+  title: string;
+  content: string;
+  type: 'feature' | 'bugfix' | 'maintenance' | 'announcement';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  isRead: boolean;
+  actionUrl?: string;
+  actionText?: string;
+  sentBy: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  createdAt: string;
+  readAt?: string;
 }
 

@@ -9,6 +9,7 @@ NEXTAUTH_SECRET=your-nextauth-secret-here
 
 # Admin Access (REQUIRED for admin features)
 ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=your-admin-password-here
 
 # External APIs (Optional - app works with fallbacks)
 # Edamam Recipe Search API for recipe data (optional)

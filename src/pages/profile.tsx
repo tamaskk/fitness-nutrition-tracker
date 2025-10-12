@@ -222,17 +222,23 @@ const ProfilePage = () => {
     return languageNames[code] || code;
   };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return 'Not set';
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return 'Invalid date';
+    return dateObj.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
   };
 
-  const calculateAge = (birthday: Date | string) => {
-    const today = new Date();
+  const calculateAge = (birthday: Date | string | null | undefined) => {
+    if (!birthday) return 'N/A';
     const birthDate = new Date(birthday);
+    if (isNaN(birthDate.getTime())) return 'N/A';
+    
+    const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {

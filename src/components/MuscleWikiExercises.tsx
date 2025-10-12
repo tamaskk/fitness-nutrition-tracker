@@ -137,18 +137,24 @@ const MuscleWikiExercises: React.FC = () => {
       updatedAt: new Date().toString()
     };
     
-    const response = await fetch('/api/training/exercises', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newExerciseItem),
-    });    
+    try {
+      const response = await fetch('/api/training/exercises', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newExerciseItem),
+      });    
 
-    if (response.ok) {
-      toast.success('Edzés mentve');
-    } else {
-      toast.error('Nem sikerült a mentés');
+      if (response.ok) {
+        toast.success('Edzés mentve');
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Nem sikerült a mentés');
+      }
+    } catch (error) {
+      console.error('Error saving exercise:', error);
+      toast.error('Hálózati hiba történt. Kérjük, próbáld újra.');
     }
 
   };
@@ -230,7 +236,14 @@ const MuscleWikiExercises: React.FC = () => {
         {exercises.map((exercise) => (
           <div key={exercise.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-800">{exercise.name}</h3>
+              {/* <h3 className="text-lg font-semibold text-gray-800">{exercise.name}</h3> */}
+              <input
+                className="border border-gray-300 p-2 rounded-md text-base focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Név"
+                type="text"
+                value={exercise.name}
+                onChange={(e) => setExercises((prev) => prev.map((ex) => (ex.id === exercise.id ? { ...ex, name: e.target.value } : ex)))}
+              />
               <button
                 onClick={() => saveExercise(exercise)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"

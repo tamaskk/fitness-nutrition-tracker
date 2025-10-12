@@ -10,34 +10,76 @@ export const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        adminPassword: { label: 'Admin Password', type: 'password' },
+        isAdmin: { label: 'Is Admin', type: 'text' }
       },
       async authorize(credentials) {
+        console.log('NextAuth received credentials:', {
+          email: credentials?.email,
+          hasPassword: !!credentials?.password,
+          hasAdminPassword: !!credentials?.adminPassword,
+          isAdmin: credentials?.isAdmin,
+          allCredentials: credentials
+        });
+        
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
-          await connectToDatabase();
+          // Check if this is an admin login request
+          const isAdminRequest = credentials.isAdmin === 'true';
           
-          const user = await User.findOne({ email: credentials.email });
-          if (!user) {
-            return null;
-          }
+          if (isAdminRequest) {
+            // For admin login, check against environment variables directly
+            const adminEmail = process.env.ADMIN_EMAIL;
+            const adminPassword = process.env.ADMIN_PASSWORD;
+            
+            if (!adminEmail || !adminPassword) {
+              console.log('Admin credentials not configured');
+              return null;
+            }
+            
+            // Verify admin credentials
+            if (credentials.email !== adminEmail || credentials.password !== adminPassword) {
+              console.log('Admin credentials validation failed');
+              return null;
+            }
+            
+            console.log('Admin credentials validation passed');
+            
+            return {
+              id: 'admin',
+              email: adminEmail,
+              name: 'Administrator',
+              firstName: 'Admin',
+              lastName: '',
+              isAdmin: true,
+            };
+          } else {
+            // Regular user login - check against database
+            await connectToDatabase();
+            
+            const user = await User.findOne({ email: credentials.email });
+            if (!user) {
+              return null;
+            }
 
-          const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
-          if (!isPasswordValid) {
-            return null;
-          }
+            const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
+            if (!isPasswordValid) {
+              return null;
+            }
 
-          return {
-            id: user._id.toString(),
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            isAdmin: user.email === process.env.ADMIN_EMAIL,
-          };
+            return {
+              id: (user._id as any).toString(),
+              email: user.email,
+              name: `${user.firstName} ${user.lastName}`,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              isAdmin: false,
+            };
+          }
         } catch (error) {
           console.error('Auth error:', error);
           return null;
@@ -66,7 +108,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-    signUp: '/signup',
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

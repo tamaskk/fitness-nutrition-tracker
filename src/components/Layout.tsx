@@ -14,9 +14,11 @@ import {
   X,
   DollarSign,
   TrendingUp,
-  Shield
+  Shield,
+  Bell
 } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { preferences } = useUserPreferences();
+  const { unreadCount } = useNotificationContext();
 
   // All possible navigation items
   const allNavigation = [
@@ -37,13 +40,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Bevásárlás', href: '/shopping', icon: ShoppingCart, key: 'shoppingList' },
     { name: 'Árfigyelő', href: '/price-monitor', icon: TrendingUp, key: 'priceMonitor' },
     { name: 'Pénzügyek', href: '/finance', icon: DollarSign, key: 'finance' },
+    { name: 'Értesítések', href: '/notifications', icon: Bell, key: 'notifications' },
     { name: 'Profil', href: '/profile', icon: User, key: 'profile' },
   ];
 
   // Filter navigation based on user preferences
   const navigation = allNavigation.filter(item => {
-    // Always show dashboard and profile
-    if (item.key === 'dashboard' || item.key === 'profile') {
+    // Always show dashboard, profile, and notifications
+    if (item.key === 'dashboard' || item.key === 'profile' || item.key === 'notifications') {
       return true;
     }
     // Show other items only if the feature is enabled
@@ -96,7 +100,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <item.icon className={`mr-3 h-5 w-5 ${
                     isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
                   }`} />
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.key === 'notifications' && unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-semibold">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -162,7 +171,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <item.icon className={`mr-3 h-5 w-5 ${
                     isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
                   }`} />
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.key === 'notifications' && unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-semibold">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

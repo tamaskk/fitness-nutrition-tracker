@@ -24,7 +24,13 @@ import {
   Settings,
   BarChart3,
   Filter,
-  Search
+  Search,
+  MessageCircle,
+  Bell,
+  AlertCircle,
+  Send,
+  Plus,
+  Users as UsersIcon
 } from 'lucide-react';
 import { AdminStats, AdminUser } from '@/types';
 import toast from 'react-hot-toast';
@@ -61,6 +67,28 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBy, setFilterBy] = useState('all');
   const [showStats, setShowStats] = useState(true);
+  const [activeSection, setActiveSection] = useState<'users' | 'notifications'>('users');
+  
+  // Notification management state
+  const [chats, setChats] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [notificationForm, setNotificationForm] = useState({
+    title: '',
+    message: '',
+    type: 'info',
+    actionUrl: '',
+    actionText: ''
+  });
+  const [updateForm, setUpdateForm] = useState({
+    title: '',
+    content: '',
+    type: 'feature',
+    priority: 'medium',
+    actionUrl: '',
+    actionText: ''
+  });
+  const [sendingNotification, setSendingNotification] = useState(false);
+  const [sendingUpdate, setSendingUpdate] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -71,7 +99,10 @@ const AdminDashboard = () => {
     }
 
     fetchStats();
-  }, [session, status, router]);
+    if (activeSection === 'notifications') {
+      fetchChats();
+    }
+  }, [session, status, router, activeSection]);
 
   // Filter and search users
   useEffect(() => {
@@ -112,6 +143,129 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchChats = async () => {
+    try {
+      const response = await fetch('/api/admin/chats');
+      if (response.ok) {
+        const data = await response.json();
+        setChats(data.chats || []);
+      } else {
+        toast.error('Failed to fetch chats');
+      }
+    } catch (error) {
+      toast.error('Error loading chats');
+    }
+  };
+
+  const sendNotification = async (sendToAll = false) => {
+    if (!notificationForm.title || !notificationForm.message) {
+      toast.error('Title and message are required');
+      return;
+    }
+
+    if (!sendToAll && selectedUsers.length === 0) {
+      toast.error('Please select at least one user');
+      return;
+    }
+
+    try {
+      setSendingNotification(true);
+      const endpoint = sendToAll ? '/api/admin/notifications/send-all' : '/api/admin/notifications/send';
+      const body = sendToAll 
+        ? notificationForm 
+        : { ...notificationForm, userIds: selectedUsers };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setNotificationForm({
+          title: '',
+          message: '',
+          type: 'info',
+          actionUrl: '',
+          actionText: ''
+        });
+        setSelectedUsers([]);
+      } else {
+        toast.error('Failed to send notification');
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      toast.error('Error sending notification');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
+  const sendUpdate = async (sendToAll = false) => {
+    if (!updateForm.title || !updateForm.content) {
+      toast.error('Title and content are required');
+      return;
+    }
+
+    if (!sendToAll && selectedUsers.length === 0) {
+      toast.error('Please select at least one user');
+      return;
+    }
+
+    try {
+      setSendingUpdate(true);
+      const endpoint = sendToAll ? '/api/admin/updates/send-all' : '/api/admin/updates/send';
+      const body = sendToAll 
+        ? updateForm 
+        : { ...updateForm, userIds: selectedUsers };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setUpdateForm({
+          title: '',
+          content: '',
+          type: 'feature',
+          priority: 'medium',
+          actionUrl: '',
+          actionText: ''
+        });
+        setSelectedUsers([]);
+      } else {
+        toast.error('Failed to send update');
+      }
+    } catch (error) {
+      console.error('Error sending update:', error);
+      toast.error('Error sending update');
+    } finally {
+      setSendingUpdate(false);
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const selectAllUsers = () => {
+    setSelectedUsers(users.map(user => user._id));
+  };
+
+  const clearSelection = () => {
+    setSelectedUsers([]);
+  };
+
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/admin/login' });
   };
@@ -123,8 +277,11 @@ const AdminDashboard = () => {
     }));
   };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return 'Not set';
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return 'Invalid date';
+    return dateObj.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -242,45 +399,80 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Search and Filter Controls */}
+      {/* Navigation Tabs */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search users by name, email, or country..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <select
-                value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
-              >
-                <option value="all">All Users</option>
-                <option value="mealPlans">🥗 Meal Plans</option>
-                <option value="recipes">🍳 Recipes</option>
-                <option value="trainings">🏋️ Trainings</option>
-                <option value="shoppingList">🛒 Shopping List</option>
-                <option value="priceMonitor">💰 Price Monitor</option>
-                <option value="finance">📊 Finance</option>
-              </select>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveSection('users')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeSection === 'users'
+                  ? 'border-red-500 text-red-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users className="h-5 w-5 inline mr-2" />
+              User Management
+            </button>
+            <button
+              onClick={() => setActiveSection('notifications')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeSection === 'notifications'
+                  ? 'border-red-500 text-red-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Bell className="h-5 w-5 inline mr-2" />
+              Notifications & Chats
+            </button>
+          </nav>
         </div>
       </div>
 
+      {/* Search and Filter Controls - Only show for users section */}
+      {activeSection === 'users' && (
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search users by name, email, or country..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <select
+                  value={filterBy}
+                  onChange={(e) => setFilterBy(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                >
+                  <option value="all">All Users</option>
+                  <option value="mealPlans">🥗 Meal Plans</option>
+                  <option value="recipes">🍳 Recipes</option>
+                  <option value="trainings">🏋️ Trainings</option>
+                  <option value="shoppingList">🛒 Shopping List</option>
+                  <option value="priceMonitor">💰 Price Monitor</option>
+                  <option value="finance">📊 Finance</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        {stats && showStats && (
+        {/* User Management Section */}
+        {activeSection === 'users' && (
+          <>
+            {/* Stats Cards */}
+            {stats && showStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white overflow-hidden shadow rounded-lg">
               <div className="p-5">
@@ -539,7 +731,7 @@ const AdminDashboard = () => {
                                   <div className="flex items-center">
                                     <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                                     <span className="text-gray-600">
-                                      Birthday: {new Date(user.birthday).toLocaleDateString()}
+                                      Birthday: {user.birthday ? formatDate(user.birthday) : 'Not set'}
                                     </span>
                                   </div>
                                 )}
@@ -794,6 +986,304 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+          </>
+        )}
+
+        {/* Notification Management Section */}
+        {activeSection === 'notifications' && (
+          <div className="space-y-8">
+            {/* Send Notifications */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  <Bell className="h-5 w-5 inline mr-2" />
+                  Send Notifications
+                </h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <input
+                      type="text"
+                      value={notificationForm.title}
+                      onChange={(e) => setNotificationForm({...notificationForm, title: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="Notification title"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select
+                      value={notificationForm.type}
+                      onChange={(e) => setNotificationForm({...notificationForm, type: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="info">Info</option>
+                      <option value="warning">Warning</option>
+                      <option value="success">Success</option>
+                      <option value="error">Error</option>
+                    </select>
+                  </div>
+                  
+                  <div className="lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                    <textarea
+                      value={notificationForm.message}
+                      onChange={(e) => setNotificationForm({...notificationForm, message: e.target.value})}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="Notification message"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Action URL (optional)</label>
+                    <input
+                      type="url"
+                      value={notificationForm.actionUrl}
+                      onChange={(e) => setNotificationForm({...notificationForm, actionUrl: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Action Text (optional)</label>
+                    <input
+                      type="text"
+                      value={notificationForm.actionText}
+                      onChange={(e) => setNotificationForm({...notificationForm, actionText: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="Click here"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex space-x-4">
+                  <button
+                    onClick={() => sendNotification(false)}
+                    disabled={sendingNotification || selectedUsers.length === 0}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send className="h-4 w-4 inline mr-2" />
+                    Send to Selected ({selectedUsers.length})
+                  </button>
+                  <button
+                    onClick={() => sendNotification(true)}
+                    disabled={sendingNotification}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <UsersIcon className="h-4 w-4 inline mr-2" />
+                    Send to All Users
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Send Updates */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  <AlertCircle className="h-5 w-5 inline mr-2" />
+                  Send Updates
+                </h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <input
+                      type="text"
+                      value={updateForm.title}
+                      onChange={(e) => setUpdateForm({...updateForm, title: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="Update title"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select
+                      value={updateForm.type}
+                      onChange={(e) => setUpdateForm({...updateForm, type: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="feature">Feature</option>
+                      <option value="bugfix">Bug Fix</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="announcement">Announcement</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                    <select
+                      value={updateForm.priority}
+                      onChange={(e) => setUpdateForm({...updateForm, priority: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Action URL (optional)</label>
+                    <input
+                      type="url"
+                      value={updateForm.actionUrl}
+                      onChange={(e) => setUpdateForm({...updateForm, actionUrl: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                  
+                  <div className="lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                    <textarea
+                      value={updateForm.content}
+                      onChange={(e) => setUpdateForm({...updateForm, content: e.target.value})}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="Update content"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Action Text (optional)</label>
+                    <input
+                      type="text"
+                      value={updateForm.actionText}
+                      onChange={(e) => setUpdateForm({...updateForm, actionText: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      placeholder="Learn more"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex space-x-4">
+                  <button
+                    onClick={() => sendUpdate(false)}
+                    disabled={sendingUpdate || selectedUsers.length === 0}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send className="h-4 w-4 inline mr-2" />
+                    Send to Selected ({selectedUsers.length})
+                  </button>
+                  <button
+                    onClick={() => sendUpdate(true)}
+                    disabled={sendingUpdate}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <UsersIcon className="h-4 w-4 inline mr-2" />
+                    Send to All Users
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* User Selection */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    <UsersIcon className="h-5 w-5 inline mr-2" />
+                    Select Users ({selectedUsers.length} selected)
+                  </h3>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={selectAllUsers}
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Select All
+                    </button>
+                    <button
+                      onClick={clearSelection}
+                      className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-md">
+                  {users.map((user) => (
+                    <div
+                      key={user._id}
+                      className={`flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 ${
+                        selectedUsers.includes(user._id) ? 'bg-blue-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.includes(user._id)}
+                          onChange={() => toggleUserSelection(user._id)}
+                          className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                        />
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.firstName} {user.lastName}
+                          </div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Management */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  <MessageCircle className="h-5 w-5 inline mr-2" />
+                  User Chats ({chats.length})
+                </h3>
+                
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {chats.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No chats yet</p>
+                  ) : (
+                    chats.map((chat) => (
+                      <div key={chat._id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-medium text-gray-900">
+                              Chat between: {chat.participants.map((p: any) => `${p.firstName} ${p.lastName}`).join(' & ')}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              {chat.participants.map((p: any) => p.email).join(' & ')}
+                            </p>
+                          </div>
+                          <span className="text-xs text-gray-400">
+                            {formatDate(chat.createdAt)}
+                          </span>
+                        </div>
+                        
+                        {chat.lastMessage && (
+                          <div className="bg-gray-50 rounded p-3">
+                            <p className="text-sm text-gray-700">{chat.lastMessage.content}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(chat.lastMessage.timestamp).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="mt-2 text-xs text-gray-500">
+                          {chat.messages.length} message(s)
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

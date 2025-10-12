@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 export default function App({ 
   Component, 
@@ -11,8 +12,10 @@ export default function App({
   return (
     <SessionProvider session={session}>
       <UserPreferencesProvider>
-        <Component {...pageProps} />
-        <Toaster position="top-right" />
+        <NotificationProvider>
+          <Component {...pageProps} />
+          <Toaster position="top-right" />
+        </NotificationProvider>
       </UserPreferencesProvider>
     </SessionProvider>
   );
