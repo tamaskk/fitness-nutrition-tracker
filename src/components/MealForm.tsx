@@ -202,11 +202,11 @@ const MealForm: React.FC<MealFormProps> = ({
         
         <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-md w-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-bold text-white">Étkezés hozzáadása</h2>
+          <div className="flex items-center justify-between p-6 border-b dark:border-zinc-900">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Étkezés hozzáadása</h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <X className="w-6 h-6" />
             </button>
@@ -236,7 +236,7 @@ const MealForm: React.FC<MealFormProps> = ({
                 </label>
                 <select
                   {...register('mealType', { required: 'Meal type is required' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                 >
                   <option value="breakfast">Reggeli</option>
                   <option value="lunch">Ebéd</option>
@@ -392,7 +392,7 @@ const MealForm: React.FC<MealFormProps> = ({
                   {...register('name', { required: 'Food name is required' })}
                   type="text"
                   placeholder="Add meg az étel nevét vagy válassz a keresésből"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white dark:placeholder-gray-500"
                 />
                 {errors.name && (
                   <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
@@ -412,7 +412,7 @@ const MealForm: React.FC<MealFormProps> = ({
                   type="number"
                   step="1"
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                 />
                 {errors.quantityGrams && (
                   <p className="mt-1 text-sm text-red-600">{errors.quantityGrams.message}</p>
@@ -432,13 +432,13 @@ const MealForm: React.FC<MealFormProps> = ({
                   type="number"
                   step="1"
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                 />
                 {errors.calories && (
                   <p className="mt-1 text-sm text-red-600">{errors.calories.message}</p>
                 )}
                 {selectedFood && (
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Auto-calculated from {selectedFood.name} ({selectedFood.caloriesPer100g} cal/100g)
                   </p>
                 )}
