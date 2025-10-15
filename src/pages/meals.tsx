@@ -243,15 +243,15 @@ const MealsPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Étkezések</h1>
-            <p className="text-gray-600">Kövesd nyomon a napi táplálkozásod</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Étkezések</h1>
+            <p className="text-gray-600 dark:text-gray-400">Kövesd nyomon a napi táplálkozásod</p>
           </div>
           <div className="mt-4 sm:mt-0 flex space-x-3">
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             <button 
               onClick={() => handleOpenMealForm('lunch')}
@@ -264,10 +264,10 @@ const MealsPage = () => {
         </div>
 
         {/* Recipe Search Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Recept keresése</h3>
-            <p className="text-sm text-gray-600 mt-1">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-800">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recept keresése</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Keress a mentett receptjeid között és add hozzá az étkezéseidhez
             </p>
           </div>
@@ -278,7 +278,7 @@ const MealsPage = () => {
                 value={foodSearchQuery}
                 onChange={(e) => setFoodSearchQuery(e.target.value)}
                 placeholder="Keress receptet név alapján..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleFoodSearch())}
               />
               <button
@@ -295,22 +295,22 @@ const MealsPage = () => {
 
             {/* Recipe Search Results */}
             {foodSearchResults.length > 0 && (
-              <div className="mt-4 border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+              <div className="mt-4 border border-gray-200 dark:border-zinc-800 rounded-lg max-h-60 overflow-y-auto">
                 {foodSearchResults.map((recipe) => (
                   <button
                     key={recipe._id}
                     onClick={() => handleSelectFood(recipe)}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black border-b border-gray-100 last:border-b-0 transition-colors"
                   >
-                    <div className="font-medium text-gray-900">{recipe.title}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-medium text-gray-900 dark:text-white">{recipe.title}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
                       {recipe.caloriesPerServing || 0} kal/adag • {recipe.servings || 1} adag
                       {recipe.prepTime && recipe.cookTime && (
                         <span className="ml-2">• {(recipe.prepTime + recipe.cookTime)} perc</span>
                       )}
                     </div>
                     {recipe.tags && recipe.tags.length > 0 && (
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                         Címkék: {recipe.tags.slice(0, 3).join(', ')}
                       </div>
                     )}
@@ -324,13 +324,13 @@ const MealsPage = () => {
         {/* Meal Sections */}
         <div className="space-y-6">
           {mealTypes.map((mealType) => (
-            <div key={mealType} className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 capitalize flex items-center">
+            <div key={mealType} className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-800">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white capitalize flex items-center">
                   <Utensils className="w-5 h-5 mr-2" />
                   {mealTypeTranslations[mealType] || mealType}
                   {mealsByType[mealType] && (
-                    <span className="ml-2 text-sm text-gray-500">
+                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-500">
                       ({mealsByType[mealType].reduce((sum, meal) => sum + meal.calories, 0)} cal)
                     </span>
                   )}
@@ -340,18 +340,18 @@ const MealsPage = () => {
                 {mealsByType[mealType] && mealsByType[mealType].length > 0 ? (
                   <div className="space-y-3">
                     {mealsByType[mealType].map((meal) => (
-                      <div key={meal._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={meal._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-black rounded-lg">
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{meal.name}</h4>
+                          <h4 className="font-medium text-gray-900 dark:text-white">{meal.name}</h4>
                           {meal.quantityGrams && (
-                            <p className="text-sm text-gray-500">{meal.quantityGrams}g</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500">{meal.quantityGrams}g</p>
                           )}
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <p className="font-medium text-gray-900">{meal.calories} cal</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{meal.calories} cal</p>
                             {meal.createdAt && (
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500 dark:text-gray-500">
                                 <Clock className="w-3 h-3 inline mr-1" />
                                 {new Date(meal.createdAt).toLocaleTimeString()}
                               </p>
@@ -370,8 +370,8 @@ const MealsPage = () => {
                 ) : (
                   <div className="text-center py-8">
                     <Utensils className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">Nincs rögzített {mealTypeTranslations[mealType]?.toLowerCase()}</h3>
-                    <p className="mt-1 text-sm text-gray-500">Kezdj azzal, hogy hozzáadod az első {mealTypeTranslations[mealType]?.toLowerCase()}ed.</p>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Nincs rögzített {mealTypeTranslations[mealType]?.toLowerCase()}</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">Kezdj azzal, hogy hozzáadod az első {mealTypeTranslations[mealType]?.toLowerCase()}ed.</p>
                     <div className="mt-6">
                       <button 
                         onClick={() => handleOpenMealForm(mealType)}
@@ -389,18 +389,18 @@ const MealsPage = () => {
         </div>
 
         {/* Saved Recipes Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-800">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
               <Plus className="w-5 h-5 mr-2" />
               Mentett receptek
               {savedRecipes.length > 0 && (
-                <span className="ml-2 text-sm text-gray-500">
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-500">
                   ({savedRecipes.length})
                 </span>
               )}
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Válassz egy mentett receptet és add hozzá az étkezéseidhez
             </p>
           </div>
@@ -408,14 +408,14 @@ const MealsPage = () => {
             {recipesLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600">Receptek betöltése...</span>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">Receptek betöltése...</span>
               </div>
             ) : savedRecipes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {savedRecipes.map((recipe) => (
-                  <div key={recipe._id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                  <div key={recipe._id} className="border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                     {recipe.imageUrl && (
-                      <div className="h-32 bg-gray-200">
+                      <div className="h-32 bg-gray-200 dark:bg-zinc-900">
                         <img
                           src={recipe.imageUrl}
                           alt={recipe.title}
@@ -424,8 +424,8 @@ const MealsPage = () => {
                       </div>
                     )}
                     <div className="p-4">
-                      <h4 className="font-medium text-gray-900 mb-2 line-clamp-2">{recipe.title}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-2 line-clamp-2">{recipe.title}</h4>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
                         <span>{recipe.caloriesPerServing || 0} kal/adag</span>
                         <span>{recipe.servings || 1} adag</span>
                         {recipe.prepTime && recipe.cookTime && (
@@ -445,8 +445,8 @@ const MealsPage = () => {
             ) : (
               <div className="text-center py-8">
                 <Plus className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Nincsenek mentett receptek</h3>
-                <p className="mt-1 text-sm text-gray-500">Menj a Receptek oldalra és ments el recepteket!</p>
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Nincsenek mentett receptek</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">Menj a Receptek oldalra és ments el recepteket!</p>
               </div>
             )}
           </div>

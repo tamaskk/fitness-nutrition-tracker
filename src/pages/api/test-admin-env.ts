@@ -16,3 +16,5 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     adminPasswordLength: process.env.ADMIN_PASSWORD?.length || 0,
   });
 }
+
+

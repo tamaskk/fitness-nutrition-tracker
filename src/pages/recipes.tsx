@@ -433,8 +433,8 @@ const RecipesPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Receptek</h1>
-            <p className="text-gray-600">Fedezz fel és ments el finom recepteket</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Receptek</h1>
+            <p className="text-gray-600 dark:text-gray-400">Fedezz fel és ments el finom recepteket</p>
           </div>
           {activeTab === 'saved' && (
             <div className="mt-4 sm:mt-0 flex gap-2">
@@ -456,14 +456,14 @@ const RecipesPage = () => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-zinc-800">
           <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab('ingredients')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                 activeTab === 'ingredients'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <ChefHat className="w-4 h-4" />
@@ -474,7 +474,7 @@ const RecipesPage = () => {
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                 activeTab === 'ai'
                   ? 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <Sparkles className="w-4 h-4" />
@@ -485,7 +485,7 @@ const RecipesPage = () => {
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                 activeTab === 'saved'
                   ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <Book className="w-4 h-4" />
@@ -505,8 +505,8 @@ const RecipesPage = () => {
             {recipes.length === 0 && !ingredientLoading && (
               <div className="text-center py-12">
                 <ChefHat className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Válaszd ki a hozzávalókat</h3>
-                <p className="mt-2 text-gray-600">Válassz hozzávalókat a fenti kategóriákból, hogy recepteket találj!</p>
+                <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Válaszd ki a hozzávalókat</h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">Válassz hozzávalókat a fenti kategóriákból, hogy recepteket találj!</p>
               </div>
             )}
           </div>
@@ -523,8 +523,8 @@ const RecipesPage = () => {
             {recipes.length === 0 && !aiLoading && (
               <div className="text-center py-12">
                 <Sparkles className="mx-auto h-12 w-12 text-purple-400" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Egyedi receptek generálása</h3>
-                <p className="mt-2 text-gray-600">Írd le, mit szeretnél főzni, és az AI személyre szabott receptet készít neked!</p>
+                <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Egyedi receptek generálása</h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">Írd le, mit szeretnél főzni, és az AI személyre szabott receptet készít neked!</p>
               </div>
             )}
           </div>
@@ -534,8 +534,8 @@ const RecipesPage = () => {
         {activeTab === 'saved' && recipes.length === 0 && !loading && (
           <div className="text-center py-12">
             <Book className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Nincsenek mentett receptek</h3>
-            <p className="mt-2 text-gray-600">Keress és ments recepteket, hogy itt lásd őket!</p>
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek mentett receptek</h3>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Keress és ments recepteket, hogy itt lásd őket!</p>
           </div>
         )}
 
@@ -543,7 +543,7 @@ const RecipesPage = () => {
         {(loading || ingredientLoading || aiLoading) && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">
+            <span className="ml-3 text-gray-600 dark:text-gray-400">
               {ingredientLoading && 'Receptek keresése a hozzávalóiddal...'}
               {aiLoading && 'Egyedi recept generálása...'}
               {loading && 'Receptek betöltése...'}
@@ -565,7 +565,7 @@ const RecipesPage = () => {
                   value={titleFilter}
                   onChange={(e) => setTitleFilter(e.target.value)}
                   placeholder="Keresés recept neve alapján..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -576,7 +576,7 @@ const RecipesPage = () => {
                   id="categoryFilter"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Összes kategória</option>
                   <option value="breakfast">Reggeli</option>
@@ -595,7 +595,7 @@ const RecipesPage = () => {
                   id="sortBy"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'title' | 'category' | 'date')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="date">Legújabb először</option>
                   <option value="title">Név szerint</option>
@@ -647,7 +647,7 @@ const RecipesPage = () => {
                     </>
                   )}
                 </button>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
                   Minden recept tartalmazza: {selectedIngredients.join(', ')}
                 </p>
               </div>
@@ -655,7 +655,7 @@ const RecipesPage = () => {
           </>
         ) : recipes.length > 0 && (titleFilter.trim() || categoryFilter) ? (
           <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-2">
+            <div className="text-gray-500 dark:text-gray-500 text-lg mb-2">
               Nincs találat a keresési feltételeknek
             </div>
             <div className="text-gray-400 text-sm">

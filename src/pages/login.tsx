@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, Utensils } from 'lucide-react';
+
+import { Button } from '@/component/Button';
+import { TextField } from '@/component/Fields';
+import { Logo } from '@/component/Logo';
+import { SlimLayout } from '@/component/SlimLayout';
 import { LoginFormData } from '@/types';
 
-const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
+export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -31,7 +34,7 @@ const LoginPage = () => {
         toast.error('Invalid credentials');
       } else {
         toast.success('Login successful!');
-        router.push('/');
+        router.push('/dashboard');
       }
     } catch (error) {
       toast.error('Something went wrong');
@@ -41,107 +44,78 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="flex justify-center">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <Utensils className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <h2 className="mt-4 text-3xl font-bold text-gray-900">
-            Welcome back
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your FitTracker account
-          </p>
-        </div>
-
-        <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address',
-                    },
-                  })}
-                  type="email"
-                  autoComplete="email"
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <input
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters',
-                    },
-                  })}
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-
-            <div className="text-center">
-              <span className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                  Sign up
-                </Link>
-              </span>
-            </div>
-          </form>
-        </div>
+    <SlimLayout>
+      <div className="flex">
+        <Link href="/" aria-label="Home">
+          <Logo className="h-10 w-auto" />
+        </Link>
       </div>
-    </div>
+      <h2 className="mt-20 text-lg font-semibold text-gray-900 dark:text-white">
+        Sign in to your account
+      </h2>
+      <p className="mt-2 text-sm text-gray-700">
+        Don't have an account?{' '}
+        <Link
+          href="/signup"
+          className="font-medium text-blue-600 hover:underline"
+        >
+          Sign up
+        </Link>{' '}
+        for a free trial.
+      </p>
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-10 grid grid-cols-1 gap-y-8">
+        <div>
+          <TextField
+            label="Email address"
+            type="email"
+            autoComplete="email"
+            required
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Invalid email address',
+              },
+            })}
+          />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+          )}
+        </div>
+        
+        <div>
+          <TextField
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            required
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters',
+              },
+            })}
+          />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
+        
+        <div>
+          <Button 
+            type="submit" 
+            variant="solid" 
+            color="blue" 
+            className="w-full"
+            disabled={isLoading}
+          >
+            <span>
+              {isLoading ? 'Signing in...' : 'Sign in'} <span aria-hidden="true">&rarr;</span>
+            </span>
+          </Button>
+        </div>
+      </form>
+    </SlimLayout>
   );
-};
-
-export default LoginPage;
-
+}

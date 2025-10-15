@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Camera, Upload, Loader, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CameraModal from './CameraModal';
 
 interface ImageAnalyzerProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ const ImageAnalyzer: React.FC<ImageAnalyzerProps> = ({ isOpen, onClose, onAnalys
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (file: File) => {
@@ -45,9 +47,7 @@ const ImageAnalyzer: React.FC<ImageAnalyzerProps> = ({ isOpen, onClose, onAnalys
   };
 
   const handleCameraCapture = () => {
-    // In a real app, you would implement camera capture
-    // For now, we'll simulate it with file input
-    fileInputRef.current?.click();
+    setShowCameraModal(true);
   };
 
   const analyzeImage = async () => {
@@ -135,17 +135,34 @@ const ImageAnalyzer: React.FC<ImageAnalyzerProps> = ({ isOpen, onClose, onAnalys
     setSelectedImage(null);
     setImagePreview(null);
     setAnalysis(null);
+    setShowCameraModal(false);
+    onClose();
+  };
+
+  const handleCameraAnalysisComplete = (analysisData: any) => {
+    onAnalysisComplete(analysisData);
+    setShowCameraModal(false);
     onClose();
   };
 
   if (!isOpen) return null;
 
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <>
+      {/* Camera Modal */}
+      <CameraModal
+        isOpen={showCameraModal}
+        onClose={() => setShowCameraModal(false)}
+        onAnalysisComplete={handleCameraAnalysisComplete}
+      />
+      
+      {/* Original Image Analyzer Modal */}
+      <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={handleClose} />
         
-        <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-2xl w-full max-h-screen overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
             <h2 className="text-xl font-bold text-gray-900">AI Food Analysis</h2>
@@ -251,7 +268,7 @@ const ImageAnalyzer: React.FC<ImageAnalyzerProps> = ({ isOpen, onClose, onAnalys
                     </div>
 
                     {/* Total Summary */}
-                    <div className="bg-white rounded-lg p-4 mb-4">
+                    <div className="bg-white dark:bg-zinc-950 rounded-lg p-4 mb-4 dark:border dark:border-zinc-900">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium text-gray-900">Total Estimated Calories</h4>
@@ -270,7 +287,7 @@ const ImageAnalyzer: React.FC<ImageAnalyzerProps> = ({ isOpen, onClose, onAnalys
                     <div className="space-y-3">
                       <h4 className="font-medium text-gray-900">Detected Food Items:</h4>
                       {analysis.foodItems.map((item: any, index: number) => (
-                        <div key={index} className="bg-white rounded-lg p-4">
+                        <div key={index} className="bg-white dark:bg-zinc-950 rounded-lg p-4 dark:border dark:border-zinc-900">
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <h5 className="font-medium text-gray-900">{item.name}</h5>
@@ -319,6 +336,7 @@ const ImageAnalyzer: React.FC<ImageAnalyzerProps> = ({ isOpen, onClose, onAnalys
         </div>
       </div>
     </div>
+    </>
   );
 };
 

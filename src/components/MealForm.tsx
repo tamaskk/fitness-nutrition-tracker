@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { X, Search, Camera, QrCode, Brain } from 'lucide-react';
+import { X, Search, Camera, QrCode, Brain, BookOpen } from 'lucide-react';
 import { MealFormData } from '@/types';
 import { getCurrentDateString } from '@/utils/dateUtils';
 import { getMealTypeColor } from '@/utils/calculations';
@@ -31,6 +31,9 @@ const MealForm: React.FC<MealFormProps> = ({
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const [showImageAnalyzer, setShowImageAnalyzer] = useState(false);
   const [showAIEstimator, setShowAIEstimator] = useState(false);
+  const [searchMode, setSearchMode] = useState<'food' | 'recipe'>('food');
+  const [recipeResults, setRecipeResults] = useState<any[]>([]);
+  const [recipeLoading, setRecipeLoading] = useState(false);
 
   const {
     register,
@@ -53,7 +56,9 @@ const MealForm: React.FC<MealFormProps> = ({
     reset();
     setSelectedFood(null);
     setSearchResults([]);
+    setRecipeResults([]);
     setSearchQuery('');
+    setSearchMode('food');
     setShowBarcodeScanner(false);
     setShowImageAnalyzer(false);
     setShowAIEstimator(false);
@@ -118,6 +123,32 @@ const MealForm: React.FC<MealFormProps> = ({
     }
   };
 
+  const handleRecipeSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    setRecipeLoading(true);
+    try {
+      // Search through saved recipes
+      const response = await fetch(`/api/recipes?search=${encodeURIComponent(searchQuery)}&limit=10`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to search recipes');
+      }
+      
+      const recipes = await response.json();
+      setRecipeResults(recipes);
+      
+      if (recipes.length === 0) {
+        toast.error('Nem találtunk receptet ezzel a névvel');
+      }
+    } catch (error) {
+      console.error('Recipe search error:', error);
+      toast.error('Hiba történt a recept keresésekor');
+    } finally {
+      setRecipeLoading(false);
+    }
+  };
+
   const handleFoodSelect = (food: any) => {
     setSelectedFood(food);
     setValue('name', food.name);
@@ -127,6 +158,19 @@ const MealForm: React.FC<MealFormProps> = ({
     setValue('calories', calories);
     
     setSearchResults([]);
+    setSearchQuery('');
+  };
+
+  const handleRecipeSelect = (recipe: any) => {
+    setSelectedFood(recipe);
+    setValue('name', recipe.title);
+    
+    // Use recipe's calories per serving
+    if (recipe.caloriesPerServing) {
+      setValue('calories', recipe.caloriesPerServing);
+    }
+    
+    setRecipeResults([]);
     setSearchQuery('');
   };
 
@@ -156,10 +200,10 @@ const MealForm: React.FC<MealFormProps> = ({
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={handleClose} />
         
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-md w-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-bold text-gray-900">Étkezés hozzáadása</h2>
+            <h2 className="text-xl font-bold text-white">Étkezés hozzáadása</h2>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-600"
@@ -172,13 +216,13 @@ const MealForm: React.FC<MealFormProps> = ({
             <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Dátum
                 </label>
                 <input
                   {...register('date', { required: 'Date is required' })}
                   type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                 />
                 {errors.date && (
                   <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
@@ -187,7 +231,7 @@ const MealForm: React.FC<MealFormProps> = ({
 
               {/* Meal Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Étkezés típusa
                 </label>
                 <select
@@ -207,48 +251,68 @@ const MealForm: React.FC<MealFormProps> = ({
 
               {/* Smart Food Input Options */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Étel hozzáadása:
                 </label>
                 
+                {/* Search Mode Toggle */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchMode('food');
+                      setSearchResults([]);
+                      setRecipeResults([]);
+                    }}
+                    className={`flex-1 px-3 py-2 text-sm font-medium rounded-md border transition-all ${
+                      searchMode === 'food'
+                        ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30'
+                        : 'bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    <Search className="w-4 h-4 mr-2 inline" />
+                    Étel keresés
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchMode('recipe');
+                      setSearchResults([]);
+                      setRecipeResults([]);
+                    }}
+                    className={`flex-1 px-3 py-2 text-sm font-medium rounded-md border transition-all ${
+                      searchMode === 'recipe'
+                        ? 'bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/30'
+                        : 'bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4 mr-2 inline" />
+                    Recept keresés
+                  </button>
+                </div>
+
                 {/* Smart Input Buttons */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowBarcodeScanner(true)}
-                    className="flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 border border-blue-200"
-                  >
-                    <QrCode className="w-4 h-4 mr-2" />
-                    Vonalkód
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowImageAnalyzer(true)}
-                    className="flex items-center justify-center px-3 py-2 bg-purple-50 text-purple-700 rounded-md hover:bg-purple-100 border border-purple-200"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Fotó
-                  </button>
+                <div className="grid grid-cols-2 gap-2 mb-4">
                   <button
                     type="button"
                     onClick={() => setShowAIEstimator(true)}
-                    className="flex items-center justify-center px-3 py-2 bg-green-50 text-green-700 rounded-md hover:bg-green-100 border border-green-200"
+                    className="flex items-center justify-center px-3 py-2 bg-green-50 dark:bg-green-500/20 text-green-700 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-500/30 border border-green-200 dark:border-green-500/30"
                   >
                     <Brain className="w-4 h-4 mr-2" />
                     AI Becslés
                   </button>
                   <button
                     type="button"
-                    onClick={handleFoodSearch}
-                    disabled={loading || !searchQuery.trim()}
-                    className="flex items-center justify-center px-3 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 border border-gray-200 disabled:opacity-50"
+                    onClick={searchMode === 'food' ? handleFoodSearch : handleRecipeSearch}
+                    disabled={(searchMode === 'food' ? loading : recipeLoading) || !searchQuery.trim()}
+                    className="flex items-center justify-center px-3 py-2 bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800 disabled:opacity-50"
                   >
-                    {loading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                    {(searchMode === 'food' ? loading : recipeLoading) ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 dark:border-gray-400 mr-2"></div>
                     ) : (
                       <Search className="w-4 h-4 mr-2" />
                     )}
-                    {loading ? 'Keresés...' : 'Keresés'}
+                    {(searchMode === 'food' ? loading : recipeLoading) ? 'Keresés...' : 'Keresés'}
                   </button>
                 </div>
 
@@ -258,31 +322,61 @@ const MealForm: React.FC<MealFormProps> = ({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Keress ételt vagy add meg kézzel..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleFoodSearch())}
+                    placeholder={searchMode === 'food' ? "Keress ételt vagy add meg kézzel..." : "Keress mentett receptek között..."}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white dark:placeholder-gray-500"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), searchMode === 'food' ? handleFoodSearch() : handleRecipeSearch())}
                   />
                 </div>
 
                 {/* Search Results */}
-                {searchResults.length > 0 && (
-                  <div className="mt-2 border border-gray-200 rounded-md max-h-40 overflow-y-auto">
+                {searchMode === 'food' && searchResults.length > 0 && (
+                  <div className="mt-2 border border-gray-200 dark:border-zinc-800 rounded-md max-h-40 overflow-y-auto dark:bg-zinc-950">
                     {searchResults.map((food) => (
                       <button
                         key={food.id}
                         type="button"
                         onClick={() => handleFoodSelect(food)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800 last:border-b-0"
                       >
-                        <div className="font-medium">{food.name}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-medium dark:text-white">{food.name}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           {food.caloriesPer100g} kal/100g
-                          {food.brand && <span className="ml-2 text-gray-500">({food.brand})</span>}
-                          {food.category && <span className="ml-2 text-blue-600">• {food.category}</span>}
+                          {food.brand && <span className="ml-2 text-gray-500 dark:text-gray-500">({food.brand})</span>}
+                          {food.category && <span className="ml-2 text-blue-600 dark:text-blue-400">• {food.category}</span>}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                           Fehérje: {food.proteinPer100g}g • Szénhidrát: {food.carbsPer100g}g • Zsír: {food.fatPer100g}g
                         </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Recipe Results */}
+                {searchMode === 'recipe' && recipeResults.length > 0 && (
+                  <div className="mt-2 border border-gray-200 dark:border-zinc-800 rounded-md max-h-40 overflow-y-auto dark:bg-zinc-950">
+                    {recipeResults.map((recipe) => (
+                      <button
+                        key={recipe._id}
+                        type="button"
+                        onClick={() => handleRecipeSelect(recipe)}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800 last:border-b-0"
+                      >
+                        <div className="font-medium flex items-center dark:text-white">
+                          <BookOpen className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                          {recipe.title}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kal/adag` : 'Kalória nincs megadva'}
+                          {recipe.servings && <span className="ml-2 text-gray-500 dark:text-gray-500">• {recipe.servings} adag</span>}
+                          {recipe.category && <span className="ml-2 text-purple-600 dark:text-purple-400">• {recipe.category}</span>}
+                        </div>
+                        {recipe.ingredients && recipe.ingredients.length > 0 && (
+                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            {recipe.ingredients.slice(0, 3).map((ing: any) => ing.name).join(', ')}
+                            {recipe.ingredients.length > 3 && '...'}
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -291,7 +385,7 @@ const MealForm: React.FC<MealFormProps> = ({
 
               {/* Food Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Étel neve
                 </label>
                 <input
@@ -307,7 +401,7 @@ const MealForm: React.FC<MealFormProps> = ({
 
               {/* Quantity */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Mennyiség (gramm)
                 </label>
                 <input
@@ -327,7 +421,7 @@ const MealForm: React.FC<MealFormProps> = ({
 
               {/* Calories */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Kalóriák
                 </label>
                 <input
@@ -354,7 +448,7 @@ const MealForm: React.FC<MealFormProps> = ({
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   Étkezés hozzáadása
                 </button>

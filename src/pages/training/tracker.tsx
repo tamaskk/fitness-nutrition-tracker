@@ -473,16 +473,16 @@ const TrackerPage = () => {
               Vissza az edzéshez
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Edzés követése</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edzés követése</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Indítsd el az edzéstervet és kövesd a haladásodat
           </p>
         </div>
 
         {showWorkoutSelector && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Válassz edzéstervet
               </h2>
               {loading ? (
@@ -492,8 +492,8 @@ const TrackerPage = () => {
               ) : workouts.length === 0 ? (
                 <div className="text-center py-8">
                   <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">Nincsenek edzéstervek</h3>
-                  <p className="mt-2 text-gray-600">
+                  <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek edzéstervek</h3>
+                  <p className="mt-2 text-gray-600 dark:text-gray-400">
                     Először hozz létre edzésterveket az edzés kezelése oldalon.
                   </p>
                   <button
@@ -507,18 +507,18 @@ const TrackerPage = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {workouts.map((workout) => (
-                    <div key={workout._id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                    <div key={workout._id} className="border border-gray-200 dark:border-zinc-800 rounded-lg p-4 hover:border-blue-300 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                             {workout.name}
                           </h3>
                           {workout.description && (
-                            <p className="text-gray-600 text-sm mb-3">
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                               {workout.description}
                             </p>
                           )}
-                          <div className="flex items-center text-sm text-gray-600 space-x-4">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
                             <div className="flex items-center">
                               <Dumbbell className="w-4 h-4 mr-1" />
                               {workout.exercises.length} gyakorlat
@@ -548,20 +548,20 @@ const TrackerPage = () => {
         {isWorkoutActive && selectedWorkout && workoutSession && (
           <div className="space-y-6">
             {/* Workout Header */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedWorkout.name}</h2>
-                  <p className="text-gray-600">Edzés folyamatban...</p>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedWorkout.name}</h2>
+                  <p className="text-gray-600 dark:text-gray-400">Edzés folyamatban...</p>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-green-600">{getWorkoutProgress()}%</div>
-                  <div className="text-sm text-gray-600">Haladás</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Haladás</div>
                 </div>
               </div>
               
               {/* Progress Bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+              <div className="w-full bg-gray-200 dark:bg-zinc-900 rounded-full h-2 mb-4">
                 <div 
                   className="bg-green-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${getWorkoutProgress()}%` }}
@@ -569,7 +569,7 @@ const TrackerPage = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   {currentExerciseIndex + 1} / {selectedWorkout.exercises.length} gyakorlat
                 </div>
                 <div className="flex space-x-2">
@@ -593,12 +593,12 @@ const TrackerPage = () => {
 
             {/* Current Exercise */}
             {getCurrentExercise() && getCurrentExerciseProgress() && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
                 <div className="text-center">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     {getCurrentExercise()?.exerciseName}
                   </h3>
-                  <div className="text-lg text-gray-600 mb-4">
+                  <div className="text-lg text-gray-600 dark:text-gray-400 mb-4">
                     {currentSet} / {getCurrentExercise()?.sets} szett
                   </div>
                   
@@ -607,19 +607,19 @@ const TrackerPage = () => {
                       <div className="text-2xl font-bold text-blue-600">
                         {getCurrentExercise()?.reps}
                       </div>
-                      <div className="text-sm text-gray-600">Ismétlés</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Ismétlés</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">
                         {getCurrentExercise()?.weight || 0} kg
                       </div>
-                      <div className="text-sm text-gray-600">Súly</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Súly</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-orange-600">
                         {getCurrentExercise()?.restTime || 60} mp
                       </div>
-                      <div className="text-sm text-gray-600">Pihenés</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Pihenés</div>
                     </div>
                   </div>
 

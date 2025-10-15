@@ -66,11 +66,11 @@ const UpdateModal: React.FC<UpdateModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Blurred background */}
-      <div className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-md transition-all duration-200 ease-out" onClick={onClose} />
+      <div className="fixed inset-0 bg-white dark:bg-black bg-opacity-80 backdrop-blur-md transition-all duration-200 ease-out" onClick={onClose} />
       
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative w-full max-w-3xl bg-white rounded-lg shadow-2xl border border-gray-200 border-l-4 transform transition-all duration-200 ease-out ${getPriorityColor(update.priority)}`}>
+        <div className={`relative w-full max-w-3xl bg-white dark:bg-zinc-950 rounded-lg shadow-2xl dark:shadow-none border border-gray-200 dark:border-zinc-800 border-l-4 transform transition-all duration-200 ease-out ${getPriorityColor(update.priority)}`}>
           {/* Header */}
           <div className="flex items-start justify-between p-6 border-b border-gray-200">
             <div className="flex items-start space-x-3">
@@ -150,7 +150,7 @@ const UpdateModal: React.FC<UpdateModalProps> = ({
               )}
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-800 rounded-md hover:bg-gray-50 transition-colors"
               >
                 Close
               </button>

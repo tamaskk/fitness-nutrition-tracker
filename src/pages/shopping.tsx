@@ -389,14 +389,14 @@ const ShoppingPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Bevásárlólista</h1>
-            <p className="text-gray-600">Kezeld a bevásárlási és élelmiszer tételeidet</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bevásárlólista</h1>
+            <p className="text-gray-600 dark:text-gray-400">Kezeld a bevásárlási és élelmiszer tételeidet</p>
           </div>
           <div className="mt-4 sm:mt-0 flex space-x-3">
             {purchasedCount > 0 && (
               <button 
                 onClick={handleClearPurchased}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-zinc-700 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
               >
                 Megvásároltak törlése ({purchasedCount})
               </button>
@@ -412,7 +412,7 @@ const ShoppingPage = () => {
         </div>
 
         {/* Summary */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -421,8 +421,8 @@ const ShoppingPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Összes tétel</p>
-                <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Összes tétel</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{items.length}</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -432,8 +432,8 @@ const ShoppingPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Függőben</p>
-                <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Függőben</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingCount}</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -443,15 +443,15 @@ const ShoppingPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Megvásárolva</p>
-                <p className="text-2xl font-bold text-gray-900">{purchasedCount}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Megvásárolva</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{purchasedCount}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-zinc-800">
           <nav className="flex space-x-8">
             {[
               { key: 'all', label: 'Összes tétel', count: items.length },
@@ -464,7 +464,7 @@ const ShoppingPage = () => {
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   filter === tab.key
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 {tab.label} ({tab.count})
@@ -475,8 +475,8 @@ const ShoppingPage = () => {
 
         {/* Add Item Form */}
         {showAddForm && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Új tétel hozzáadása</h3>
+          <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Új tétel hozzáadása</h3>
             <form onSubmit={handleAddItem} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -488,7 +488,7 @@ const ShoppingPage = () => {
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
                     placeholder="Tétel neve"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -501,7 +501,7 @@ const ShoppingPage = () => {
                     value={newItemQuantity}
                     onChange={(e) => setNewItemQuantity(e.target.value)}
                     placeholder="pl. 2 kg, 1 üveg"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -519,7 +519,7 @@ const ShoppingPage = () => {
                     setNewItemName('');
                     setNewItemQuantity('');
                   }}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                  className="px-4 py-2 bg-gray-100 dark:bg-zinc-950 text-gray-700 rounded-md hover:bg-gray-200"
                 >
                   Mégse
                 </button>
@@ -530,15 +530,15 @@ const ShoppingPage = () => {
 
         {/* Shopping Items */}
         {filteredItems.length > 0 ? (
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
             {/* Select All Header */}
             {(((filter === 'pending') || (filter === 'all' && expandedItems.size > 0)) && filteredItems.length > 0) && (
-              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-black">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={handleSelectAll}
-                      className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 hover:border-green-500 flex items-center justify-center"
+                      className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 dark:border-zinc-700 hover:border-green-500 flex items-center justify-center"
                     >
                       <Check className="w-3 h-3 text-gray-400" />
                     </button>
@@ -566,7 +566,7 @@ const ShoppingPage = () => {
                             className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
                               item.purchased
                                 ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 hover:border-green-500'
+                                : 'border-gray-300 dark:border-zinc-700 hover:border-green-500'
                             }`}
                           >
                             {item.purchased && <Check className="w-3 h-3" />}
@@ -574,7 +574,7 @@ const ShoppingPage = () => {
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
                               <h4 className={`font-medium ${
-                                item.purchased ? 'text-gray-500 line-through' : 'text-gray-900'
+                                item.purchased ? 'text-gray-500 dark:text-gray-500 line-through' : 'text-gray-900'
                               }`}>
                                 {item.name}
                               </h4>
@@ -592,7 +592,7 @@ const ShoppingPage = () => {
                             </div>
                             {item.quantity && (
                               <p className={`text-sm ${
-                                item.purchased ? 'text-gray-400' : 'text-gray-600'
+                                item.purchased ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'
                               }`}>
                                 {item.quantity}
                               </p>
@@ -605,7 +605,7 @@ const ShoppingPage = () => {
                               handleToggleExpanded(item._id!);
                               getSuggestionShoppingList(item);
                             }}
-                            className="text-gray-400 hover:text-gray-600 p-1"
+                            className="text-gray-400 hover:text-gray-600 dark:text-gray-400 p-1"
                             title="Extra információ"
                           >
                             <svg 
@@ -636,7 +636,7 @@ const ShoppingPage = () => {
                     
                     {/* Expanded Content */}
                     {isExpanded && (
-                      <div className="px-4 pb-4 border-t border-gray-100 bg-white">
+                      <div className="px-4 pb-4 border-t border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950">
                         <div className="pt-4 space-y-6">
                           {/* Preferred Store Section */}
                           <div>
@@ -653,7 +653,7 @@ const ShoppingPage = () => {
                                     [item._id!]: e.target.value
                                   }))}
                                   placeholder="pl. Tesco, Spar, Auchan..."
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                                 <div className="flex gap-2">
                                   <button
@@ -664,7 +664,7 @@ const ShoppingPage = () => {
                                   </button>
                                   <button
                                     onClick={() => handleCancelEditingPreferredStore(item._id!)}
-                                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                                    className="px-3 py-1 bg-gray-100 dark:bg-zinc-950 text-gray-700 text-sm rounded-md hover:bg-gray-200"
                                   >
                                     Mégse
                                   </button>
@@ -678,7 +678,7 @@ const ShoppingPage = () => {
                                     <span className="text-sm text-green-700 font-medium">{item.preferredStore}</span>
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-gray-500 italic">Nincs preferált bolt megadva</p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-500 italic">Nincs preferált bolt megadva</p>
                                 )}
                                 <button
                                   onClick={() => handleStartEditingPreferredStore(item._id!, item.preferredStore)}
@@ -705,7 +705,7 @@ const ShoppingPage = () => {
                                   }))}
                                   placeholder="Pl. konkrét márka, méret, megjegyzés..."
                                   rows={3}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                                 <div className="flex gap-2">
                                   <button
@@ -716,7 +716,7 @@ const ShoppingPage = () => {
                                   </button>
                                   <button
                                     onClick={() => handleCancelEditingExtraInfo(item._id!)}
-                                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                                    className="px-3 py-1 bg-gray-100 dark:bg-zinc-950 text-gray-700 text-sm rounded-md hover:bg-gray-200"
                                   >
                                     Mégse
                                   </button>
@@ -725,7 +725,7 @@ const ShoppingPage = () => {
                             ) : (
                               <div className="space-y-2">
                                 {item.extraInfo ? (
-                                  <div className="p-3 bg-gray-50 rounded-md">
+                                  <div className="p-3 bg-gray-50 dark:bg-black rounded-md">
                                     {(() => {
                                       try {
                                         const productInfo = JSON.parse(item.extraInfo);
@@ -743,13 +743,13 @@ const ShoppingPage = () => {
                                                   }}
                                                 />
                                                 <div className="flex-1">
-                                                  <p className="text-sm font-medium text-gray-900">
+                                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
                                                     {item.name}
                                                   </p>
-                                                  <p className="text-xs text-gray-600">
+                                                  <p className="text-xs text-gray-600 dark:text-gray-400">
                                                     ID: {productInfo.productId}
                                                   </p>
-                                                  <p className="text-xs text-gray-600">
+                                                  <p className="text-xs text-gray-600 dark:text-gray-400">
                                                     Kategória: {productInfo.categoryPath}
                                                   </p>
                                                 </div>
@@ -790,7 +790,7 @@ const ShoppingPage = () => {
                                     })()}
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-gray-500 italic">Nincs extra információ</p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-500 italic">Nincs extra információ</p>
                                 )}
                                 <button
                                   onClick={() => handleStartEditingExtraInfo(item._id!, item.extraInfo)}
@@ -805,21 +805,21 @@ const ShoppingPage = () => {
                                       {item.suggestion.map((suggestion) => (
                                         <div key={suggestion.shop}>
                                           <img src={suggestion.imageUrl} alt={suggestion.name} className="w-full h-24 object-cover rounded" />
-                                          <p className="text-sm font-medium text-gray-900">{suggestion.name}</p>
-                                          <p className="text-sm text-gray-600">{suggestion.shop}</p>
-                                          <p className="text-sm text-gray-600">{suggestion.price} Ft</p>
+                                          <p className="text-sm font-medium text-gray-900 dark:text-white">{suggestion.name}</p>
+                                          <p className="text-sm text-gray-600 dark:text-gray-400">{suggestion.shop}</p>
+                                          <p className="text-sm text-gray-600 dark:text-gray-400">{suggestion.price} Ft</p>
                                         </div>
                                       ))}
                                     </div>
                                   )}
                                   {item.suggestionState === 'pending' && (
-                                    <div className="text-sm text-gray-500 italic">Ajánlatot kérünk a tételhez</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-500 italic">Ajánlatot kérünk a tételhez</div>
                                   )}
                                   {item.suggestionState === 'error' && (
-                                    <div className="text-sm text-gray-500 italic">Hiba történt az ajánlat kérésekor</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-500 italic">Hiba történt az ajánlat kérésekor</div>
                                   )}
                                   {item.suggestionState === 'empty' && (
-                                    <div className="text-sm text-gray-500 italic">Nincs ajánlat a tételhez</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-500 italic">Nincs ajánlat a tételhez</div>
                                   )}
 
                                   <button
@@ -843,13 +843,13 @@ const ShoppingPage = () => {
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
+          <div className="text-center py-12 bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
             <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
               {filter === 'all' ? 'Nincsenek tételek a bevásárlólistában' : 
                filter === 'pending' ? 'Nincsenek függőben lévő tételek' : 'Nincsenek megvásárolt tételek'}
             </h3>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               {filter === 'all' && 'Kezdd el az első tétel hozzáadásával!'}
             </p>
             {filter === 'all' && (

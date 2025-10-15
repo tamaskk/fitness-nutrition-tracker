@@ -58,7 +58,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-zinc-950 rounded-lg shadow-md dark:shadow-none dark:border dark:border-zinc-900 overflow-hidden hover:shadow-lg transition-shadow">
       {/* Recipe Image */}
       <div className="relative h-48 bg-gray-200">
         {image ? (

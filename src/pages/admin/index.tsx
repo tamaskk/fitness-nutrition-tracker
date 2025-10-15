@@ -356,10 +356,10 @@ const AdminDashboard = () => {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading admin dashboard...</p>
         </div>
       </div>
     );
@@ -370,19 +370,19 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <Shield className="h-8 w-8 text-red-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowStats(!showStats)}
-                className="flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                className="flex items-center px-3 py-2 border border-gray-300 dark:border-zinc-700 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
                 {showStats ? 'Hide Stats' : 'Show Stats'}
@@ -400,7 +400,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-zinc-950 border-b dark:border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             <button
@@ -408,7 +408,7 @@ const AdminDashboard = () => {
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeSection === 'users'
                   ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <Users className="h-5 w-5 inline mr-2" />
@@ -419,7 +419,7 @@ const AdminDashboard = () => {
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeSection === 'notifications'
                   ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <Bell className="h-5 w-5 inline mr-2" />
@@ -431,7 +431,7 @@ const AdminDashboard = () => {
 
       {/* Search and Filter Controls - Only show for users section */}
       {activeSection === 'users' && (
-        <div className="bg-white border-b">
+        <div className="bg-white dark:bg-zinc-950 border-b dark:border-zinc-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
@@ -442,7 +442,7 @@ const AdminDashboard = () => {
                     placeholder="Search users by name, email, or country..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                   />
                 </div>
               </div>
@@ -451,7 +451,7 @@ const AdminDashboard = () => {
                 <select
                   value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                  className="border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                 >
                   <option value="all">All Users</option>
                   <option value="mealPlans">🥗 Meal Plans</option>
@@ -474,7 +474,7 @@ const AdminDashboard = () => {
             {/* Stats Cards */}
             {stats && showStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 overflow-hidden shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -482,15 +482,15 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.totalUsers}</dd>
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">Total Users</dt>
+                      <dd className="text-lg font-medium text-gray-900 dark:text-white">{stats.totalUsers}</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 overflow-hidden shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -498,15 +498,15 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">New This Month</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.newUsersThisMonth}</dd>
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">New This Month</dt>
+                      <dd className="text-lg font-medium text-gray-900 dark:text-white">{stats.newUsersThisMonth}</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 overflow-hidden shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -514,15 +514,15 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Active This Week</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.activeUsersThisWeek}</dd>
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">Active This Week</dt>
+                      <dd className="text-lg font-medium text-gray-900 dark:text-white">{stats.activeUsersThisWeek}</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 overflow-hidden shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -530,8 +530,8 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Average Age</dt>
-                      <dd className="text-lg font-medium text-gray-900">
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">Average Age</dt>
+                      <dd className="text-lg font-medium text-gray-900 dark:text-white">
                         {stats.averageAge ? `${stats.averageAge} years` : 'N/A'}
                       </dd>
                     </dl>
@@ -544,21 +544,21 @@ const AdminDashboard = () => {
 
         {/* Gender Distribution */}
         {stats && (
-          <div className="bg-white shadow rounded-lg mb-8">
+          <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg mb-8">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Gender Distribution</h3>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Gender Distribution</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">{stats.genderDistribution.male}</div>
-                  <div className="text-sm text-gray-500">Male</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-500">Male</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-pink-600">{stats.genderDistribution.female}</div>
-                  <div className="text-sm text-gray-500">Female</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-500">Female</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-600">{stats.genderDistribution.other}</div>
-                  <div className="text-sm text-gray-500">Other</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-500">Other</div>
                 </div>
               </div>
             </div>
@@ -566,42 +566,42 @@ const AdminDashboard = () => {
         )}
 
         {/* Users Table */}
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
                 Registered Users ({filteredUsers.length} of {users.length})
               </h3>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-500">
                 {searchTerm && `Searching: "${searchTerm}"`}
                 {filterBy !== 'all' && ` • Filtered by: ${filterBy}`}
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-black">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       User
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Location
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Joined
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-zinc-950 divide-y divide-gray-200 dark:divide-zinc-800">
                   {filteredUsers.map((user) => (
                     <React.Fragment key={user._id}>
-                      <tr className="hover:bg-gray-50">
+                      <tr className="hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
@@ -612,10 +612,10 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {user.firstName} {user.lastName}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-gray-500 dark:text-gray-500">
                                 {user.gender && user.birthday ? (
                                   `${user.gender}, ${new Date().getFullYear() - new Date(user.birthday).getFullYear()} years`
                                 ) : user.gender ? (
@@ -626,14 +626,14 @@ const AdminDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{user.email}</div>
+                          <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{getCountryName(user.country)}</div>
-                          <div className="text-sm text-gray-500">{getLanguageName(user.language)}</div>
+                          <div className="text-sm text-gray-900 dark:text-white">{getCountryName(user.country)}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-500">{getLanguageName(user.language)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{formatDate(user.createdAt)}</div>
+                          <div className="text-sm text-gray-900 dark:text-white">{formatDate(user.createdAt)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
@@ -671,12 +671,12 @@ const AdminDashboard = () => {
                         </td>
                       </tr>
                       {showUserDetails[user._id] && (
-                        <tr className="bg-gray-50">
+                        <tr className="bg-gray-50 dark:bg-black">
                           <td colSpan={5} className="px-6 py-4">
                             <div className="space-y-4">
                               {/* Preferences */}
                               <div>
-                                <h4 className="text-sm font-medium text-gray-900 mb-2">Selected Features:</h4>
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Selected Features:</h4>
                                 <div className="flex flex-wrap gap-2">
                                   {Object.entries(user.preferences).map(([key, value]) => 
                                     value && (
@@ -695,12 +695,12 @@ const AdminDashboard = () => {
 
                               {/* Notification Preferences */}
                               <div>
-                                <h4 className="text-sm font-medium text-gray-900 mb-2">Notification Preferences:</h4>
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Notification Preferences:</h4>
                                 <div className="space-y-2">
                                   {Object.entries(user.preferences).map(([key, value]) => 
                                     value && user.onboardingAnswers?.[key as keyof typeof user.onboardingAnswers]?.notifications && (
                                       <div key={key} className="flex items-center justify-between text-xs">
-                                        <span className="text-gray-600">
+                                        <span className="text-gray-600 dark:text-gray-400">
                                           {key === 'mealPlans' && '🥗 Meal Plans'}
                                           {key === 'recipes' && '🍳 Recipes'}
                                           {key === 'trainings' && '🏋️ Trainings'}
@@ -730,7 +730,7 @@ const AdminDashboard = () => {
                                 {user.birthday && (
                                   <div className="flex items-center">
                                     <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Birthday: {user.birthday ? formatDate(user.birthday) : 'Not set'}
                                     </span>
                                   </div>
@@ -738,7 +738,7 @@ const AdminDashboard = () => {
                                 {user.weight?.value && (
                                   <div className="flex items-center">
                                     <Weight className="h-4 w-4 text-gray-400 mr-2" />
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Weight: {user.weight.value} {user.weight.unit}
                                     </span>
                                   </div>
@@ -746,7 +746,7 @@ const AdminDashboard = () => {
                                 {user.height?.value && (
                                   <div className="flex items-center">
                                     <Ruler className="h-4 w-4 text-gray-400 mr-2" />
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Height: {user.height.value} {user.height.unit}
                                     </span>
                                   </div>
@@ -754,7 +754,7 @@ const AdminDashboard = () => {
                                 {user.dailyCalorieGoal && (
                                   <div className="flex items-center">
                                     <Target className="h-4 w-4 text-gray-400 mr-2" />
-                                    <span className="text-gray-600">Calorie Goal: {user.dailyCalorieGoal}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Calorie Goal: {user.dailyCalorieGoal}</span>
                                   </div>
                                 )}
                               </div>
@@ -768,7 +768,7 @@ const AdminDashboard = () => {
                         <tr className="bg-blue-50">
                           <td colSpan={5} className="px-6 py-4">
                             <div className="space-y-4">
-                              <h4 className="text-lg font-medium text-gray-900">Edit User</h4>
+                              <h4 className="text-lg font-medium text-gray-900 dark:text-white">Edit User</h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700">First Name</label>
@@ -776,7 +776,7 @@ const AdminDashboard = () => {
                                     type="text"
                                     value={editForm.firstName || ''}
                                     onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   />
                                 </div>
                                 <div>
@@ -785,7 +785,7 @@ const AdminDashboard = () => {
                                     type="text"
                                     value={editForm.lastName || ''}
                                     onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   />
                                 </div>
                                 <div>
@@ -794,7 +794,7 @@ const AdminDashboard = () => {
                                     type="email"
                                     value={editForm.email || ''}
                                     onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   />
                                 </div>
                                 <div>
@@ -802,7 +802,7 @@ const AdminDashboard = () => {
                                   <select
                                     value={editForm.country || ''}
                                     onChange={(e) => setEditForm({...editForm, country: e.target.value})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   >
                                     <option value="">Select country</option>
                                     {Object.entries(countries)
@@ -819,7 +819,7 @@ const AdminDashboard = () => {
                                   <select
                                     value={editForm.language || ''}
                                     onChange={(e) => setEditForm({...editForm, language: e.target.value})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   >
                                     <option value="">Select language</option>
                                     <option value="en">English</option>
@@ -837,7 +837,7 @@ const AdminDashboard = () => {
                                     type="date"
                                     value={editForm.birthday ? new Date(editForm.birthday).toISOString().split('T')[0] : ''}
                                     onChange={(e) => setEditForm({...editForm, birthday: e.target.value})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   />
                                 </div>
                                 <div>
@@ -845,7 +845,7 @@ const AdminDashboard = () => {
                                   <select
                                     value={editForm.gender || ''}
                                     onChange={(e) => setEditForm({...editForm, gender: e.target.value as any})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   >
                                     <option value="">Select gender</option>
                                     <option value="male">Male</option>
@@ -866,7 +866,7 @@ const AdminDashboard = () => {
                                           value: parseFloat(e.target.value)
                                         }
                                       })}
-                                      className="mt-1 flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                      className="mt-1 flex-1 border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                       placeholder="Weight"
                                     />
                                     <select
@@ -878,7 +878,7 @@ const AdminDashboard = () => {
                                           unit: e.target.value as 'kg' | 'lbs'
                                         }
                                       })}
-                                      className="mt-1 w-20 border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                      className="mt-1 w-20 border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                     >
                                       <option value="kg">kg</option>
                                       <option value="lbs">lbs</option>
@@ -898,7 +898,7 @@ const AdminDashboard = () => {
                                           value: parseInt(e.target.value)
                                         }
                                       })}
-                                      className="mt-1 flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                      className="mt-1 flex-1 border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                       placeholder="Height"
                                     />
                                     <select
@@ -910,7 +910,7 @@ const AdminDashboard = () => {
                                           unit: e.target.value as 'cm' | 'ft'
                                         }
                                       })}
-                                      className="mt-1 w-20 border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                      className="mt-1 w-20 border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                     >
                                       <option value="cm">cm</option>
                                       <option value="ft">ft</option>
@@ -923,7 +923,7 @@ const AdminDashboard = () => {
                                     type="number"
                                     value={editForm.dailyCalorieGoal || ''}
                                     onChange={(e) => setEditForm({...editForm, dailyCalorieGoal: parseInt(e.target.value)})}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-zinc-700 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500"
                                   />
                                 </div>
                               </div>
@@ -944,7 +944,7 @@ const AdminDashboard = () => {
                                             [key]: e.target.checked
                                           }
                                         })}
-                                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-zinc-700 rounded"
                                       />
                                       <span className="ml-2 text-sm text-gray-700">
                                         {key === 'mealPlans' && '🥗 Meal Plans'}
@@ -962,7 +962,7 @@ const AdminDashboard = () => {
                               <div className="flex justify-end space-x-2">
                                 <button
                                   onClick={handleCancelEdit}
-                                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                  className="px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                                 >
                                   <X className="h-4 w-4 mr-1 inline" />
                                   Cancel
@@ -993,9 +993,9 @@ const AdminDashboard = () => {
         {activeSection === 'notifications' && (
           <div className="space-y-8">
             {/* Send Notifications */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                   <Bell className="h-5 w-5 inline mr-2" />
                   Send Notifications
                 </h3>
@@ -1007,7 +1007,7 @@ const AdminDashboard = () => {
                       type="text"
                       value={notificationForm.title}
                       onChange={(e) => setNotificationForm({...notificationForm, title: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="Notification title"
                     />
                   </div>
@@ -1017,7 +1017,7 @@ const AdminDashboard = () => {
                     <select
                       value={notificationForm.type}
                       onChange={(e) => setNotificationForm({...notificationForm, type: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                     >
                       <option value="info">Info</option>
                       <option value="warning">Warning</option>
@@ -1032,7 +1032,7 @@ const AdminDashboard = () => {
                       value={notificationForm.message}
                       onChange={(e) => setNotificationForm({...notificationForm, message: e.target.value})}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="Notification message"
                     />
                   </div>
@@ -1043,7 +1043,7 @@ const AdminDashboard = () => {
                       type="url"
                       value={notificationForm.actionUrl}
                       onChange={(e) => setNotificationForm({...notificationForm, actionUrl: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="https://example.com"
                     />
                   </div>
@@ -1054,7 +1054,7 @@ const AdminDashboard = () => {
                       type="text"
                       value={notificationForm.actionText}
                       onChange={(e) => setNotificationForm({...notificationForm, actionText: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="Click here"
                     />
                   </div>
@@ -1082,9 +1082,9 @@ const AdminDashboard = () => {
             </div>
 
             {/* Send Updates */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                   <AlertCircle className="h-5 w-5 inline mr-2" />
                   Send Updates
                 </h3>
@@ -1096,7 +1096,7 @@ const AdminDashboard = () => {
                       type="text"
                       value={updateForm.title}
                       onChange={(e) => setUpdateForm({...updateForm, title: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="Update title"
                     />
                   </div>
@@ -1106,7 +1106,7 @@ const AdminDashboard = () => {
                     <select
                       value={updateForm.type}
                       onChange={(e) => setUpdateForm({...updateForm, type: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                     >
                       <option value="feature">Feature</option>
                       <option value="bugfix">Bug Fix</option>
@@ -1120,7 +1120,7 @@ const AdminDashboard = () => {
                     <select
                       value={updateForm.priority}
                       onChange={(e) => setUpdateForm({...updateForm, priority: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -1135,7 +1135,7 @@ const AdminDashboard = () => {
                       type="url"
                       value={updateForm.actionUrl}
                       onChange={(e) => setUpdateForm({...updateForm, actionUrl: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="https://example.com"
                     />
                   </div>
@@ -1146,7 +1146,7 @@ const AdminDashboard = () => {
                       value={updateForm.content}
                       onChange={(e) => setUpdateForm({...updateForm, content: e.target.value})}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="Update content"
                     />
                   </div>
@@ -1157,7 +1157,7 @@ const AdminDashboard = () => {
                       type="text"
                       value={updateForm.actionText}
                       onChange={(e) => setUpdateForm({...updateForm, actionText: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-red-500 focus:border-red-500"
                       placeholder="Learn more"
                     />
                   </div>
@@ -1185,10 +1185,10 @@ const AdminDashboard = () => {
             </div>
 
             {/* User Selection */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
                     <UsersIcon className="h-5 w-5 inline mr-2" />
                     Select Users ({selectedUsers.length} selected)
                   </h3>
@@ -1208,11 +1208,11 @@ const AdminDashboard = () => {
                   </div>
                 </div>
                 
-                <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-md">
+                <div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-zinc-800 rounded-md">
                   {users.map((user) => (
                     <div
                       key={user._id}
-                      className={`flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 ${
+                      className={`flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black ${
                         selectedUsers.includes(user._id) ? 'bg-blue-50' : ''
                       }`}
                     >
@@ -1221,13 +1221,13 @@ const AdminDashboard = () => {
                           type="checkbox"
                           checked={selectedUsers.includes(user._id)}
                           onChange={() => toggleUserSelection(user._id)}
-                          className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-zinc-700 rounded"
                         />
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {user.firstName} {user.lastName}
                           </div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-500">{user.email}</div>
                         </div>
                       </div>
                     </div>
@@ -1237,25 +1237,25 @@ const AdminDashboard = () => {
             </div>
 
             {/* Chat Management */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white dark:bg-zinc-950 shadow dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                   <MessageCircle className="h-5 w-5 inline mr-2" />
                   User Chats ({chats.length})
                 </h3>
                 
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {chats.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No chats yet</p>
+                    <p className="text-gray-500 dark:text-gray-500 text-center py-8">No chats yet</p>
                   ) : (
                     chats.map((chat) => (
-                      <div key={chat._id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={chat._id} className="border border-gray-200 dark:border-zinc-800 rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h4 className="font-medium text-gray-900">
+                            <h4 className="font-medium text-gray-900 dark:text-white">
                               Chat between: {chat.participants.map((p: any) => `${p.firstName} ${p.lastName}`).join(' & ')}
                             </h4>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-500">
                               {chat.participants.map((p: any) => p.email).join(' & ')}
                             </p>
                           </div>
@@ -1265,15 +1265,15 @@ const AdminDashboard = () => {
                         </div>
                         
                         {chat.lastMessage && (
-                          <div className="bg-gray-50 rounded p-3">
+                          <div className="bg-gray-50 dark:bg-black rounded p-3">
                             <p className="text-sm text-gray-700">{chat.lastMessage.content}</p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                               {new Date(chat.lastMessage.timestamp).toLocaleString()}
                             </p>
                           </div>
                         )}
                         
-                        <div className="mt-2 text-xs text-gray-500">
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-500">
                           {chat.messages.length} message(s)
                         </div>
                       </div>

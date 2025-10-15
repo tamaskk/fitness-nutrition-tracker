@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // All possible navigation items
   const allNavigation = [
-    { name: 'Irányítópult', href: '/', icon: Home, key: 'dashboard' },
+    { name: 'Irányítópult', href: '/dashboard', icon: Home, key: 'dashboard' },
     { name: 'Étkezések', href: '/meals', icon: Utensils, key: 'mealPlans' },
     { name: 'Receptek', href: '/recipes', icon: Book, key: 'recipes' },
     { name: 'Edzések', href: '/training', icon: Dumbbell, key: 'trainings' },
@@ -69,16 +69,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">FitTracker</h1>
+        <div className="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white dark:bg-zinc-950">
+          <div className="flex h-16 items-center justify-between px-4 border-b dark:border-zinc-900">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">FitTracker</h1>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400"
             >
               <X className="h-6 w-6" />
             </button>
@@ -92,13 +92,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   href={item.href}
                   className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon className={`mr-3 h-5 w-5 ${
-                    isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                    isActive ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                   }`} />
                   <span className="flex-1">{item.name}</span>
                   {item.key === 'notifications' && unreadCount > 0 && (
@@ -110,8 +110,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               );
             })}
             {session.user?.isAdmin && (
-              <div className="border-t pt-4 mt-4">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+              <div className="border-t dark:border-zinc-900 pt-4 mt-4">
+                <div className="text-xs font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider mb-2 px-2">
                   Admin
                 </div>
                 {adminNavigation.map((item) => {
@@ -122,13 +122,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       href={item.href}
                       className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                         isActive
-                          ? 'bg-red-100 text-red-700'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
                       }`}
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className={`mr-3 h-5 w-5 ${
-                        isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500'
+                        isActive ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                       }`} />
                       {item.name}
                     </Link>
@@ -137,12 +137,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
             )}
           </nav>
-          <div className="border-t p-4 space-y-2">
+          <div className="border-t dark:border-zinc-900 p-4 space-y-2">
             <button
               onClick={handleSignOut}
-              className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
+              className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white"
             >
-              <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+              <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400" />
               Kijelentkezés
             </button>
           </div>
@@ -151,9 +151,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex min-h-0 flex-1 flex-col bg-white border-r">
-          <div className="flex h-16 items-center px-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">FitTracker</h1>
+        <div className="flex min-h-0 flex-1 flex-col bg-white dark:bg-zinc-950 border-r dark:border-zinc-900">
+          <div className="flex h-16 items-center px-4 border-b dark:border-zinc-900">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">FitTracker</h1>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => {
@@ -164,12 +164,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   href={item.href}
                   className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   <item.icon className={`mr-3 h-5 w-5 ${
-                    isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                    isActive ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                   }`} />
                   <span className="flex-1">{item.name}</span>
                   {item.key === 'notifications' && unreadCount > 0 && (
@@ -181,8 +181,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               );
             })}
             {session.user?.isAdmin && (
-              <div className="border-t pt-4 mt-4">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+              <div className="border-t dark:border-zinc-900 pt-4 mt-4">
+                <div className="text-xs font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider mb-2 px-2">
                   Admin
                 </div>
                 {adminNavigation.map((item) => {
@@ -193,12 +193,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       href={item.href}
                       className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                         isActive
-                          ? 'bg-red-100 text-red-700'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       <item.icon className={`mr-3 h-5 w-5 ${
-                        isActive ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500'
+                        isActive ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                       }`} />
                       {item.name}
                     </Link>
@@ -207,19 +207,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
             )}
           </nav>
-          <div className="border-t p-4">
+          <div className="border-t dark:border-zinc-900 p-4">
             <div className="flex items-center mb-4">
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{session.user?.name || session.user?.email}</p>
-                <p className="text-xs text-gray-500">{session.user?.email}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{session.user?.name || session.user?.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-600">{session.user?.email}</p>
               </div>
             </div>
             <div className="space-y-2">
               <button
                 onClick={handleSignOut}
-                className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
+                className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white"
               >
-                <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+                <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400" />
                 Kijelentkezés
               </button>
             </div>
@@ -230,16 +230,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className="lg:pl-64 flex flex-col min-h-screen">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 flex h-16 bg-white border-b lg:hidden">
+        <div className="sticky top-0 z-10 flex h-16 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 lg:hidden"
+            className="px-4 text-gray-500 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 lg:hidden"
           >
             <Menu className="h-6 w-6" />
           </button>
           <div className="flex flex-1 justify-between px-4">
             <div className="flex flex-1">
-              <h1 className="text-xl font-bold text-gray-900 self-center">FitTracker</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white self-center">FitTracker</h1>
             </div>
           </div>
         </div>

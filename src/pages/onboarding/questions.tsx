@@ -416,7 +416,7 @@ const OnboardingQuestionsPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your preferences...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your preferences...</p>
         </div>
       </div>
     );
@@ -428,14 +428,14 @@ const OnboardingQuestionsPage = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               Personalize Your Experience
             </h2>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-500">
               {currentSection + 1} of {availableSections.length}
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-zinc-900 rounded-full h-2">
             <div 
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentSection + 1) / availableSections.length) * 100}%` }}
@@ -444,12 +444,12 @@ const OnboardingQuestionsPage = () => {
         </div>
 
         {/* Current Section */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow-lg dark:shadow-none dark:border dark:border-zinc-900 p-8">
           <div className="flex items-center mb-6">
-            <div className={`p-3 rounded-lg bg-gray-100 ${currentSectionData.color}`}>
+            <div className={`p-3 rounded-lg bg-gray-100 dark:bg-zinc-950 ${currentSectionData.color}`}>
               <currentSectionData.icon className="h-6 w-6" />
             </div>
-            <h3 className="ml-4 text-xl font-semibold text-gray-900">
+            <h3 className="ml-4 text-xl font-semibold text-gray-900 dark:text-white">
               {currentSectionData.title}
             </h3>
           </div>
@@ -457,14 +457,14 @@ const OnboardingQuestionsPage = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {currentSectionData.questions.map((question, questionIndex) => (
               <div key={question.key} className="space-y-4">
-                <h4 className="text-lg font-medium text-gray-900">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white">
                   {question.question}
                 </h4>
                 <div className="space-y-2">
                   {question.options.map((option, optionIndex) => (
                     <label
                       key={optionIndex}
-                      className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="flex items-center p-3 border border-gray-200 dark:border-zinc-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors"
                     >
                       <input
                         {...register(`${currentSectionData.key}.${question.key}` as any, {
@@ -472,7 +472,7 @@ const OnboardingQuestionsPage = () => {
                         })}
                         type="radio"
                         value={option}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-zinc-700"
                       />
                       <span className="ml-3 text-gray-700">{option}</span>
                     </label>
@@ -489,16 +489,16 @@ const OnboardingQuestionsPage = () => {
             {/* Notification Preferences */}
             <div className="border-t pt-6 mt-8">
               <div className="space-y-4">
-                <h4 className="text-lg font-medium text-gray-900">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white">
                   {currentSectionData.notificationQuestion}
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label className="flex items-center p-4 border border-gray-200 dark:border-zinc-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors">
                     <input
                       {...register(`${currentSectionData.key}.notifications` as any)}
                       type="radio"
                       value="email"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-zinc-700"
                     />
                     <div className="ml-3 flex items-center">
                       <Mail className="h-5 w-5 text-gray-400 mr-2" />
@@ -506,12 +506,12 @@ const OnboardingQuestionsPage = () => {
                     </div>
                   </label>
                   
-                  <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label className="flex items-center p-4 border border-gray-200 dark:border-zinc-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors">
                     <input
                       {...register(`${currentSectionData.key}.notifications` as any)}
                       type="radio"
                       value="in-app"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-zinc-700"
                     />
                     <div className="ml-3 flex items-center">
                       <Bell className="h-5 w-5 text-gray-400 mr-2" />
@@ -519,12 +519,12 @@ const OnboardingQuestionsPage = () => {
                     </div>
                   </label>
                   
-                  <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label className="flex items-center p-4 border border-gray-200 dark:border-zinc-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors">
                     <input
                       {...register(`${currentSectionData.key}.notifications` as any)}
                       type="radio"
                       value="both"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-zinc-700"
                     />
                     <div className="ml-3 flex items-center">
                       <Smartphone className="h-5 w-5 text-gray-400 mr-2" />
@@ -532,12 +532,12 @@ const OnboardingQuestionsPage = () => {
                     </div>
                   </label>
                   
-                  <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label className="flex items-center p-4 border border-gray-200 dark:border-zinc-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors">
                     <input
                       {...register(`${currentSectionData.key}.notifications` as any)}
                       type="radio"
                       value="none"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-zinc-700"
                     />
                     <div className="ml-3 flex items-center">
                       <span className="text-gray-700">No notifications</span>
@@ -553,7 +553,7 @@ const OnboardingQuestionsPage = () => {
             <button
               type="button"
               onClick={handlePrevious}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-zinc-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               {currentSection === 0 ? 'Back to Preferences' : 'Previous'}

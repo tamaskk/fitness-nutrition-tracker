@@ -27,7 +27,9 @@ import {
   Globe,
   Languages,
   Heart,
-  AlertTriangle
+  AlertTriangle,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -35,6 +37,7 @@ import { User as UserType, PreferencesFormData, OnboardingAnswersFormData } from
 import { countries, languages } from 'countries-list';
 import OnboardingModal from '@/components/OnboardingModal';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ProfilePage = () => {
   const { data: session, status } = useSession();
@@ -49,6 +52,7 @@ const ProfilePage = () => {
   const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
   
   const { preferences, updatePreference } = useUserPreferences();
+  const { theme, toggleTheme } = useTheme();
 
   const {
     register,
@@ -303,11 +307,11 @@ const ProfilePage = () => {
                 <User className="h-12 w-12 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-gray-100 mb-2">
               {userData.firstName} {userData.lastName}
             </h1>
-            <p className="text-gray-600">{userData.email}</p>
-            <div className="flex items-center mt-2 text-sm text-gray-500">
+            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-300">{userData.email}</p>
+            <div className="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">
               <Globe className="h-4 w-4 mr-1" />
               {getCountryName(userData.country)} • {getLanguageName(userData.language)}
             </div>
@@ -317,13 +321,13 @@ const ProfilePage = () => {
             {/* Profile Information */}
             <div className="lg:col-span-2 space-y-6">
               {/* Basic Information */}
-              <div className="bg-white shadow-lg rounded-xl p-6">
+              <div className="bg-white dark:bg-zinc-950 shadow-lg rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-gray-100">Profile Information</h2>
                   {!isEditing && (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="flex items-center text-blue-600 hover:text-blue-700"
+                      className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                     >
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
@@ -335,26 +339,26 @@ const ProfilePage = () => {
                   <form onSubmit={handleSubmit(handleProfileSubmit)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           First Name <span className="text-red-500">*</span>
                         </label>
                         <input
                           {...register('firstName', { required: 'First name is required' })}
                           type="text"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                         {errors.firstName && (
                           <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Last Name <span className="text-red-500">*</span>
                         </label>
                         <input
                           {...register('lastName', { required: 'Last name is required' })}
                           type="text"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                         {errors.lastName && (
                           <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
@@ -363,7 +367,7 @@ const ProfilePage = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Email <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -375,7 +379,7 @@ const ProfilePage = () => {
                           },
                         })}
                         type="email"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                       {errors.email && (
                         <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -384,12 +388,12 @@ const ProfilePage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Country <span className="text-red-500">*</span>
                         </label>
                         <select
                           {...register('country', { required: 'Country is required' })}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                           <option value="">Select country</option>
                           {Object.entries(countries)
@@ -405,12 +409,12 @@ const ProfilePage = () => {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Language <span className="text-red-500">*</span>
                         </label>
                         <select
                           {...register('language', { required: 'Language is required' })}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                           <option value="en">English</option>
                           <option value="de">German</option>
@@ -428,23 +432,23 @@ const ProfilePage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Birthday <span className="text-red-500">*</span>
                         </label>
                         <input
                           {...register('birthday', { required: 'Birthday is required' })}
                           type="date"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                         {errors.birthday && (
                           <p className="mt-1 text-sm text-red-600">{errors.birthday.message}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
                         <select
                           {...register('gender')}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                           <option value="">Select gender</option>
                           <option value="male">Male</option>
@@ -457,17 +461,17 @@ const ProfilePage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Weight</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight</label>
                         <div className="flex space-x-2">
                           <input
                             {...register('weight.value')}
                             type="number"
                             placeholder="Weight"
-                            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="flex-1 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                           />
                           <select
                             {...register('weight.unit')}
-                            className="w-20 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-20 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                           >
                             <option value="kg">kg</option>
                             <option value="lbs">lbs</option>
@@ -475,17 +479,17 @@ const ProfilePage = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Height</label>
                         <div className="flex space-x-2">
                           <input
                             {...register('height.value')}
                             type="number"
                             placeholder="Height"
-                            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="flex-1 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                           />
                           <select
                             {...register('height.unit')}
-                            className="w-20 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-20 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                           >
                             <option value="cm">cm</option>
                             <option value="ft">ft</option>
@@ -495,11 +499,11 @@ const ProfilePage = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Daily Calorie Goal</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Daily Calorie Goal</label>
                       <input
                         {...register('dailyCalorieGoal')}
                         type="number"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
@@ -507,7 +511,7 @@ const ProfilePage = () => {
                       <button
                         type="button"
                         onClick={() => setIsEditing(false)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black dark:hover:bg-zinc-900"
                       >
                         Cancel
                       </button>
@@ -523,70 +527,70 @@ const ProfilePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-center">
-                        <Mail className="h-5 w-5 text-gray-400 mr-3" />
+                        <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                         <div>
-                          <p className="text-sm text-gray-500">Email</p>
-                          <p className="font-medium">{userData.email}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Email</p>
+                          <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{userData.email}</p>
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <Calendar className="h-5 w-5 text-gray-400 mr-3" />
+                        <Calendar className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                         <div>
-                          <p className="text-sm text-gray-500">Birthday</p>
-                          <p className="font-medium">
+                          <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Birthday</p>
+                          <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">
                             {formatDate(userData.birthday)} ({calculateAge(userData.birthday)} years old)
                           </p>
                         </div>
                       </div>
                       {userData.gender && (
                         <div className="flex items-center">
-                          <Heart className="h-5 w-5 text-gray-400 mr-3" />
+                          <Heart className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Gender</p>
-                            <p className="font-medium capitalize">{userData.gender}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Gender</p>
+                            <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100 capitalize">{userData.gender}</p>
                           </div>
                         </div>
                       )}
                       {userData.weight?.value && (
                         <div className="flex items-center">
-                          <Weight className="h-5 w-5 text-gray-400 mr-3" />
+                          <Weight className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Weight</p>
-                            <p className="font-medium">{userData.weight.value} {userData.weight.unit}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Weight</p>
+                            <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{userData.weight.value} {userData.weight.unit}</p>
                           </div>
                         </div>
                       )}
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center">
-                        <Globe className="h-5 w-5 text-gray-400 mr-3" />
+                        <Globe className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                         <div>
-                          <p className="text-sm text-gray-500">Country</p>
-                          <p className="font-medium">{getCountryName(userData.country)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Country</p>
+                          <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{getCountryName(userData.country)}</p>
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <Languages className="h-5 w-5 text-gray-400 mr-3" />
+                        <Languages className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                         <div>
-                          <p className="text-sm text-gray-500">Language</p>
-                          <p className="font-medium">{getLanguageName(userData.language)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Language</p>
+                          <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{getLanguageName(userData.language)}</p>
                         </div>
                       </div>
                       {userData.height?.value && (
                         <div className="flex items-center">
-                          <Ruler className="h-5 w-5 text-gray-400 mr-3" />
+                          <Ruler className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Height</p>
-                            <p className="font-medium">{userData.height.value} {userData.height.unit}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Height</p>
+                            <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{userData.height.value} {userData.height.unit}</p>
                           </div>
                         </div>
                       )}
                       {userData.dailyCalorieGoal && (
                         <div className="flex items-center">
-                          <Target className="h-5 w-5 text-gray-400 mr-3" />
+                          <Target className="h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Daily Calorie Goal</p>
-                            <p className="font-medium">{userData.dailyCalorieGoal} calories</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500 dark:text-gray-400">Daily Calorie Goal</p>
+                            <p className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{userData.dailyCalorieGoal} calories</p>
                           </div>
                         </div>
                       )}
@@ -596,9 +600,9 @@ const ProfilePage = () => {
               </div>
 
               {/* Feature Preferences */}
-              <div className="bg-white shadow-lg rounded-xl p-6">
+              <div className="bg-white dark:bg-zinc-950 shadow-lg rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Feature Preferences</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-gray-100">Feature Preferences</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {preferences && Object.entries(preferences).map(([key, enabled]) => {
@@ -615,15 +619,15 @@ const ProfilePage = () => {
                     const Icon = feature.icon;
                     
                     return (
-                      <div key={key} className={`p-4 rounded-lg border-2 ${enabled ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+                      <div key={key} className={`p-4 rounded-lg border-2 ${enabled ? 'border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10' : 'border-gray-200 dark:border-zinc-800 dark:border-zinc-800 bg-gray-50 dark:bg-black dark:bg-zinc-900/50'}`}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
                             <div className={`p-2 rounded-lg ${feature.color} text-white mr-3`}>
                               {feature.emoji}
                             </div>
                             <div>
-                              <h3 className="font-medium text-gray-900">{feature.name}</h3>
-                              <p className={`text-sm ${enabled ? 'text-green-600' : 'text-gray-500'}`}>
+                              <h3 className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{feature.name}</h3>
+                              <p className={`text-sm ${enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-500 dark:text-gray-400'}`}>
                                 {enabled ? 'Enabled' : 'Disabled'}
                               </p>
                             </div>
@@ -635,7 +639,7 @@ const ProfilePage = () => {
                               onClick={() => handlePreferenceToggle(key, !enabled)}
                               disabled={isUpdatingPreferences}
                               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                                enabled ? 'bg-blue-600' : 'bg-gray-200'
+                                enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-zinc-800'
                               } ${isUpdatingPreferences ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                               <span
@@ -654,24 +658,24 @@ const ProfilePage = () => {
                               <div className="flex items-center text-xs">
                                 {userData.onboardingAnswers[key as keyof typeof userData.onboardingAnswers]?.notifications === 'email' && (
                                   <>
-                                    <Mail className="h-3 w-3 text-gray-400 mr-1" />
-                                    <span className="text-gray-600">Email notifications</span>
+                                    <Mail className="h-3 w-3 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-1" />
+                                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-300">Email notifications</span>
                                   </>
                                 )}
                                 {userData.onboardingAnswers[key as keyof typeof userData.onboardingAnswers]?.notifications === 'in-app' && (
                                   <>
-                                    <Bell className="h-3 w-3 text-gray-400 mr-1" />
-                                    <span className="text-gray-600">In-app notifications</span>
+                                    <Bell className="h-3 w-3 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-1" />
+                                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-300">In-app notifications</span>
                                   </>
                                 )}
                                 {userData.onboardingAnswers[key as keyof typeof userData.onboardingAnswers]?.notifications === 'both' && (
                                   <>
-                                    <Smartphone className="h-3 w-3 text-gray-400 mr-1" />
-                                    <span className="text-gray-600">Email & in-app notifications</span>
+                                    <Smartphone className="h-3 w-3 text-gray-400 dark:text-gray-500 dark:text-gray-500 mr-1" />
+                                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-300">Email & in-app notifications</span>
                                   </>
                                 )}
                                 {userData.onboardingAnswers[key as keyof typeof userData.onboardingAnswers]?.notifications === 'none' && (
-                                  <span className="text-gray-600">No notifications</span>
+                                  <span className="text-gray-600 dark:text-gray-400 dark:text-gray-300">No notifications</span>
                                 )}
                               </div>
                             )}
@@ -680,7 +684,7 @@ const ProfilePage = () => {
                             {!hasAnsweredQuestions(key) ? (
                               <button
                                 onClick={() => setShowOnboarding(key)}
-                                className="w-full text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                                className="w-full text-xs bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-3 py-1 rounded"
                               >
                                 Answer Questions
                               </button>
@@ -697,19 +701,35 @@ const ProfilePage = () => {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Account Actions */}
-              <div className="bg-white shadow-lg rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Actions</h3>
+              <div className="bg-white dark:bg-zinc-950 shadow-lg rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-gray-100 mb-4">Account Actions</h3>
                 <div className="space-y-3">
                   <button
+                    onClick={toggleTheme}
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black dark:hover:bg-zinc-900"
+                  >
+                    {theme === 'dark' ? (
+                      <>
+                        <Sun className="h-4 w-4 mr-2" />
+                        Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-4 w-4 mr-2" />
+                        Dark Mode
+                      </>
+                    )}
+                  </button>
+                  <button
                     onClick={() => setShowPasswordForm(true)}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black dark:hover:bg-zinc-900"
                   >
                     <Settings className="h-4 w-4 mr-2" />
                     Change Password
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-red-300 rounded-lg text-red-700 hover:bg-red-50"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-red-300 dark:border-red-600 rounded-lg text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Account
@@ -718,22 +738,22 @@ const ProfilePage = () => {
               </div>
 
               {/* Account Stats */}
-              <div className="bg-white shadow-lg rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Stats</h3>
+              <div className="bg-white dark:bg-zinc-950 shadow-lg rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-gray-100 mb-4">Account Stats</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Member since</span>
-                    <span className="font-medium">{formatDate(userData.createdAt)}</span>
+                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Member since</span>
+                    <span className="font-medium text-gray-900 dark:text-white dark:text-gray-100">{formatDate(userData.createdAt)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Features enabled</span>
-                    <span className="font-medium">
+                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Features enabled</span>
+                    <span className="font-medium text-gray-900 dark:text-white dark:text-gray-100">
                       {Object.values(userData.preferences).filter(Boolean).length} of 6
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Questions answered</span>
-                    <span className="font-medium">
+                    <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Questions answered</span>
+                    <span className="font-medium text-gray-900 dark:text-white dark:text-gray-100">
                       {Object.values(userData.onboardingAnswers || {}).filter(answers => 
                         Object.values(answers).some(answer => answer)
                       ).length} features
@@ -758,12 +778,12 @@ const ProfilePage = () => {
       {/* Password Change Modal */}
       {showPasswordForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white dark:bg-zinc-950 rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:text-gray-100">Change Password</h2>
               <button
                 onClick={() => setShowPasswordForm(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 dark:text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -771,13 +791,13 @@ const ProfilePage = () => {
             
             <form onSubmit={handlePasswordFormSubmit(handlePasswordSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Current Password <span className="text-red-500">*</span>
                 </label>
                 <input
                   {...registerPassword('currentPassword', { required: 'Current password is required' })}
                   type="password"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {passwordErrors.currentPassword && (
                   <p className="mt-1 text-sm text-red-600">{passwordErrors.currentPassword.message}</p>
@@ -785,7 +805,7 @@ const ProfilePage = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   New Password <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -794,7 +814,7 @@ const ProfilePage = () => {
                     minLength: { value: 6, message: 'Password must be at least 6 characters' }
                   })}
                   type="password"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {passwordErrors.newPassword && (
                   <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword.message}</p>
@@ -802,7 +822,7 @@ const ProfilePage = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Confirm New Password <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -811,7 +831,7 @@ const ProfilePage = () => {
                     validate: (value) => value === password || 'Passwords do not match'
                   })}
                   type="password"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {passwordErrors.confirmPassword && (
                   <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword.message}</p>
@@ -822,7 +842,7 @@ const ProfilePage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPasswordForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black dark:hover:bg-zinc-900"
                 >
                   Cancel
                 </button>
@@ -841,25 +861,25 @@ const ProfilePage = () => {
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white dark:bg-zinc-950 rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
                 <AlertTriangle className="h-6 w-6 text-red-600 mr-3" />
-                <h2 className="text-xl font-bold text-gray-900">Delete Account</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:text-gray-100">Delete Account</h2>
               </div>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 dark:text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
             
             <div className="mb-6">
-              <p className="text-gray-700 mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
                 Are you sure you want to delete your account? This action cannot be undone and will permanently remove:
               </p>
-              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+              <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 space-y-1">
                 <li>Your profile information</li>
                 <li>All your preferences and settings</li>
                 <li>Your meal plans and recipes</li>
@@ -871,7 +891,7 @@ const ProfilePage = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-zinc-700 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black dark:hover:bg-zinc-900"
               >
                 Cancel
               </button>

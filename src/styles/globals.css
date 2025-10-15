@@ -15,9 +15,40 @@
   overflow: hidden;
 }
 
+/* Light mode (default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f9fafb;
+  --foreground: #111827;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-text: #1f2937;
+  --hover-bg: #f3f4f6;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode */
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card-bg: #0a0a0a;
+  --card-border: #1a1a1a;
+  --sidebar-bg: #0a0a0a;
+  --sidebar-border: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-tertiary: #9ca3af;
+  --input-bg: #1a1a1a;
+  --input-border: #2a2a2a;
+  --input-text: #ffffff;
+  --hover-bg: #1a1a1a;
+  --shadow: rgba(0, 0, 0, 0.9);
 }
 
 @theme inline {
@@ -27,60 +58,61 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Global input styling for darker text and placeholders */
+/* Global input styling */
 input, textarea, select {
-  color: #1f2937 !important; /* Dark gray text */
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  transition: all 0.3s ease;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #6b7280 !important; /* Medium gray placeholder */
-  opacity: 1 !important;
+  color: var(--text-tertiary);
+  opacity: 1;
 }
 
 /* Focus states */
 input:focus, textarea:focus, select:focus {
-  color: #111827 !important; /* Even darker on focus */
+  border-color: #3b82f6;
+  outline: none;
 }
 
-/* Darker text for all content areas */
+.dark input:focus, .dark textarea:focus, .dark select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+/* Text content areas */
 .recipe-ingredients, .recipe-steps, .ingredient-text {
-  color: #1f2937 !important;
-}
-
-/* Make sure all text in modals and cards is dark */
-.bg-white p, .bg-white span, .bg-white li {
-  color: #374151 !important;
-}
-
-/* Specific styling for ingredient lists */
-ul li, ol li {
-  color: #1f2937 !important;
+  color: var(--text-primary);
 }
 
 /* Specific input types */
 input[type="text"], input[type="email"], input[type="password"], 
 input[type="number"], input[type="date"], input[type="search"],
 textarea, select {
-  background-color: #ffffff !important;
-  border-color: #d1d5db !important;
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--input-text);
 }
 
 input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus,
 input[type="number"]:focus, input[type="date"]:focus, input[type="search"]:focus,
 textarea:focus, select:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark input[type="text"]:focus, .dark input[type="email"]:focus, .dark input[type="password"]:focus,
+.dark input[type="number"]:focus, .dark input[type="date"]:focus, .dark input[type="search"]:focus,
+.dark textarea:focus, .dark select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
 }

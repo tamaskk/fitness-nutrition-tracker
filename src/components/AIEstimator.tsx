@@ -105,7 +105,7 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={handleClose} />
         
-        <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full">
+        <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-lg w-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center">
@@ -205,7 +205,7 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
                 </div>
 
                 {/* Nutrition Facts */}
-                <div className="bg-white rounded-lg p-4 mb-4">
+                <div className="bg-white dark:bg-zinc-950 rounded-lg p-4 mb-4 dark:border dark:border-zinc-900">
                   <h4 className="font-medium text-gray-900 mb-3">
                     {estimation.foodName} ({estimation.quantity} {estimation.unit})
                   </h4>
@@ -241,7 +241,7 @@ const AIEstimator: React.FC<AIEstimatorProps> = ({
                 </div>
 
                 {/* Per 100g Breakdown */}
-                <div className="bg-white rounded-lg p-4 mb-4">
+                <div className="bg-white dark:bg-zinc-950 rounded-lg p-4 mb-4 dark:border dark:border-zinc-900">
                   <h5 className="font-medium text-gray-900 mb-2">Per 100g:</h5>
                   <div className="text-sm text-gray-600 space-y-1">
                     <div className="flex justify-between">

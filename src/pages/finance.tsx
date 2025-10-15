@@ -527,29 +527,29 @@ const FinancePage = () => {
         {/* Header */}
         <div className="space-y-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Pénzügyek</h1>
-            <p className="text-gray-600">Kövesd a kiadásaidat és bevételeidet</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pénzügyek</h1>
+            <p className="text-gray-600 dark:text-gray-400">Kövesd a kiadásaidat és bevételeidet</p>
           </div>
           
           {/* Period Navigation */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg shadow-sm dark:shadow-none p-3">
             <div className="flex items-center justify-between">
               <button
                 onClick={goToPreviousPeriod}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-zinc-900 rounded-md transition-colors"
                 title="Előző időszak"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
               <div className="flex flex-col items-center flex-1 mx-4">
-                <div className="text-lg font-semibold text-gray-900 mb-1 text-center">
+                <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1 text-center">
                   {getPeriodDisplay()}
                 </div>
                 <select
                   value={period}
                   onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
-                  className="text-sm text-gray-600 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer"
+                  className="text-sm text-gray-600 dark:text-gray-400 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer"
                 >
                   <option value="week">Heti</option>
                   <option value="month">Havi</option>
@@ -560,7 +560,7 @@ const FinancePage = () => {
               <div className="flex items-center space-x-1">
                 <button
                   onClick={goToNextPeriod}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  className="p-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-zinc-900 rounded-md transition-colors"
                   title="Következő időszak"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -568,7 +568,7 @@ const FinancePage = () => {
                 
                 <button
                   onClick={goToCurrentPeriod}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  className="p-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-zinc-900 rounded-md transition-colors"
                   title="Jelenlegi időszak"
                 >
                   <Home className="w-5 h-5" />
@@ -609,7 +609,7 @@ const FinancePage = () => {
         {/* Summary Cards */}
         {summary && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-full flex items-center justify-center">
@@ -617,12 +617,12 @@ const FinancePage = () => {
                   </div>
                 </div>
                 <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Összes kiadás</p>
-                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{summary.totalExpenses.toLocaleString()} Ft</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Összes kiadás</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{summary.totalExpenses.toLocaleString()} Ft</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -630,12 +630,12 @@ const FinancePage = () => {
                   </div>
                 </div>
                 <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Összes bevétel</p>
-                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{summary.totalIncome.toLocaleString()} Ft</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Összes bevétel</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{summary.totalIncome.toLocaleString()} Ft</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
@@ -647,7 +647,7 @@ const FinancePage = () => {
                   </div>
                 </div>
                 <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Egyenleg</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Egyenleg</p>
                   <p className={`text-lg sm:text-2xl font-bold truncate ${
                     summary.balance >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
@@ -656,7 +656,7 @@ const FinancePage = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -664,8 +664,8 @@ const FinancePage = () => {
                   </div>
                 </div>
                 <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Időszak</p>
-                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Időszak</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
                     {getPeriodDisplay()}
                   </p>
                 </div>
@@ -675,7 +675,7 @@ const FinancePage = () => {
         )}
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-zinc-800">
           <nav className="flex space-x-2 sm:space-x-8 overflow-x-auto">
             {[
               { key: 'overview', label: 'Áttekintés', icon: BarChart3 },
@@ -688,7 +688,7 @@ const FinancePage = () => {
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-1 sm:gap-2 whitespace-nowrap ${
                   activeTab === tab.key
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -703,8 +703,8 @@ const FinancePage = () => {
         {activeTab === 'overview' && summary && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Expenses by Category */}
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Kiadások kategóriánként</h3>
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Kiadások kategóriánként</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <RechartsPieChart>
                   <Pie
@@ -730,8 +730,8 @@ const FinancePage = () => {
             </div>
 
             {/* Income by Category */}
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Bevételek kategóriánként</h3>
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Bevételek kategóriánként</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <RechartsPieChart>
                   <Pie
@@ -761,38 +761,38 @@ const FinancePage = () => {
         {/* Expenses Tab Content */}
         {activeTab === 'expenses' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Kiadások</h3>
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Kiadások</h3>
               {expenses.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Nincsenek kiadások</p>
+                <p className="text-gray-500 dark:text-gray-500 text-center py-8">Nincsenek kiadások</p>
               ) : (
                 <div className="space-y-3">
                   {expenses.map((expense, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg">
+                    <div key={index} className="bg-gray-50 dark:bg-black rounded-lg">
                       <div className="flex items-center justify-between p-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-gray-900">{expense.description}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{expense.description}</p>
                             {((expense as any).isBill || expense.description.includes('Sml számla') || expense.description.includes('számla')) && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 Számla
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600">{expense.category} • {expense.location}</p>
-                          <p className="text-xs text-gray-500">{new Date(expense.date).toLocaleDateString('hu-HU')}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{expense.category} • {expense.location}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500">{new Date(expense.date).toLocaleDateString('hu-HU')}</p>
                         </div>
                         <div className="text-right flex items-center gap-2">
                           <div>
                             <p className="font-bold text-red-600">{expense.amount.toLocaleString()} Ft</p>
-                            <p className="text-xs text-gray-500">{expense.paymentMethod}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500">{expense.paymentMethod}</p>
                           </div>
                           <div className="flex items-center gap-1">
                             {(((expense as any).isBill && (expense as any).billItems && (expense as any).billItems.length > 0) || 
                              (expense.description.includes('Sml számla') || expense.description.includes('számla'))) && (
                               <button
                                 onClick={() => toggleExpenseExpansion(index)}
-                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                                className="p-1 text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
                                 title={expandedExpenses.has(index) ? 'Összezár' : 'Részletek'}
                               >
                                 {expandedExpenses.has(index) ? (
@@ -829,9 +829,9 @@ const FinancePage = () => {
                       </div>
                       {(((expense as any).isBill && (expense as any).billItems && (expense as any).billItems.length > 0) || 
                         (expense.description.includes('Sml számla') || expense.description.includes('számla'))) && expandedExpenses.has(index) && (
-                        <div className="px-3 pb-3 border-t border-gray-200">
-                          <div className="mt-3 bg-white p-3 rounded border">
-                            <h4 className="text-sm font-medium text-gray-900 mb-2">
+                        <div className="px-3 pb-3 border-t border-gray-200 dark:border-zinc-800">
+                          <div className="mt-3 bg-white dark:bg-zinc-950 p-3 rounded border dark:border-zinc-900">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                               Számla tételek ({(expense as any).billItems ? (expense as any).billItems.length : 0} db)
                             </h4>
                             <div className="space-y-1 max-h-32 overflow-y-auto">
@@ -843,7 +843,7 @@ const FinancePage = () => {
                                   </div>
                                 ))
                               ) : (
-                                <div className="text-xs text-gray-500 py-2">
+                                <div className="text-xs text-gray-500 dark:text-gray-500 py-2">
                                   Ez a számla a régi formátumban van mentve. Az egyes tételek nem érhetők el.
                                 </div>
                               )}
@@ -862,19 +862,19 @@ const FinancePage = () => {
         {/* Income Tab Content */}
         {activeTab === 'income' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Bevételek</h3>
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Bevételek</h3>
               {income.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Nincsenek bevételek</p>
+                <p className="text-gray-500 dark:text-gray-500 text-center py-8">Nincsenek bevételek</p>
               ) : (
                 <div className="space-y-3">
                   {income.map((incomeItem, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg">
+                    <div key={index} className="bg-gray-50 dark:bg-black rounded-lg">
                       <div className="flex items-center justify-between p-3">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{incomeItem.description}</p>
-                          <p className="text-sm text-gray-600">{incomeItem.category} • {incomeItem.source}</p>
-                          <p className="text-xs text-gray-500">{new Date(incomeItem.date).toLocaleDateString('hu-HU')}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{incomeItem.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{incomeItem.category} • {incomeItem.source}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500">{new Date(incomeItem.date).toLocaleDateString('hu-HU')}</p>
                         </div>
                         <div className="text-right flex items-center gap-2">
                           <div>
@@ -916,9 +916,9 @@ const FinancePage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowBillUpload(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-md w-full mx-4">
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Számla fotó feltöltése</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Számla fotó feltöltése</h3>
                   <form onSubmit={handleBillUpload} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -928,12 +928,12 @@ const FinancePage = () => {
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                       {billImage && (
                         <div className="mt-2">
-                          <p className="text-sm text-gray-600">Kiválasztott fájl: {billImage.name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Kiválasztott fájl: {billImage.name}</p>
                           <div className="mt-2">
                             <img
                               src={URL.createObjectURL(billImage)}
@@ -946,8 +946,8 @@ const FinancePage = () => {
                     </div>
                     
                     {ocrData && (
-                      <div className="bg-gray-50 p-4 rounded-md">
-                        <h4 className="font-medium text-gray-900 mb-2">Elemzés eredménye:</h4>
+                      <div className="bg-gray-50 dark:bg-black p-4 rounded-md">
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">Elemzés eredménye:</h4>
                         {ocrData.note && (
                           <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded mb-3">
                             <p className="text-sm">{ocrData.note}</p>
@@ -971,7 +971,7 @@ const FinancePage = () => {
                                 </button>
                               </div>
                               {showBillItems && (
-                                <div className="bg-white p-3 rounded border max-h-40 overflow-y-auto">
+                                <div className="bg-white dark:bg-zinc-950 p-3 rounded border dark:border-zinc-900 max-h-40 overflow-y-auto">
                                   <ul className="space-y-1">
                                     {ocrData.items.map((item: any, index: number) => (
                                       <li key={index} className="flex justify-between text-xs">
@@ -998,7 +998,7 @@ const FinancePage = () => {
                           setBillItems([]);
                           setShowBillItems(false);
                         }}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                       >
                         Mégse
                       </button>
@@ -1043,10 +1043,10 @@ const FinancePage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowAddForm(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-md w-full mx-4">
                 <div className="p-4 sm:p-6">
                   <div className="mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                       {formType === 'expense' ? 'Új kiadás' : 'Új bevétel'}
                     </h3>
                     {billItems.length > 0 && formType === 'expense' && (
@@ -1067,7 +1067,7 @@ const FinancePage = () => {
                         step="0.01"
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -1080,7 +1080,7 @@ const FinancePage = () => {
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         placeholder="pl. Élelmiszer, Szórakozás, Fizetés"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -1093,7 +1093,7 @@ const FinancePage = () => {
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Rövid leírás"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -1105,7 +1105,7 @@ const FinancePage = () => {
                         type="date"
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     {formType === 'expense' && (
@@ -1117,7 +1117,7 @@ const FinancePage = () => {
                           <select
                             value={formData.paymentMethod}
                             onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as any })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="cash">Készpénz</option>
                             <option value="card">Bankkártya</option>
@@ -1133,7 +1133,7 @@ const FinancePage = () => {
                             value={formData.location}
                             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                             placeholder="pl. Tesco, KFC"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
 
@@ -1154,33 +1154,33 @@ const FinancePage = () => {
                         {billItems.length > 0 && (
                           <div className="space-y-2 max-h-64 overflow-y-auto border rounded-md p-2">
                             {/* Add here a header to know that name price and quantity are editable */}
-                            <div className="flex items-center justify-start gap-2 p-2 bg-gray-50 rounded w-[100%]">
-                              <span className="text-sm font-medium mr-40 text-gray-900">Név</span>
-                              <span className="text-sm font-medium mr-20 text-gray-900">Ár</span>
-                              <span className="text-sm font-medium text-gray-900">Db</span>
+                            <div className="flex items-center justify-start gap-2 p-2 bg-gray-50 dark:bg-black rounded w-[100%]">
+                              <span className="text-sm font-medium mr-40 text-gray-900 dark:text-white">Név</span>
+                              <span className="text-sm font-medium mr-20 text-gray-900 dark:text-white">Ár</span>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">Db</span>
                             </div>
                             {billItems.map((item, index) => (
-                              <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                              <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-black rounded">
                                 <input
                                   type="text"
                                   value={item.name}
                                   onChange={(e) => updateBillItem(index, 'name', e.target.value)}
-                                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   placeholder="Tétel neve"
                                 />
                                 <input
                                   type="number"
                                   value={item.price}
                                   onChange={(e) => updateBillItem(index, 'price', parseFloat(e.target.value) || 0)}
-                                  className="w-20 px-2 py-1 ml-4 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  className="w-20 px-2 py-1 ml-4 text-sm border border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   placeholder="Ár"
                                 />
-                                <span className="text-sm text-gray-600">Ft</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Ft</span>
                                 <input
                                   type="number"
                                   value={item.quantity}
                                   onChange={(e) => updateBillItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   placeholder="Db"
                                 />
                                 <button
@@ -1199,7 +1199,7 @@ const FinancePage = () => {
                         )}
                         {billItems.length > 0 && (
                           <div className="mt-2 bg-blue-50 p-2 rounded-md flex justify-between items-center">
-                            <span className="text-sm font-medium text-gray-900">Tételek összege:</span>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">Tételek összege:</span>
                             <span className="text-sm font-bold text-blue-600">
                               {billItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0).toLocaleString()} Ft
                             </span>
@@ -1218,7 +1218,7 @@ const FinancePage = () => {
                           value={formData.source}
                           onChange={(e) => setFormData({ ...formData, source: e.target.value })}
                           placeholder="pl. Munkahely, Freelance"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     )}
@@ -1226,7 +1226,7 @@ const FinancePage = () => {
                       <button
                         type="button"
                         onClick={() => setShowAddForm(false)}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                       >
                         Mégse
                       </button>
@@ -1250,41 +1250,41 @@ const FinancePage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowEditModal(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                     Számla szerkesztése: {editingExpense.description}
                   </h3>
                   
                   <div className="space-y-4">
                     {/* Bill Items */}
                     <div>
-                      <h4 className="text-md font-medium text-gray-900 mb-3">
+                      <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
                         Számla tételek ({editingItems.length} db)
                       </h4>
                       <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3">
                         {editingItems.map((item, index) => (
-                          <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                          <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-black rounded">
                             <input
                               type="text"
                               value={item.name}
                               onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                               placeholder="Tétel neve"
                             />
                             <input
                               type="number"
                               value={item.price}
                               onChange={(e) => handleUpdateItem(index, 'price', parseFloat(e.target.value) || 0)}
-                              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                               placeholder="Ár"
                             />
-                            <span className="text-sm text-gray-600">Ft</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Ft</span>
                             <input
                               type="number"
                               value={item.quantity}
                               onChange={(e) => handleUpdateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                              className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                               placeholder="Db"
                             />
                             <button
@@ -1304,13 +1304,13 @@ const FinancePage = () => {
                     {/* Total Calculation */}
                     <div className="bg-blue-50 p-3 rounded-md">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium text-gray-900">Új összeg:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">Új összeg:</span>
                         <span className="font-bold text-lg text-blue-600">
                           {editingItems.reduce((sum, item) => sum + (item.price || 0), 0).toLocaleString()} Ft
                         </span>
                       </div>
                       {editingExpense.amount !== editingItems.reduce((sum, item) => sum + (item.price || 0), 0) && (
-                        <div className="text-sm text-gray-600 mt-1">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           Eredeti összeg: {editingExpense.amount.toLocaleString()} Ft
                         </div>
                       )}
@@ -1321,7 +1321,7 @@ const FinancePage = () => {
                     <button
                       type="button"
                       onClick={() => setShowEditModal(false)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                     >
                       Mégse
                     </button>
@@ -1345,9 +1345,9 @@ const FinancePage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowIncomeEditModal(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-md w-full mx-4">
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                     Bevétel szerkesztése
                   </h3>
                   
@@ -1361,7 +1361,7 @@ const FinancePage = () => {
                         step="0.01"
                         value={editingIncome.amount}
                         onChange={(e) => setEditingIncome({ ...editingIncome, amount: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -1374,7 +1374,7 @@ const FinancePage = () => {
                         value={editingIncome.category}
                         onChange={(e) => setEditingIncome({ ...editingIncome, category: e.target.value })}
                         placeholder="pl. Fizetés, Freelance, Befektetés"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -1387,7 +1387,7 @@ const FinancePage = () => {
                         value={editingIncome.description}
                         onChange={(e) => setEditingIncome({ ...editingIncome, description: e.target.value })}
                         placeholder="Rövid leírás"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -1399,7 +1399,7 @@ const FinancePage = () => {
                         type="date"
                         value={new Date(editingIncome.date).toISOString().split('T')[0]}
                         onChange={(e) => setEditingIncome({ ...editingIncome, date: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -1411,7 +1411,7 @@ const FinancePage = () => {
                         value={editingIncome.source || ''}
                         onChange={(e) => setEditingIncome({ ...editingIncome, source: e.target.value })}
                         placeholder="pl. Munkahely, Freelance"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -1420,7 +1420,7 @@ const FinancePage = () => {
                     <button
                       type="button"
                       onClick={() => setShowIncomeEditModal(false)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                     >
                       Mégse
                     </button>

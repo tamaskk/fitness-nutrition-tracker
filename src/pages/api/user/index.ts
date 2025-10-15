@@ -3,10 +3,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
+import { getUserFromToken } from '@/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Check for JWT token first (for mobile app), then NextAuth session (for web app)
+  const tokenUser = getUserFromToken(req);
   const session = await getServerSession(req, res, authOptions);
-  if (!session?.user?.email) {
+  
+  const userEmail = tokenUser?.email || session?.user?.email;
+  
+  if (!userEmail) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
@@ -15,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'GET') {
       // Get user data
-      const user = await User.findOne({ email: session.user.email });
+      const user = await User.findOne({ email: userEmail });
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -67,7 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (dailyCalorieGoal !== undefined) updateData.dailyCalorieGoal = dailyCalorieGoal;
 
       const updatedUser = await User.findOneAndUpdate(
-        { email: session.user.email },
+        { email: userEmail },
         updateData,
         { new: true, runValidators: true }
       );

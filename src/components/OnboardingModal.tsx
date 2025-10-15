@@ -322,7 +322,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-zinc-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:border dark:border-zinc-900">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -443,7 +443,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <button
                 type="button"
                 onClick={handlePrevious}
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-800 rounded-md hover:bg-gray-50"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {currentQuestion === 0 ? 'Cancel' : 'Previous'}

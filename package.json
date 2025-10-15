@@ -9,13 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@types/formidable": "^3.4.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
     "countries-list": "^3.1.1",
     "date-fns": "^2.30.0",
     "formidable": "^3.5.4",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.460.0",
     "mongoose": "^8.0.3",
     "multer": "^2.0.2",

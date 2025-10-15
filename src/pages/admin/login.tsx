@@ -68,15 +68,15 @@ const AdminLoginPage = () => {
               <Shield className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h2 className="mt-4 text-3xl font-bold text-gray-900">
+          <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-white">
             Admin Access
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Sign in to access the admin dashboard
           </p>
         </div>
 
-        <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
+        <div className="bg-white dark:bg-zinc-950 py-8 px-6 shadow-lg dark:shadow-none dark:border dark:border-zinc-900 rounded-lg">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -93,7 +93,7 @@ const AdminLoginPage = () => {
                   })}
                   type="email"
                   autoComplete="email"
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter admin email"
                 />
                 {errors.email && (
@@ -117,7 +117,7 @@ const AdminLoginPage = () => {
                   })}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter your account password"
                 />
                 <button
@@ -147,7 +147,7 @@ const AdminLoginPage = () => {
                     required: 'Admin password is required',
                   })}
                   type={showAdminPassword ? 'text' : 'password'}
-                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter admin access password"
                 />
                 <button
@@ -180,7 +180,7 @@ const AdminLoginPage = () => {
             <div className="text-center">
               <Link 
                 href="/" 
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+                className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to main site

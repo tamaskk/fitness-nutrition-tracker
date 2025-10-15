@@ -93,7 +93,7 @@ const HistoryPage = () => {
       case 'in-progress':
         return <PlayCircle className="w-5 h-5 text-blue-500" />;
       default:
-        return <Clock className="w-5 h-5 text-gray-500" />;
+        return <Clock className="w-5 h-5 text-gray-500 dark:text-gray-500" />;
     }
   };
 
@@ -164,8 +164,8 @@ const HistoryPage = () => {
               Vissza az edzéshez
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Edzés történet</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edzés történet</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Tekintsd meg az előző edzéseidet és a haladásodat
           </p>
         </div>
@@ -177,8 +177,8 @@ const HistoryPage = () => {
         ) : sessions.length === 0 ? (
           <div className="text-center py-12">
             <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Nincs edzés történet</h3>
-            <p className="mt-2 text-gray-600">
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincs edzés történet</h3>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Még nem fejeztél be egyetlen edzést sem. Kezdj el edzeni!
             </p>
             <button
@@ -192,17 +192,17 @@ const HistoryPage = () => {
         ) : (
           <div className="space-y-6">
             {/* Sessions List */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Edzés munkamenetek</h2>
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-800">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Edzés munkamenetek</h2>
               </div>
               <div className="divide-y divide-gray-200">
                 {sessions.map((session) => (
-                  <div key={session._id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div key={session._id} className="p-6 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {session.workoutName}
                           </h3>
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
@@ -212,33 +212,33 @@ const HistoryPage = () => {
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <Calendar className="w-4 h-4 mr-2" />
                             {formatDate(session.startTime)}
                           </div>
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <Clock className="w-4 h-4 mr-2" />
                             {session.duration ? `${session.duration} perc` : 'Ismeretlen'}
                           </div>
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <Dumbbell className="w-4 h-4 mr-2" />
                             {session.exercises.length} gyakorlat
                           </div>
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <BarChart3 className="w-4 h-4 mr-2" />
                             {getProgressPercentage(session.exercises)}% teljesítve
                           </div>
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                        <div className="w-full bg-gray-200 dark:bg-zinc-900 rounded-full h-2 mb-4">
                           <div 
                             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${getProgressPercentage(session.exercises)}%` }}
                           ></div>
                         </div>
 
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           {calculateCompletedSets(session.exercises)} / {calculateTotalSets(session.exercises)} szett befejezve
                         </div>
                       </div>
@@ -249,7 +249,7 @@ const HistoryPage = () => {
                             setSelectedSession(session);
                             setShowDetails(true);
                           }}
-                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-zinc-700 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                         >
                           Részletek
                         </button>
@@ -265,10 +265,10 @@ const HistoryPage = () => {
         {/* Session Details Modal */}
         {showDetails && selectedSession && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg dark:shadow-none dark:border dark:border-zinc-900 rounded-md bg-white dark:bg-zinc-950">
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                     {selectedSession.workoutName} - Részletek
                   </h3>
                   <button
@@ -276,7 +276,7 @@ const HistoryPage = () => {
                       setShowDetails(false);
                       setSelectedSession(null);
                     }}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:text-gray-400"
                   >
                     <span className="sr-only">Bezárás</span>
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,19 +289,19 @@ const HistoryPage = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Kezdés ideje</label>
-                      <p className="text-sm text-gray-900">{formatDate(selectedSession.startTime)}</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{formatDate(selectedSession.startTime)}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Időtartam</label>
-                      <p className="text-sm text-gray-900">{selectedSession.duration ? `${selectedSession.duration} perc` : 'Ismeretlen'}</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{selectedSession.duration ? `${selectedSession.duration} perc` : 'Ismeretlen'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Státusz</label>
-                      <p className="text-sm text-gray-900">{getStatusText(selectedSession.status)}</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{getStatusText(selectedSession.status)}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Haladás</label>
-                      <p className="text-sm text-gray-900">{getProgressPercentage(selectedSession.exercises)}%</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{getProgressPercentage(selectedSession.exercises)}%</p>
                     </div>
                   </div>
 
@@ -309,23 +309,23 @@ const HistoryPage = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Gyakorlatok</label>
                     <div className="space-y-3">
                       {selectedSession.exercises.map((exercise, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-3">
+                        <div key={index} className="border border-gray-200 dark:border-zinc-800 rounded-lg p-3">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-gray-900">{exercise.exerciseName}</h4>
-                            <span className="text-sm text-gray-600">
+                            <h4 className="font-medium text-gray-900 dark:text-white">{exercise.exerciseName}</h4>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
                               {exercise.completedSets} / {exercise.totalSets} szett
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-zinc-900 rounded-full h-2">
                             <div 
                               className="bg-blue-600 h-2 rounded-full"
                               style={{ width: `${(exercise.completedSets / exercise.totalSets) * 100}%` }}
                             ></div>
                           </div>
-                          <div className="mt-2 text-sm text-gray-600">
+                          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             {exercise.sets.map((set, setIndex) => (
                               <span key={setIndex} className={`inline-block mr-2 px-2 py-1 rounded text-xs ${
-                                set.completed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                set.completed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 dark:text-gray-400'
                               }`}>
                                 {set.setNumber}. szett: {set.reps} ismétlés {set.weight ? `(${set.weight} kg)` : ''}
                               </span>
@@ -339,7 +339,7 @@ const HistoryPage = () => {
                   {selectedSession.notes && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Megjegyzések</label>
-                      <p className="text-sm text-gray-900">{selectedSession.notes}</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{selectedSession.notes}</p>
                     </div>
                   )}
                 </div>
@@ -350,7 +350,7 @@ const HistoryPage = () => {
                       setShowDetails(false);
                       setSelectedSession(null);
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                   >
                     Bezárás
                   </button>

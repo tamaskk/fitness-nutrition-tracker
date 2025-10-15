@@ -122,13 +122,13 @@ const PreferencesPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
             Choose Your Features
           </h2>
-          <p className="mt-2 text-lg text-gray-600">
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
             Select the features you'd like to use. You can always change these later.
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">
             {selectedCount} of {preferences.length} features selected
           </p>
         </div>
@@ -152,7 +152,7 @@ const PreferencesPage = () => {
                     className={`block p-6 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-lg ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50 shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-gray-300 dark:hover:border-zinc-700'
                     }`}
                   >
                     <div className="flex items-start space-x-4">
@@ -161,7 +161,7 @@ const PreferencesPage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {preference.title}
                           </h3>
                           {isSelected && (
@@ -170,7 +170,7 @@ const PreferencesPage = () => {
                             </div>
                           )}
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                           {preference.description}
                         </p>
                       </div>
@@ -185,7 +185,7 @@ const PreferencesPage = () => {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-zinc-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
@@ -203,7 +203,7 @@ const PreferencesPage = () => {
         </form>
 
         <div className="text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-500">
             Don't worry, you can always change these preferences later in your profile settings.
           </p>
         </div>

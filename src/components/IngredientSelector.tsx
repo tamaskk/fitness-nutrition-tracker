@@ -256,7 +256,7 @@ const IngredientSelector: React.FC<IngredientSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-white dark:bg-zinc-950 rounded-lg border border-gray-200 dark:border-zinc-800 shadow-sm dark:shadow-none">
         <div className="p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Hozzávalók kiválasztása</h3>
           <p className="text-sm text-gray-600 mt-1">
@@ -293,7 +293,7 @@ const IngredientSelector: React.FC<IngredientSelectorProps> = ({
 
               {/* Section Content */}
               {expandedSections.includes(key) && (
-                <div className="p-4 bg-white">
+                <div className="p-4 bg-white dark:bg-zinc-950">
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {category.items.map((item) => (
                       <button
@@ -302,7 +302,7 @@ const IngredientSelector: React.FC<IngredientSelectorProps> = ({
                         className={`px-3 py-2 text-sm rounded-md border transition-all flex items-center gap-2 ${
                           selectedIngredients.includes(item.name)
                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                            : 'bg-white dark:bg-zinc-950 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:border-gray-400 dark:hover:border-zinc-700'
                         }`}
                       >
                         <span>{item.emoji}</span>

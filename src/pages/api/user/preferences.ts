@@ -4,14 +4,19 @@ import { authOptions } from '../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
 import { PreferencesFormData } from '@/types';
+import { getUserFromToken } from '@/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PUT') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
+  const tokenUser = getUserFromToken(req);
   const session = await getServerSession(req, res, authOptions);
-  if (!session?.user?.email) {
+  
+  const userEmail = tokenUser?.email || session?.user?.email;
+  
+  if (!userEmail) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
@@ -27,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDatabase();
 
     // Get current user data
-    const currentUser = await User.findOne({ email: session.user.email });
+    const currentUser = await User.findOne({ email: userEmail });
     if (!currentUser) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -44,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Update user with new preferences and cleared onboarding answers
     const updatedUser = await User.findOneAndUpdate(
-      { email: session.user.email },
+      { email: userEmail },
       {
         preferences,
         onboardingAnswers: updatedOnboardingAnswers,

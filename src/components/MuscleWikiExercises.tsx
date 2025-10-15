@@ -161,7 +161,7 @@ const MuscleWikiExercises: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto mt-8 px-4">
-      <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-100">
+      <div className="bg-white dark:bg-zinc-950 shadow-md dark:shadow-none rounded-2xl p-6 border border-gray-100 dark:border-zinc-900">
         <div className="flex items-center gap-3 mb-6">
           <Dumbbell className="w-6 h-6 text-blue-600" />
           <h2 className="text-xl font-semibold text-gray-800">MuscleWiki Edzéskereső</h2>
@@ -196,7 +196,7 @@ const MuscleWikiExercises: React.FC = () => {
             <select
               value={category ?? ''}
               onChange={(e) => setCategory(Number(e.target.value))}
-              className="w-full border border-gray-300 p-2.5 rounded-md mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full border border-gray-300 p-2.5 rounded-md mt-1 bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 dark:text-white outline-none"
             >
               <option value="">Összes</option>
               {categories.map((cat) => (
@@ -210,7 +210,7 @@ const MuscleWikiExercises: React.FC = () => {
             <select
               value={muscles}
               onChange={(e) => setMuscles(Number(e.target.value))}
-              className="w-full border border-gray-300 p-2.5 rounded-md mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full border border-gray-300 p-2.5 rounded-md mt-1 bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 dark:text-white outline-none"
             >
               {muscleGroups.map((muscle) => (
                 <option key={muscle.id} value={muscle.id}>{muscle.name}</option>
@@ -234,7 +234,7 @@ const MuscleWikiExercises: React.FC = () => {
         {!loading && exercises.length === 0 && <p className="text-center text-gray-500">Nincs találat.</p>}
 
         {exercises.map((exercise) => (
-          <div key={exercise.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <div key={exercise.id} className="bg-white dark:bg-zinc-950 rounded-2xl shadow-sm dark:shadow-none border border-gray-100 dark:border-zinc-900 p-5">
             <div className="flex items-center justify-between mb-3">
               {/* <h3 className="text-lg font-semibold text-gray-800">{exercise.name}</h3> */}
               <input

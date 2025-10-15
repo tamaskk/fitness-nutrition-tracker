@@ -379,13 +379,13 @@ const TrainingPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edzés</h1>
-            <p className="text-gray-600">Edzések kezelése és követése</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edzés</h1>
+            <p className="text-gray-600 dark:text-gray-400">Edzések kezelése és követése</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-zinc-800">
           <nav className="flex space-x-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -401,7 +401,7 @@ const TrainingPage = () => {
                   className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -413,16 +413,16 @@ const TrainingPage = () => {
         </div>
 
         <div>
-          <input type="text" placeholder="Keresés" value={searchTerm} onChange={handleSearch} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input type="text" placeholder="Keresés" value={searchTerm} onChange={handleSearch} className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
 
         {/* Tab Content */}
         <div className="mt-6">
           {activeTab === 'exercises' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Gyakorlatok</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Gyakorlatok</h3>
                   <button
                     onClick={() => {
                       setEditingExercise(null);
@@ -435,7 +435,7 @@ const TrainingPage = () => {
                     Új gyakorlat
                   </button>
                 </div>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Itt kezelheted a gyakorlataidat. Hozzáadhatsz új gyakorlatokat, módosíthatod a meglévőket, vagy törölheted őket.
                 </p>
 
@@ -447,16 +447,16 @@ const TrainingPage = () => {
                 ) : exercises.length === 0 ? (
                   <div className="text-center py-8">
                     <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-                    <h4 className="mt-4 text-lg font-medium text-gray-900">Nincsenek gyakorlatok</h4>
-                    <p className="mt-2 text-gray-600">Kezdj el gyakorlatokat hozzáadni az edzéshez.</p>
+                    <h4 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek gyakorlatok</h4>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Kezdj el gyakorlatokat hozzáadni az edzéshez.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(searchTerm ? searchedExercises : exercises).map((exercise) => (
-                      <div key={exercise._id} className="bg-gray-50 rounded-lg p-4">
+                      <div key={exercise._id} className="bg-gray-50 dark:bg-black rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                               {exercise.name}
                             </h4>
                             <div className="space-y-2">
@@ -472,18 +472,18 @@ const TrainingPage = () => {
                                 {exercise.muscleGroups.map((muscleGroup: string) => (
                                   <span
                                     key={muscleGroup}
-                                    className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-200 text-gray-800"
+                                    className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-200 dark:bg-zinc-900 text-gray-800"
                                   >
                                     {muscleGroupLabels[muscleGroup]}
                                   </span>
                                 ))}
                               </div>
                               {exercise.equipment && (
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                   Felszerelés: {exercise.equipment}
                                 </p>
                               )}
-                              <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                              <div className="flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
                                 <span>{exercise.sets || 3} szett</span>
                                 <span>{exercise.reps || 10} ismétlés</span>
                                 {exercise.weight && exercise.weight > 0 && (
@@ -492,7 +492,7 @@ const TrainingPage = () => {
                                 <span>{exercise.rest || 60} mp pihenés</span>
                               </div>
                               {exercise.description && (
-                                <p className="text-sm text-gray-600 line-clamp-2">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                   {exercise.description}
                                 </p>
                               )}
@@ -526,9 +526,9 @@ const TrainingPage = () => {
 
           {activeTab === 'workouts' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Edzéstervek</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edzéstervek</h3>
                   <button
                     onClick={() => router.push('/training/workouts?create=1')}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
@@ -537,7 +537,7 @@ const TrainingPage = () => {
                     Új edzésterv
                   </button>
                 </div>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Itt hozhatsz létre edzésterveket a meglévő gyakorlataidból. Kombinálhatod a gyakorlatokat egy teljes edzésbe.
                 </p>
 
@@ -549,20 +549,20 @@ const TrainingPage = () => {
                 ) : workouts.length === 0 ? (
                   <div className="text-center py-8">
                     <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-                    <h4 className="mt-4 text-lg font-medium text-gray-900">Nincsenek edzéstervek</h4>
-                    <p className="mt-2 text-gray-600">Kezdj el edzésterveket létrehozni a gyakorlataidból.</p>
+                    <h4 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek edzéstervek</h4>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Kezdj el edzésterveket létrehozni a gyakorlataidból.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(searchTerm ? searchedWorkouts : workouts).map((workout) => (
-                      <div key={workout._id} className="bg-gray-50 rounded-lg p-4">
+                      <div key={workout._id} className="bg-gray-50 dark:bg-black rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                               {workout.name}
                             </h4>
                             {workout.description && (
-                              <p className="text-gray-600 text-sm mb-3">
+                              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                                 {workout.description}
                               </p>
                             )}
@@ -571,7 +571,7 @@ const TrainingPage = () => {
                                 {difficultyLabels[workout.difficulty]}
                               </span>
                             </div>
-                            <div className="flex items-center text-sm text-gray-600 space-x-4">
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
                               <div className="flex items-center">
                                 <Dumbbell className="w-4 h-4 mr-1" />
                                 {workout.exercises.length} gyakorlat
@@ -583,12 +583,12 @@ const TrainingPage = () => {
                             </div>
                             <div className="mt-3 space-y-1">
                               {workout.exercises.slice(0, 2).map((exercise: any, index: number) => (
-                                <div key={index} className="text-sm text-gray-600">
+                                <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
                                   • {exercise.exerciseName} ({exercise.sets}×{exercise.reps})
                                 </div>
                               ))}
                               {workout.exercises.length > 2 && (
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-gray-500 dark:text-gray-500">
                                   +{workout.exercises.length - 2} további gyakorlat
                                 </div>
                               )}
@@ -621,13 +621,13 @@ const TrainingPage = () => {
 
           {activeTab === 'tracker' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Edzés követése</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edzés követése</h3>
                   <div className="flex space-x-2">
                     <button
                       onClick={loadActiveSessions}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-zinc-700 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -643,7 +643,7 @@ const TrainingPage = () => {
                     </button>
                   </div>
                 </div>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Itt indíthatod el az edzéseidet és követheted a haladásodat. Jelölheted be a befejezett szetteket és nyomon követheted az időt.
                 </p>
 
@@ -655,19 +655,19 @@ const TrainingPage = () => {
                 ) : activeSessions.length === 0 ? (
                   <div className="text-center py-8">
                     <Play className="mx-auto h-12 w-12 text-gray-400" />
-                    <h4 className="mt-4 text-lg font-medium text-gray-900">Nincsenek aktív edzések</h4>
-                    <p className="mt-2 text-gray-600">Indíts el egy új edzést vagy folytasd a mentett haladást.</p>
+                    <h4 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek aktív edzések</h4>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Indíts el egy új edzést vagy folytasd a mentett haladást.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {activeSessions.map((session) => (
-                      <div key={session._id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={session._id} className="border border-gray-200 dark:border-zinc-800 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                               {session.workoutName}
                             </h4>
-                            <div className="flex items-center text-sm text-gray-600 space-x-4">
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1" />
                                 {new Date(session.startTime).toLocaleDateString('hu-HU')}
@@ -697,7 +697,7 @@ const TrainingPage = () => {
                             </div>
                             {/* Progress Bar */}
                             <div className="mt-3">
-                              <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div className="w-full bg-gray-200 dark:bg-zinc-900 rounded-full h-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                                   style={{ 
@@ -705,7 +705,7 @@ const TrainingPage = () => {
                                   }}
                                 ></div>
                               </div>
-                              <div className="text-xs text-gray-600 mt-1">
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                 {session.exercises.reduce((total: number, ex: any) => total + ex.completedSets, 0)} / {session.exercises.reduce((total: number, ex: any) => total + ex.totalSets, 0)} szett befejezve
                               </div>
                             </div>
@@ -730,9 +730,9 @@ const TrainingPage = () => {
 
           {activeTab === 'history' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Edzés történet</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edzés történet</h3>
                   <button
                     onClick={() => router.push('/training/history')}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
@@ -741,7 +741,7 @@ const TrainingPage = () => {
                     Teljes történet
                   </button>
                 </div>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Itt tekintheted meg az előző edzéseidet, a teljesítményedet és a haladásodat az idő múlásával.
                 </p>
 
@@ -753,19 +753,19 @@ const TrainingPage = () => {
                 ) : sessions.length === 0 ? (
                   <div className="text-center py-8">
                     <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
-                    <h4 className="mt-4 text-lg font-medium text-gray-900">Nincs edzés történet</h4>
-                    <p className="mt-2 text-gray-600">Még nem fejeztél be egyetlen edzést sem.</p>
+                    <h4 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincs edzés történet</h4>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Még nem fejeztél be egyetlen edzést sem.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {sessions.slice(0, 5).map((session) => (
-                      <div key={session._id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={session._id} className="border border-gray-200 dark:border-zinc-800 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                               {session.workoutName}
                             </h4>
-                            <div className="flex items-center text-sm text-gray-600 space-x-4">
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1" />
                                 {new Date(session.startTime).toLocaleDateString('hu-HU')}
@@ -821,9 +821,9 @@ const TrainingPage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowAddModal(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                     {editingExercise ? 'Gyakorlat szerkesztése' : 'Új gyakorlat hozzáadása'}
                   </h3>
                   
@@ -836,7 +836,7 @@ const TrainingPage = () => {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -849,7 +849,7 @@ const TrainingPage = () => {
                         <select
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
                           {categories.filter(c => c.value).map(category => (
@@ -867,7 +867,7 @@ const TrainingPage = () => {
                         <select
                           value={formData.difficulty}
                           onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
                           <option value="beginner">Kezdő</option>
@@ -888,7 +888,7 @@ const TrainingPage = () => {
                               type="checkbox"
                               checked={formData.muscleGroups.includes(muscleGroup)}
                               onChange={() => toggleMuscleGroup(muscleGroup)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
                             />
                             <span className="ml-2 text-sm text-gray-700">
                               {muscleGroupLabels[muscleGroup]}
@@ -907,7 +907,7 @@ const TrainingPage = () => {
                         value={formData.equipment}
                         onChange={(e) => setFormData({ ...formData, equipment: e.target.value })}
                         placeholder="pl. súlyzó, gép, saját testsúly"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
@@ -921,7 +921,7 @@ const TrainingPage = () => {
                           min="1"
                           value={formData.reps}
                           onChange={(e) => setFormData({ ...formData, reps: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -934,7 +934,7 @@ const TrainingPage = () => {
                           min="1"
                           value={formData.sets}
                           onChange={(e) => setFormData({ ...formData, sets: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -948,7 +948,7 @@ const TrainingPage = () => {
                           step="0.5"
                           value={formData.weight}
                           onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -961,7 +961,7 @@ const TrainingPage = () => {
                           min="0"
                           value={formData.rest}
                           onChange={(e) => setFormData({ ...formData, rest: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -975,7 +975,7 @@ const TrainingPage = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows={3}
                         placeholder="Rövid leírás a gyakorlatról..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
@@ -983,7 +983,7 @@ const TrainingPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowAddModal(false)}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                       >
                         Mégse
                       </button>
@@ -1003,8 +1003,8 @@ const TrainingPage = () => {
 
         {activeTab === 'musclewiki' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">MuscleWiki kereső</h3>
+            <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">MuscleWiki kereső</h3>
               <MuscleWikiExercises />
             </div>
           </div>

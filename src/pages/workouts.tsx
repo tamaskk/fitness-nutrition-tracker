@@ -107,15 +107,15 @@ const WorkoutsPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edzések</h1>
-            <p className="text-gray-600">Kövesd nyomon az edzéseid és fitness haladásod</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edzések</h1>
+            <p className="text-gray-600 dark:text-gray-400">Kövesd nyomon az edzéseid és fitness haladásod</p>
           </div>
           <div className="mt-4 sm:mt-0 flex space-x-3">
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             <button 
               onClick={() => setShowWorkoutForm(true)}
@@ -128,7 +128,7 @@ const WorkoutsPage = () => {
         </div>
 
         {/* Daily Summary */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -137,8 +137,8 @@ const WorkoutsPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Mai edzések</p>
-                <p className="text-2xl font-bold text-gray-900">{workouts.length}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Mai edzések</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{workouts.length}</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -148,8 +148,8 @@ const WorkoutsPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Összes gyakorlat</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Összes gyakorlat</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {workouts.reduce((sum, workout) => sum + workout.exercises.length, 0)}
                 </p>
               </div>
@@ -161,8 +161,8 @@ const WorkoutsPage = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Elégetett kalóriák</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCalories(totalCaloriesBurned)}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Elégetett kalóriák</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCalories(totalCaloriesBurned)}</p>
               </div>
             </div>
           </div>
@@ -172,14 +172,14 @@ const WorkoutsPage = () => {
         {workouts.length > 0 ? (
           <div className="space-y-6">
             {workouts.map((workout) => (
-              <div key={workout._id} className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b border-gray-200">
+              <div key={workout._id} className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-800">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                         Workout Session
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mt-1">
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           {workout.createdAt && new Date(workout.createdAt).toLocaleTimeString()}
@@ -204,10 +204,10 @@ const WorkoutsPage = () => {
                   {/* Exercises */}
                   <div className="space-y-4">
                     {workout.exercises.map((exercise, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-black rounded-lg">
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{exercise.name}</h4>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white">{exercise.name}</h4>
+                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mt-1">
                             <span>{exercise.sets} sets</span>
                             {exercise.reps && <span>{exercise.reps} reps</span>}
                             {exercise.weightKg && <span>{exercise.weightKg} kg</span>}
@@ -217,7 +217,7 @@ const WorkoutsPage = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-white">
                             {formatCalories(exercise.caloriesBurned)} cal
                           </p>
                         </div>
@@ -228,7 +228,7 @@ const WorkoutsPage = () => {
                   {/* Notes */}
                   {workout.notes && (
                     <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <h5 className="font-medium text-gray-900 mb-1">Notes</h5>
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-1">Notes</h5>
                       <p className="text-sm text-gray-700">{workout.notes}</p>
                     </div>
                   )}
@@ -237,10 +237,10 @@ const WorkoutsPage = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
+          <div className="text-center py-12 bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
             <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Nincsenek rögzített edzések</h3>
-            <p className="mt-2 text-gray-600">Kezdj azzal, hogy rögzíted az első edzésed!</p>
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek rögzített edzések</h3>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Kezdj azzal, hogy rögzíted az első edzésed!</p>
             <div className="mt-6">
               <button 
                 onClick={() => setShowWorkoutForm(true)}

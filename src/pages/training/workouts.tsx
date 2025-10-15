@@ -291,8 +291,8 @@ const WorkoutsPage = () => {
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Edzéstervek</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edzéstervek</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Hozz létre edzésterveket a meglévő gyakorlataidból
           </p>
         </div>
@@ -319,14 +319,14 @@ const WorkoutsPage = () => {
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4 mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Keresés</label>
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Edzésterv neve..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -337,8 +337,8 @@ const WorkoutsPage = () => {
         ) : workouts.filter(w => w.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
           <div className="text-center py-12">
             <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Nincsenek edzéstervek</h3>
-            <p className="mt-2 text-gray-600">
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek edzéstervek</h3>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Kezdj el edzésterveket létrehozni a gyakorlataidból.
             </p>
           </div>
@@ -347,14 +347,14 @@ const WorkoutsPage = () => {
             {workouts
               .filter(w => w.name.toLowerCase().includes(searchTerm.toLowerCase()))
               .map((workout) => (
-              <div key={workout._id} className="bg-white rounded-lg shadow-md p-6">
+              <div key={workout._id} className="bg-white dark:bg-zinc-950 rounded-lg shadow-md dark:shadow-none dark:border dark:border-zinc-900 p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                       {workout.name}
                     </h3>
                     {workout.description && (
-                      <p className="text-gray-600 text-sm mb-3">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                         {workout.description}
                       </p>
                     )}
@@ -363,7 +363,7 @@ const WorkoutsPage = () => {
                         {difficultyLabels[workout.difficulty]}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 space-x-4">
+                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
                       <div className="flex items-center">
                         <Dumbbell className="w-4 h-4 mr-1" />
                         {workout.exercises.length} gyakorlat
@@ -393,13 +393,13 @@ const WorkoutsPage = () => {
                 </div>
                 <div className="space-y-2">
                   {workout.exercises.slice(0, 3).map((exercise, index) => (
-                    <div key={index} className="text-sm text-gray-600">
+                    <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
                       • {exercise.exerciseName} 
                       ({exercise.sets}×{exercise.reps})
                     </div>
                   ))}
                   {workout.exercises.length > 3 && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-500">
                       +{workout.exercises.length - 3} további gyakorlat
                     </div>
                   )}
@@ -412,10 +412,10 @@ const WorkoutsPage = () => {
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg dark:shadow-none dark:border dark:border-zinc-900 rounded-md bg-white dark:bg-zinc-950">
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                     {editingWorkout ? 'Edzésterv szerkesztése' : 'Új edzésterv'}
                   </h3>
                   <button
@@ -423,7 +423,7 @@ const WorkoutsPage = () => {
                       setShowModal(false);
                       resetForm();
                     }}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:text-gray-400"
                   >
                     <span className="sr-only">Bezárás</span>
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -441,7 +441,7 @@ const WorkoutsPage = () => {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="pl. Felsőtest edzés"
                       required
                     />
@@ -454,7 +454,7 @@ const WorkoutsPage = () => {
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       rows={3}
                       placeholder="Edzésterv leírása..."
                     />
@@ -467,7 +467,7 @@ const WorkoutsPage = () => {
                     <select
                       value={formData.difficulty}
                       onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="beginner">Kezdő</option>
                       <option value="intermediate">Középhaladó</option>
@@ -491,12 +491,12 @@ const WorkoutsPage = () => {
 
                     <div className="space-y-3 max-h-64 overflow-y-auto">
                       {formData.exercises.map((exercise, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-3">
+                        <div key={index} className="border border-gray-200 dark:border-zinc-800 rounded-lg p-3">
                           <div className="flex items-center justify-between mb-2">
                             <select
                               value={exercise.exerciseId}
                               onChange={(e) => updateExercise(index, 'exerciseId', e.target.value)}
-                              className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="flex-1 px-2 py-1 border border-gray-300 dark:border-zinc-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                             >
                               {exercises.map((ex) => (
                                 <option key={ex._id} value={ex._id}>
@@ -514,43 +514,43 @@ const WorkoutsPage = () => {
                           </div>
                           <div className="grid grid-cols-4 gap-2">
                             <div>
-                              <label className="block text-xs text-gray-600 mb-1">Szettek</label>
+                              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Szettek</label>
                               <input
                                 type="number"
                                 value={exercise.sets}
                                 onChange={(e) => updateExercise(index, 'sets', parseInt(e.target.value) || 0)}
-                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 border border-gray-300 dark:border-zinc-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 min="1"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-600 mb-1">Ismétlések</label>
+                              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Ismétlések</label>
                               <input
                                 type="number"
                                 value={exercise.reps}
                                 onChange={(e) => updateExercise(index, 'reps', parseInt(e.target.value) || 0)}
-                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 border border-gray-300 dark:border-zinc-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 min="1"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-600 mb-1">Súly (kg)</label>
+                              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Súly (kg)</label>
                               <input
                                 type="number"
                                 value={exercise.weight}
                                 onChange={(e) => updateExercise(index, 'weight', parseFloat(e.target.value) || 0)}
-                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 border border-gray-300 dark:border-zinc-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 min="0"
                                 step="0.5"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-600 mb-1">Pihenés (mp)</label>
+                              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Pihenés (mp)</label>
                               <input
                                 type="number"
                                 value={exercise.restTime || 60}
                                 onChange={(e) => updateExercise(index, 'restTime', parseInt(e.target.value) || 0)}
-                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 border border-gray-300 dark:border-zinc-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 min="0"
                               />
                             </div>
@@ -567,7 +567,7 @@ const WorkoutsPage = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                     >
                       Mégse
                     </button>

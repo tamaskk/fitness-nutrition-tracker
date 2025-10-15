@@ -57,7 +57,7 @@ const AIRecipeGenerator: React.FC<AIRecipeGeneratorProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-white dark:bg-zinc-950 rounded-lg border border-gray-200 dark:border-zinc-800 shadow-sm dark:shadow-none">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-purple-600" />

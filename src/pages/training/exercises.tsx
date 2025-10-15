@@ -233,8 +233,8 @@ const ExercisesPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gyakorlatok</h1>
-            <p className="text-gray-600">Gyakorlatok kezelése és szerkesztése</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gyakorlatok</h1>
+            <p className="text-gray-600 dark:text-gray-400">Gyakorlatok kezelése és szerkesztése</p>
           </div>
           <button
             onClick={() => {
@@ -250,7 +250,7 @@ const ExercisesPage = () => {
         </div>
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -263,7 +263,7 @@ const ExercisesPage = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Gyakorlat neve..."
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -274,7 +274,7 @@ const ExercisesPage = () => {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {categories.map(category => (
                   <option key={category.value} value={category.value}>
@@ -294,16 +294,16 @@ const ExercisesPage = () => {
         ) : filteredExercises.length === 0 ? (
           <div className="text-center py-12">
             <Dumbbell className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Nincsenek gyakorlatok</h3>
-            <p className="mt-2 text-gray-600">Kezdj el gyakorlatokat hozzáadni az edzéshez.</p>
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Nincsenek gyakorlatok</h3>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Kezdj el gyakorlatokat hozzáadni az edzéshez.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredExercises.map((exercise) => (
-              <div key={exercise._id} className="bg-white rounded-lg shadow-md p-6">
+              <div key={exercise._id} className="bg-white dark:bg-zinc-950 rounded-lg shadow-md dark:shadow-none dark:border dark:border-zinc-900 p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                       {exercise.name}
                     </h3>
                     <div className="space-y-2">
@@ -319,18 +319,18 @@ const ExercisesPage = () => {
                         {exercise.muscleGroups.map((muscleGroup) => (
                           <span
                             key={muscleGroup}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-zinc-950 text-gray-800"
                           >
                             {muscleGroupLabels[muscleGroup]}
                           </span>
                         ))}
                       </div>
                       {exercise.equipment && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           Felszerelés: {exercise.equipment}
                         </p>
                       )}
-                      <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <span>{(exercise as any).sets || 3} szett</span>
                         <span>{(exercise as any).reps || 10} ismétlés</span>
                         {(exercise as any).weight > 0 && (
@@ -339,7 +339,7 @@ const ExercisesPage = () => {
                         <span>{(exercise as any).rest || 60} mp pihenés</span>
                       </div>
                       {exercise.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                           {exercise.description}
                         </p>
                       )}
@@ -373,9 +373,9 @@ const ExercisesPage = () => {
             <div className="flex min-h-screen items-center justify-center p-4">
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowAddModal(false)} />
               
-              <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="relative bg-white dark:bg-zinc-950 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-zinc-900 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                     {editingExercise ? 'Gyakorlat szerkesztése' : 'Új gyakorlat hozzáadása'}
                   </h3>
                   
@@ -388,7 +388,7 @@ const ExercisesPage = () => {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -401,7 +401,7 @@ const ExercisesPage = () => {
                         <select
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
                           {categories.filter(c => c.value).map(category => (
@@ -419,7 +419,7 @@ const ExercisesPage = () => {
                         <select
                           value={formData.difficulty}
                           onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
                           <option value="beginner">Kezdő</option>
@@ -440,7 +440,7 @@ const ExercisesPage = () => {
                               type="checkbox"
                               checked={formData.muscleGroups.includes(muscleGroup)}
                               onChange={() => toggleMuscleGroup(muscleGroup)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
                             />
                             <span className="ml-2 text-sm text-gray-700">
                               {muscleGroupLabels[muscleGroup]}
@@ -459,7 +459,7 @@ const ExercisesPage = () => {
                         value={formData.equipment}
                         onChange={(e) => setFormData({ ...formData, equipment: e.target.value })}
                         placeholder="pl. súlyzó, gép, saját testsúly"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
@@ -473,7 +473,7 @@ const ExercisesPage = () => {
                           min="1"
                           value={formData.reps}
                           onChange={(e) => setFormData({ ...formData, reps: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -486,7 +486,7 @@ const ExercisesPage = () => {
                           min="1"
                           value={formData.sets}
                           onChange={(e) => setFormData({ ...formData, sets: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -500,7 +500,7 @@ const ExercisesPage = () => {
                           step="0.5"
                           value={formData.weight}
                           onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -513,7 +513,7 @@ const ExercisesPage = () => {
                           min="0"
                           value={formData.rest}
                           onChange={(e) => setFormData({ ...formData, rest: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -527,7 +527,7 @@ const ExercisesPage = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows={3}
                         placeholder="Rövid leírás a gyakorlatról..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
@@ -535,7 +535,7 @@ const ExercisesPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowAddModal(false)}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black"
                       >
                         Mégse
                       </button>

@@ -227,13 +227,13 @@ const PriceMonitorPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Árfigyelő</h1>
-            <p className="text-gray-600">Keress és hasonlíts össze termékárakat különböző boltokban</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Árfigyelő</h1>
+            <p className="text-gray-600 dark:text-gray-400">Keress és hasonlíts össze termékárakat különböző boltokban</p>
           </div>
         </div>
 
         {/* Search Form */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6">
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="flex gap-4">
               <div className="flex-1">
@@ -246,7 +246,7 @@ const PriceMonitorPage = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="pl. csirkemell filé, tej, kenyér..."
-                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                 </div>
@@ -267,7 +267,7 @@ const PriceMonitorPage = () => {
           {availableStores.length > 0 && (
             <div className="mt-4">
               <div className="flex items-center gap-2 mb-2">
-                <Filter className="h-4 w-4 text-gray-500" />
+                <Filter className="h-4 w-4 text-gray-500 dark:text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Bolt szűrő:</span>
                 <button
                   onClick={() => setShowStoreFilter(!showStoreFilter)}
@@ -283,7 +283,7 @@ const PriceMonitorPage = () => {
                     className={`px-3 py-1 text-sm rounded-full border ${
                       selectedStore === '' 
                         ? 'bg-blue-100 border-blue-500 text-blue-700' 
-                        : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-100 border-gray-300 dark:border-zinc-700 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     Összes bolt
@@ -295,7 +295,7 @@ const PriceMonitorPage = () => {
                       className={`px-3 py-1 text-sm rounded-full border ${
                         selectedStore === store 
                           ? 'bg-blue-100 border-blue-500 text-blue-700' 
-                          : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                          : 'bg-gray-100 border-gray-300 dark:border-zinc-700 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       {store}
@@ -312,7 +312,7 @@ const PriceMonitorPage = () => {
           <div className="space-y-4">
             {/* Results Header */}
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {totalCount} termék találat
                 {selectedStore && ` (${selectedStore} szűrve)`}
               </p>
@@ -321,17 +321,17 @@ const PriceMonitorPage = () => {
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 0}
-                    className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 border border-gray-300 dark:border-zinc-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {currentPage + 1} / {totalPages}
                   </span>
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage >= totalPages - 1}
-                    className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 border border-gray-300 dark:border-zinc-700 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -344,9 +344,9 @@ const PriceMonitorPage = () => {
               {products.map((product) => {
                 const bestPrice = getBestPrice(product);
                 return (
-                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <div key={product.id} className="bg-white dark:bg-zinc-950 rounded-lg shadow-md dark:shadow-none dark:border dark:border-zinc-900 overflow-hidden hover:shadow-lg transition-shadow">
                     {/* Product Image */}
-                    <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                    <div className="aspect-square bg-gray-100 dark:bg-zinc-950 flex items-center justify-center">
                       {product.imageUrl ? (
                         <img
                           src={product.imageUrl}
@@ -369,7 +369,7 @@ const PriceMonitorPage = () => {
 
                     {/* Product Info */}
                     <div className="p-4">
-                      <h3 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
+                      <h3 className="font-medium text-gray-900 dark:text-white text-sm mb-2 line-clamp-2">
                         {product.name}
                       </h3>
                       
@@ -379,13 +379,13 @@ const PriceMonitorPage = () => {
                           <span className="text-lg font-bold text-green-600">
                             {formatPrice(bestPrice.price)} Ft
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 dark:text-gray-500">
                             /{product.unitTitle}
                           </span>
                         </div>
                         
                         {bestPrice.store && (
-                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                             <Store className="h-3 w-3" />
                             <span>{bestPrice.store}</span>
                           </div>
@@ -403,7 +403,7 @@ const PriceMonitorPage = () => {
                           
                           return (
                             <div key={store.id} className="flex items-center justify-between text-xs">
-                              <span className="text-gray-600">{store.name}</span>
+                              <span className="text-gray-600 dark:text-gray-400">{store.name}</span>
                               <div className="flex items-center gap-1">
                                 {isDiscounted && (
                                   <span className="text-gray-400 line-through">
@@ -430,7 +430,7 @@ const PriceMonitorPage = () => {
                                   e.target.value = ''; // Reset selection
                                 }
                               }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                               defaultValue=""
                             >
                               <option value="" disabled>Bolt kiválasztása...</option>
@@ -475,12 +475,12 @@ const PriceMonitorPage = () => {
 
         {/* Empty State */}
         {!loading && products.length === 0 && searchQuery && (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
+          <div className="text-center py-12 bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
             <Search className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
               Nincs találat
             </h3>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Próbálj meg másik keresési kifejezést használni
             </p>
           </div>
@@ -488,12 +488,12 @@ const PriceMonitorPage = () => {
 
         {/* Initial State */}
         {!loading && products.length === 0 && !searchQuery && (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
+          <div className="text-center py-12 bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
             <Search className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
               Árfigyelő
             </h3>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Keress termékeket és hasonlítsd össze az árakat különböző boltokban
             </p>
           </div>

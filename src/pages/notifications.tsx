@@ -78,9 +78,13 @@ const NotificationsPage = () => {
             
             setChats(newChats);
             
-            // If we have a selected chat, also check for new messages in that chat
+            // If we have a selected chat, check for new messages only if there are unread messages
             if (selectedChat && isAtBottom) {
-              fetchChatMessages(selectedChat._id, false);
+              const currentChat = newChats.find((chat: Chat) => chat._id === selectedChat._id);
+              if (currentChat && currentChat.unreadCount > 0) {
+                // Only fetch messages if there are actually new unread messages
+                fetchChatMessages(selectedChat._id, false);
+              }
             }
           }
         })
@@ -144,7 +148,30 @@ const NotificationsPage = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Messages data:', data);
-        setChatMessages(data.chat.messages || []);
+        const newMessages = data.chat.messages || [];
+        
+        // Only update state if messages have actually changed
+        setChatMessages(prevMessages => {
+          // Check if messages are different by comparing length and last message
+          if (prevMessages.length !== newMessages.length) {
+            return newMessages;
+          }
+          
+          // Check if the last message is different
+          if (prevMessages.length > 0 && newMessages.length > 0) {
+            const lastPrevMessage = prevMessages[prevMessages.length - 1];
+            const lastNewMessage = newMessages[newMessages.length - 1];
+            if (lastPrevMessage._id !== lastNewMessage._id || 
+                lastPrevMessage.content !== lastNewMessage.content ||
+                lastPrevMessage.timestamp !== lastNewMessage.timestamp) {
+              return newMessages;
+            }
+          }
+          
+          // No changes detected, return previous state
+          return prevMessages;
+        });
+        
         // Only scroll if explicitly requested
         if (shouldScroll) {
           setTimeout(() => {
@@ -382,9 +409,9 @@ const NotificationsPage = () => {
       case 'error': return <XCircle className="h-4 w-4 text-red-500" />;
       case 'feature': return <Zap className="h-4 w-4 text-purple-500" />;
       case 'bugfix': return <Wrench className="h-4 w-4 text-orange-500" />;
-      case 'maintenance': return <AlertCircle className="h-4 w-4 text-gray-500" />;
+      case 'maintenance': return <AlertCircle className="h-4 w-4 text-gray-500 dark:text-gray-500" />;
       case 'announcement': return <Megaphone className="h-4 w-4 text-indigo-500" />;
-      default: return <Info className="h-4 w-4 text-gray-500" />;
+      default: return <Info className="h-4 w-4 text-gray-500 dark:text-gray-500" />;
     }
   };
 
@@ -401,7 +428,7 @@ const NotificationsPage = () => {
   if (status === 'loading' || loading) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
         </div>
       </Layout>
@@ -412,19 +439,19 @@ const NotificationsPage = () => {
     <Layout>
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
-          <p className="mt-2 text-gray-600">Stay updated with your messages, notifications, and app updates</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Stay updated with your messages, notifications, and app updates</p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
+        <div className="border-b border-gray-200 dark:border-zinc-800 mb-6">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('chat')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'chat'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <MessageCircle className="h-5 w-5 inline mr-2" />
@@ -440,7 +467,7 @@ const NotificationsPage = () => {
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'notifications'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <Bell className="h-5 w-5 inline mr-2" />
@@ -456,7 +483,7 @@ const NotificationsPage = () => {
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'updates'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <AlertCircle className="h-5 w-5 inline mr-2" />
@@ -475,10 +502,10 @@ const NotificationsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Chat List */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow">
-                <div className="p-4 border-b border-gray-200">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900">
+                <div className="p-4 border-b border-gray-200 dark:border-zinc-800">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-medium text-gray-900">Start New Chat</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Start New Chat</h3>
                   </div>
                   <div className="mt-3 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -490,7 +517,7 @@ const NotificationsPage = () => {
                         setSearchEmail(e.target.value);
                         searchUsers(e.target.value);
                       }}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   {searchResults.length > 0 && (
@@ -498,13 +525,13 @@ const NotificationsPage = () => {
                       {searchResults.map((user) => (
                         <div
                           key={user._id}
-                          className="flex items-center justify-between p-3 hover:bg-gray-50 rounded border border-gray-200"
+                          className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black rounded border border-gray-200 dark:border-zinc-800"
                         >
                           <div className="flex items-center">
                             <User className="h-4 w-4 text-gray-400 mr-2" />
                             <div>
                               <span className="text-sm font-medium">{user.firstName} {user.lastName}</span>
-                              <div className="text-xs text-gray-500">{user.email}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-500">{user.email}</div>
                             </div>
                           </div>
                           <button
@@ -526,14 +553,14 @@ const NotificationsPage = () => {
                       <div
                         key={chat._id}
                         onClick={() => handleSelectChat(chat)}
-                        className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 dark:bg-black transition-colors ${
                           selectedChat?._id === chat._id ? 'bg-blue-50' : ''
                         } ${chat.unreadCount > 0 ? 'bg-blue-25 border-l-4 border-l-blue-500' : ''}`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <User className={`h-4 w-4 mr-2 ${chat.unreadCount > 0 ? 'text-blue-500' : 'text-gray-400'}`} />
-                            <span className={`font-medium text-sm ${chat.unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-700'}`}>
+                            <span className={`font-medium text-sm ${chat.unreadCount > 0 ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-700'}`}>
                               {otherParticipant?.firstName} {otherParticipant?.lastName}
                             </span>
                           </div>
@@ -571,12 +598,12 @@ const NotificationsPage = () => {
 
             {/* Chat Messages */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow h-96 flex flex-col">
+              <div className="bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 h-96 flex flex-col">
                 {selectedChat ? (
                   <>
-                    <div className="p-4 border-b border-gray-200">
+                    <div className="p-4 border-b border-gray-200 dark:border-zinc-800">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-medium text-gray-900">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                           Chat with {selectedChat.participants.find(p => p._id !== session?.user?.id)?.firstName}
                         </h3>
                         {markingAsRead === selectedChat._id && (
@@ -597,7 +624,7 @@ const NotificationsPage = () => {
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
                       ) : chatMessages.length === 0 ? (
-                        <p className="text-gray-500 text-center">No messages yet. Start the conversation!</p>
+                        <p className="text-gray-500 dark:text-gray-500 text-center">No messages yet. Start the conversation!</p>
                       ) : (
                         <div className="space-y-4">
                           {chatMessages.map((message) => (
@@ -632,7 +659,7 @@ const NotificationsPage = () => {
                         </div>
                       )}
                     </div>
-                    <div className="p-4 border-t border-gray-200">
+                    <div className="p-4 border-t border-gray-200 dark:border-zinc-800">
                       <div className="flex space-x-2">
                         <input
                           type="text"
@@ -640,7 +667,7 @@ const NotificationsPage = () => {
                           onChange={(e) => setNewMessage(e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                           placeholder="Type a message..."
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          className="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:ring-blue-500 focus:border-blue-500"
                         />
                         <button
                           onClick={sendMessage}
@@ -656,7 +683,7 @@ const NotificationsPage = () => {
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                       <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Select a chat to start messaging</p>
+                      <p className="text-gray-500 dark:text-gray-500">Select a chat to start messaging</p>
                     </div>
                   </div>
                 )}
@@ -671,13 +698,13 @@ const NotificationsPage = () => {
             {notifications.length === 0 ? (
               <div className="text-center py-12">
                 <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No notifications yet</p>
+                <p className="text-gray-500 dark:text-gray-500">No notifications yet</p>
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className={`bg-white rounded-lg shadow p-6 border-l-4 cursor-pointer hover:shadow-md transition-shadow ${
+                  className={`bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6 border-l-4 cursor-pointer hover:shadow-md transition-shadow ${
                     notification.isRead ? 'border-l-gray-300' : 'border-l-blue-500'
                   }`}
                   onClick={() => {
@@ -692,9 +719,9 @@ const NotificationsPage = () => {
                     <div className="flex items-start space-x-3">
                       {getTypeIcon(notification.type)}
                       <div className="flex-1">
-                        <h3 className="text-lg font-medium text-gray-900">{notification.title}</h3>
-                        <p className="mt-1 text-gray-600 line-clamp-2">{notification.message}</p>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{notification.title}</h3>
+                        <p className="mt-1 text-gray-600 dark:text-gray-400 line-clamp-2">{notification.message}</p>
+                        <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-500">
                           <Clock className="h-4 w-4 mr-1" />
                           {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
                         </div>
@@ -725,13 +752,13 @@ const NotificationsPage = () => {
             {updates.length === 0 ? (
               <div className="text-center py-12">
                 <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No updates yet</p>
+                <p className="text-gray-500 dark:text-gray-500">No updates yet</p>
               </div>
             ) : (
               updates.map((update) => (
                 <div
                   key={update._id}
-                  className={`bg-white rounded-lg shadow p-6 border-l-4 cursor-pointer hover:shadow-md transition-shadow ${getPriorityColor(update.priority)} ${
+                  className={`bg-white dark:bg-zinc-950 rounded-lg shadow dark:shadow-none dark:border dark:border-zinc-900 p-6 border-l-4 cursor-pointer hover:shadow-md transition-shadow ${getPriorityColor(update.priority)} ${
                     update.isRead ? 'opacity-75' : ''
                   }`}
                   onClick={() => {
@@ -747,7 +774,7 @@ const NotificationsPage = () => {
                       {getTypeIcon(update.type)}
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <h3 className="text-lg font-medium text-gray-900">{update.title}</h3>
+                          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{update.title}</h3>
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                             update.priority === 'urgent' ? 'bg-red-100 text-red-800' :
                             update.priority === 'high' ? 'bg-orange-100 text-orange-800' :
@@ -757,8 +784,8 @@ const NotificationsPage = () => {
                             {update.priority}
                           </span>
                         </div>
-                        <p className="mt-2 text-gray-600 line-clamp-3">{update.content}</p>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <p className="mt-2 text-gray-600 dark:text-gray-400 line-clamp-3">{update.content}</p>
+                        <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-500">
                           <Clock className="h-4 w-4 mr-1" />
                           {update.createdAt ? new Date(update.createdAt).toLocaleDateString() : 'No date'}
                         </div>
