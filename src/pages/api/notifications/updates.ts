@@ -4,6 +4,7 @@ import { authOptions } from '../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import Update from '@/models/Update';
 import User from '@/models/User';
+import { getUserFromToken } from '@/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,19 +12,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
     await connectToDatabase();
 
     // Handle admin user - get or create admin user for proper ObjectId
-    let userId = session.user.id;
+    let userId = user?._id as string;
     if (userId === 'admin') {
       const adminUser = await User.findOne({ email: process.env.ADMIN_EMAIL });
       if (adminUser) {
-        userId = adminUser._id;
+        userId = adminUser._id as string;
       } else {
         // If no admin user exists, return empty updates
         return res.status(200).json({

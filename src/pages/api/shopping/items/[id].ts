@@ -3,12 +3,23 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import ShoppingListItem from '@/models/ShoppingListItem';
+import { getUserFromToken } from '@/utils/auth';
+import User from '@/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const { id } = req.query;
@@ -31,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (preferredStore !== undefined) updateData.preferredStore = preferredStore;
 
       const item = await ShoppingListItem.findOneAndUpdate(
-        { _id: id, userId: session.user.id },
+        { _id: id, userId: user._id },
         updateData,
         { new: true }
       );
@@ -44,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (req.method === 'DELETE') {
       const item = await ShoppingListItem.findOneAndDelete({
         _id: id,
-        userId: session.user.id,
+        userId: user._id,
       });
 
       if (!item) {

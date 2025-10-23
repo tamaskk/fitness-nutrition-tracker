@@ -4,6 +4,8 @@ import { authOptions } from '../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import Expense from '@/models/Expense';
 import Income from '@/models/Income';
+import User from '@/models/User';
+import { getUserFromToken } from '@/utils/auth';
 
 // Helper function to get week number
 function getWeekNumber(date: Date): number {
@@ -12,17 +14,43 @@ function getWeekNumber(date: Date): number {
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 }
 
+// Helper function to get month name in Hungarian
+function getMonthName(monthIndex: number): string {
+  const monthNames = [
+    'Január', 'Február', 'Március', 'Április', 'Május', 'Június',
+    'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December'
+  ];
+  return monthNames[monthIndex];
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.log(`[Finance Summary API] ${req.method} request received`);
+    
+    // Connect to database first
+    await connectToDatabase();
+    
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
+      console.log('[Finance Summary API] Unauthorized: No user email found');
+      return res.status(401).json({ success: false, message: 'Nincs jogosultság' });
     }
 
-    await connectToDatabase();
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      console.log(`[Finance Summary API] User not found: ${userEmail}`);
+      return res.status(404).json({ success: false, message: 'Felhasználó nem található' });
+    }
+
+    console.log(`[Finance Summary API] User authenticated: ${user.email} (${user._id})`);
 
     if (req.method === 'GET') {
       const { period = 'month', year, month, week } = req.query;
+      console.log('[Finance Summary API] GET - Query params:', { period, year, month, week });
       
       // Calculate date range based on period and specific date
       let startDate: Date;
@@ -69,22 +97,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
+      console.log(`[Finance Summary API] Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
       // Get expenses and income for the period
       const [expenses, income] = await Promise.all([
         Expense.find({
-          userId: session.user.id,
+          userId: user._id,
           date: { $gte: startDate, $lte: endDate }
         }),
         Income.find({
-          userId: session.user.id,
+          userId: user._id,
           date: { $gte: startDate, $lte: endDate }
         })
       ]);
+
+      console.log(`[Finance Summary API] Found ${expenses.length} expenses and ${income.length} income entries for period`);
 
       // Calculate totals
       const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
       const totalIncome = income.reduce((sum, inc) => sum + inc.amount, 0);
       const balance = totalIncome - totalExpenses;
+
+      console.log(`[Finance Summary API] Totals - Income: ${totalIncome}, Expenses: ${totalExpenses}, Balance: ${balance}`);
 
       // Group by category
       const expensesByCategory = expenses.reduce((acc, expense) => {
@@ -117,27 +151,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }))
       ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
 
-      res.status(200).json({
-        totalExpenses,
-        totalIncome,
-        balance,
-        expensesByCategory,
-        incomeByCategory,
-        recentTransactions,
-        period,
-        startDate,
-        endDate,
-        currentPeriod: {
-          year: year ? parseInt(year as string) : new Date().getFullYear(),
-          month: month ? parseInt(month as string) : new Date().getMonth() + 1,
-          week: week ? parseInt(week as string) : getWeekNumber(new Date()),
+      // Calculate monthly trend for the last 6 months
+      console.log('[Finance Summary API] Calculating monthly trend for last 6 months...');
+      const monthlyTrend = [];
+      const now = new Date();
+      
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+        
+        const [monthExpenses, monthIncome] = await Promise.all([
+          Expense.find({
+            userId: user._id,
+            date: { $gte: monthStart, $lte: monthEnd }
+          }),
+          Income.find({
+            userId: user._id,
+            date: { $gte: monthStart, $lte: monthEnd }
+          })
+        ]);
+        
+        const expenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const incomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
+        
+        monthlyTrend.push({
+          month: getMonthName(monthDate.getMonth()),
+          year: monthDate.getFullYear(),
+          monthIndex: monthDate.getMonth(),
+          income: incomeTotal,
+          expenses: expenseTotal,
+          balance: incomeTotal - expenseTotal,
+        });
+      }
+
+      console.log(`[Finance Summary API] Monthly trend calculated: ${monthlyTrend.length} months`);
+
+      // Prepare comparison data
+      const comparisonData = {
+        income: totalIncome,
+        expenses: totalExpenses,
+        balance: balance,
+      };
+
+      console.log('[Finance Summary API] Sending summary response');
+      return res.status(200).json({
+        success: true,
+        data: {
+          totalExpenses,
+          totalIncome,
+          balance,
+          expensesByCategory,
+          incomeByCategory,
+          monthlyTrend,
+          comparisonData,
+          recentTransactions,
+          period,
+          startDate,
+          endDate,
+          currentPeriod: {
+            year: year ? parseInt(year as string) : new Date().getFullYear(),
+            month: month ? parseInt(month as string) : new Date().getMonth() + 1,
+            week: week ? parseInt(week as string) : getWeekNumber(new Date()),
+          },
         },
       });
     } else {
-      res.status(405).json({ message: 'Method not allowed' });
+      console.log(`[Finance Summary API] Method not allowed: ${req.method}`);
+      return res.status(405).json({ success: false, message: 'A metódus nem engedélyezett' });
     }
   } catch (error) {
-    console.error('Finance summary API error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('[Finance Summary API] Error:', error);
+    return res.status(500).json({ success: false, message: 'Szerver hiba történt' });
   }
 }

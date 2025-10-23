@@ -3,20 +3,98 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from './auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import Expense from '@/models/Expense';
+import User from '@/models/User';
+import { getUserFromToken } from '@/utils/auth';
+
+// Validation helper functions
+const validateAmount = (amount: any): { valid: boolean; error?: string } => {
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount) || numAmount <= 0) {
+    return { valid: false, error: 'Az összegnek pozitív számnak kell lennie' };
+  }
+  return { valid: true };
+};
+
+const validateRequiredString = (value: any, fieldName: string): { valid: boolean; error?: string } => {
+  if (!value || typeof value !== 'string' || value.trim() === '') {
+    return { valid: false, error: `A ${fieldName} mező kötelező` };
+  }
+  return { valid: true };
+};
+
+const validateDate = (date: any): { valid: boolean; error?: string } => {
+  if (!date) {
+    return { valid: true }; // Optional, will use current date
+  }
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) {
+    return { valid: false, error: 'Érvénytelen dátum formátum' };
+  }
+  return { valid: true };
+};
+
+const validatePaymentMethod = (method: any): { valid: boolean; error?: string } => {
+  const validMethods = ['cash', 'card', 'transfer'];
+  if (method && !validMethods.includes(method)) {
+    return { valid: false, error: 'A fizetési mód csak "cash", "card", vagy "transfer" lehet' };
+  }
+  return { valid: true };
+};
+
+const validateBillItems = (items: any[]): { valid: boolean; error?: string } => {
+  if (!Array.isArray(items)) {
+    return { valid: false, error: 'A számlaelemeknek tömbnek kell lenniük' };
+  }
+  
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item.name || typeof item.name !== 'string' || item.name.trim() === '') {
+      return { valid: false, error: `A számlaelem nevének kötelező (elem ${i + 1})` };
+    }
+    const price = parseFloat(item.price);
+    if (isNaN(price) || price < 0) {
+      return { valid: false, error: `A számlaelem árának pozitív számnak kell lennie (elem ${i + 1})` };
+    }
+    if (item.quantity !== undefined) {
+      const quantity = parseFloat(item.quantity);
+      if (isNaN(quantity) || quantity <= 0) {
+        return { valid: false, error: `A számlaelem mennyiségének pozitív számnak kell lennie (elem ${i + 1})` };
+      }
+    }
+  }
+  return { valid: true };
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.log(`[Expenses API] ${req.method} request received`);
+    
+    // Connect to database first
+    await connectToDatabase();
+    
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
+      console.log('[Expenses API] Unauthorized: No user email found');
+      return res.status(401).json({ success: false, message: 'Nincs jogosultság' });
     }
 
-    await connectToDatabase();
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      console.log(`[Expenses API] User not found: ${userEmail}`);
+      return res.status(404).json({ success: false, message: 'Felhasználó nem található' });
+    }
+
+    console.log(`[Expenses API] User authenticated: ${user.email} (${user._id})`);
 
     if (req.method === 'GET') {
       const { startDate, endDate, category } = req.query;
+      console.log('[Expenses API] GET - Query params:', { startDate, endDate, category });
       
-      let query: any = { userId: session.user.id };
+      let query: any = { userId: user._id };
       
       if (startDate || endDate) {
         query.date = {};
@@ -29,10 +107,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const expenses = await Expense.find(query)
-        .sort({ createdAt: -1, date: -1 })
+        .sort({ date: -1, createdAt: -1 })
         .limit(100);
 
-      res.status(200).json(expenses);
+      console.log(`[Expenses API] GET - Found ${expenses.length} expenses`);
+      return res.status(200).json({ success: true, data: expenses });
     } else if (req.method === 'POST') {
       const { 
         amount, 
@@ -47,72 +126,139 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         paymentMethod 
       } = req.body;
 
-      if (!amount || !category || !description) {
-        return res.status(400).json({ message: 'Amount, category, and description are required' });
+      console.log('[Expenses API] POST - Creating expense:', { 
+        amount, 
+        category, 
+        description, 
+        isBill, 
+        billItemsCount: billItems?.length || 0 
+      });
+
+      // Comprehensive validation
+      const amountValidation = validateAmount(amount);
+      if (!amountValidation.valid) {
+        console.log('[Expenses API] POST - Validation failed: amount');
+        return res.status(400).json({ success: false, message: amountValidation.error });
+      }
+
+      const categoryValidation = validateRequiredString(category, 'kategória');
+      if (!categoryValidation.valid) {
+        console.log('[Expenses API] POST - Validation failed: category');
+        return res.status(400).json({ success: false, message: categoryValidation.error });
+      }
+
+      const descriptionValidation = validateRequiredString(description, 'leírás');
+      if (!descriptionValidation.valid) {
+        console.log('[Expenses API] POST - Validation failed: description');
+        return res.status(400).json({ success: false, message: descriptionValidation.error });
+      }
+
+      const dateValidation = validateDate(date);
+      if (!dateValidation.valid) {
+        console.log('[Expenses API] POST - Validation failed: date');
+        return res.status(400).json({ success: false, message: dateValidation.error });
+      }
+
+      const paymentMethodValidation = validatePaymentMethod(paymentMethod);
+      if (!paymentMethodValidation.valid) {
+        console.log('[Expenses API] POST - Validation failed: paymentMethod');
+        return res.status(400).json({ success: false, message: paymentMethodValidation.error });
+      }
+
+      // Validate bill items if provided
+      if (billItems && billItems.length > 0) {
+        const billItemsValidation = validateBillItems(billItems);
+        if (!billItemsValidation.valid) {
+          console.log('[Expenses API] POST - Validation failed: billItems');
+          return res.status(400).json({ success: false, message: billItemsValidation.error });
+        }
+      }
+
+      // Calculate total amount from billItems if provided
+      let finalAmount = parseFloat(amount);
+      if (billItems && billItems.length > 0) {
+        finalAmount = billItems.reduce((sum: number, item: any) => {
+          return sum + (parseFloat(item.price) * (item.quantity || 1));
+        }, 0);
+        console.log(`[Expenses API] POST - Calculated amount from billItems: ${finalAmount}`);
       }
 
       const expenseData = {
-        userId: session.user.id,
-        amount: parseFloat(amount),
-        category,
-        description,
+        userId: user._id,
+        amount: finalAmount,
+        category: category.trim(),
+        description: description.trim(),
         date: date ? new Date(date) : new Date(),
         billImageUrl,
         extractedItems,
         billItems,
         isBill: isBill || false,
-        location,
+        location: location?.trim(),
         paymentMethod: paymentMethod || 'cash',
       };
       
       const expense = await Expense.create(expenseData);
+      console.log(`[Expenses API] POST - Expense created successfully: ${expense._id}`);
 
-      res.status(201).json(expense);
+      return res.status(201).json({ success: true, data: expense });
     } else if (req.method === 'PUT') {
       const { id } = req.query;
       const { amount, billItems } = req.body;
 
+      console.log(`[Expenses API] PUT - Updating expense: ${id}`);
+
       if (!id) {
-        return res.status(400).json({ message: 'Expense ID is required' });
+        console.log('[Expenses API] PUT - Missing expense ID');
+        return res.status(400).json({ success: false, message: 'A kiadás azonosítója kötelező' });
       }
 
       const updateData: any = {};
       if (amount !== undefined) updateData.amount = parseFloat(amount);
       if (billItems !== undefined) updateData.billItems = billItems;
 
+      console.log('[Expenses API] PUT - Update data:', updateData);
+
       const expense = await Expense.findOneAndUpdate(
-        { _id: id, userId: session.user.id },
+        { _id: id, userId: user._id },
         updateData,
         { new: true }
       );
 
       if (!expense) {
-        return res.status(404).json({ message: 'Expense not found' });
+        console.log(`[Expenses API] PUT - Expense not found: ${id}`);
+        return res.status(404).json({ success: false, message: 'Kiadás nem található' });
       }
 
-      res.status(200).json(expense);
+      console.log(`[Expenses API] PUT - Expense updated successfully: ${expense._id}`);
+      return res.status(200).json({ success: true, data: expense });
     } else if (req.method === 'DELETE') {
       const { id } = req.query;
 
+      console.log(`[Expenses API] DELETE - Deleting expense: ${id}`);
+
       if (!id) {
-        return res.status(400).json({ message: 'Expense ID is required' });
+        console.log('[Expenses API] DELETE - Missing expense ID');
+        return res.status(400).json({ success: false, message: 'A kiadás azonosítója kötelező' });
       }
 
       const expense = await Expense.findOneAndDelete({
         _id: id,
-        userId: session.user.id
+        userId: user._id
       });
 
       if (!expense) {
-        return res.status(404).json({ message: 'Expense not found' });
+        console.log(`[Expenses API] DELETE - Expense not found: ${id}`);
+        return res.status(404).json({ success: false, message: 'Kiadás nem található' });
       }
 
-      res.status(200).json({ message: 'Expense deleted successfully' });
+      console.log(`[Expenses API] DELETE - Expense deleted successfully: ${id}`);
+      return res.status(200).json({ success: true, message: 'Kiadás sikeresen törölve' });
     } else {
-      res.status(405).json({ message: 'Method not allowed' });
+      console.log(`[Expenses API] Method not allowed: ${req.method}`);
+      return res.status(405).json({ success: false, message: 'A metódus nem engedélyezett' });
     }
   } catch (error) {
-    console.error('Expenses API error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('[Expenses API] Error:', error);
+    return res.status(500).json({ success: false, message: 'Szerver hiba történt' });
   }
 }

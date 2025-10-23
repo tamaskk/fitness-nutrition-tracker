@@ -1,145 +1,45 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface CompletedSet {
-  setNumber: number;
-  reps: number;
-  weight?: number;
-  duration?: number;
-  completed: boolean;
-  restTime?: number;
-  notes?: string;
-}
+const exerciseSetSchema = new mongoose.Schema({
+  setNumber: { type: Number, required: true },
+  weight: { type: Number, default: 10 },
+  reps: { type: Number, default: 0 },
+  restSeconds: { type: Number, default: 60 },
+  isCompleted: { type: Boolean, default: false },
+}, { _id: false });
 
-export interface CompletedExercise {
-  exerciseId: string;
-  exerciseName: string;
-  sets: CompletedSet[];
-  totalSets: number;
-  completedSets: number;
-}
+const workoutExerciseSchema = new mongoose.Schema({
+  exerciseId: { type: String, required: true },
+  name: { type: String, required: true },
+  gifUrl: { type: String, required: true },
+  targetMuscles: [String],
+  bodyParts: [String],
+  equipments: [String],
+  sets: { type: [exerciseSetSchema], default: [] },
+  notes: { type: String, default: '' },
+}, { _id: false });
 
-export interface WorkoutSessionDocument extends Document {
-  userId: string;
-  workoutId: string;
-  workoutName: string;
-  startTime: Date;
-  endTime?: Date;
-  duration?: number; // in minutes
-  exercises: CompletedExercise[];
-  totalCaloriesBurned?: number;
-  notes?: string;
-  status: 'processing' | 'in-progress' | 'paused' | 'completed' | 'failed';
-  createdAt: Date;
-  updatedAt: Date;
-}
+const workoutSessionSchema = new mongoose.Schema({
+  userId: { type: String, required: true, index: true },
+  planId: { type: String }, // optional reference to WorkoutPlan
+  workoutPlanName: { type: String, required: true },
+  exercises: { type: [workoutExerciseSchema], default: [] },
+  startTime: { type: Date, required: true },
+  endTime: { type: Date, required: true },
+  durationSeconds: { type: Number, required: true },
+  totalSets: { type: Number, default: 0 },
+  completedSets: { type: Number, default: 0 },
+  caloriesBurned: { type: Number, default: 0 },
+  bodyWeight: { type: Number },
+  status: { type: String, default: 'completed' },
+  createdAt: { type: Date, default: Date.now },
+}, { timestamps: false });
 
-const CompletedSetSchema = new Schema({
-  setNumber: {
-    type: Number,
-    required: true,
-    min: 1,
-  },
-  reps: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  weight: {
-    type: Number,
-    min: 0,
-  },
-  duration: {
-    type: Number,
-    min: 0,
-  },
-  completed: {
-    type: Boolean,
-    default: false,
-  },
-  restTime: {
-    type: Number,
-    min: 0,
-  },
-  notes: {
-    type: String,
-    trim: true,
-  },
-});
+workoutSessionSchema.index({ userId: 1, startTime: -1 });
 
-const CompletedExerciseSchema = new Schema({
-  exerciseId: {
-    type: String,
-    required: true,
-  },
-  exerciseName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  sets: [CompletedSetSchema],
-  totalSets: {
-    type: Number,
-    required: true,
-    min: 1,
-  },
-  completedSets: {
-    type: Number,
-    required: true,
-    min: 0,
-    default: 0,
-  },
-});
-
-const WorkoutSessionSchema = new Schema<WorkoutSessionDocument>({
-  userId: {
-    type: String,
-    required: true,
-  },
-  workoutId: {
-    type: String,
-    required: true,
-  },
-  workoutName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  startTime: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-  endTime: {
-    type: Date,
-  },
-  duration: {
-    type: Number,
-    min: 0,
-  },
-  exercises: [CompletedExerciseSchema],
-  totalCaloriesBurned: {
-    type: Number,
-    min: 0,
-  },
-  notes: {
-    type: String,
-    trim: true,
-  },
-  status: {
-    type: String,
-    enum: ['processing', 'in-progress', 'paused', 'completed', 'failed'],
-    default: 'processing',
-  },
-}, {
-  timestamps: true,
-});
-
-// Index for search functionality
-WorkoutSessionSchema.index({ userId: 1, startTime: -1 });
-
-// Clear any existing model to ensure fresh schema
-if (mongoose.models.WorkoutSession) {
+// Force reload the model in development to pick up schema changes
+if (mongoose.models.WorkoutSession && process.env.NODE_ENV === 'development') {
   delete mongoose.models.WorkoutSession;
 }
 
-export default mongoose.model<WorkoutSessionDocument>('WorkoutSession', WorkoutSessionSchema);
+export default mongoose.models.WorkoutSession || mongoose.model('WorkoutSession', workoutSessionSchema);

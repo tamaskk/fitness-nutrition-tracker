@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
+import { getUserFromToken } from '@/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -10,9 +11,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Connect to database first
+    await connectToDatabase();
+    
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const { email } = req.query;
@@ -20,15 +33,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Email parameter is required' });
     }
 
-    await connectToDatabase();
-
     // Search for users by email (excluding current user)
     const users = await User.find({
       email: { $regex: email, $options: 'i' },
-      _id: { $ne: session.user.id }
+      _id: { $ne: user?._id as string }
     })
     .select('firstName lastName email')
     .limit(10);
+
+    console.log(users);
 
     res.status(200).json({
       success: true,

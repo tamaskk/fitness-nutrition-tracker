@@ -3,19 +3,32 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import Chat from '@/models/Chat';
+import { getUserFromToken } from '@/utils/auth';
+import User from '@/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-  if (!session?.user?.id) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  try {
+    // Connect to database first
+    await connectToDatabase();
+    
+    const tokenUser = getUserFromToken(req);
+    const session = await getServerSession(req, res, authOptions);
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
-  const { chatId } = req.query;
-  if (!chatId || typeof chatId !== 'string') {
-    return res.status(400).json({ message: 'Chat ID is required' });
-  }
-
-  await connectToDatabase();
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const { chatId } = req.query;
+    if (!chatId || typeof chatId !== 'string') {
+      return res.status(400).json({ message: 'Chat ID is required' });
+    }
 
   if (req.method === 'GET') {
     try {
@@ -28,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ message: 'Chat not found' });
       }
 
-      if (!chat.participants.some(p => p._id.toString() === session.user.id)) {
+      if (!chat.participants.some((p: any) => p._id.toString() === (user?._id as string))) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
@@ -37,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         chat: {
           _id: chat._id,
           participants: chat.participants,
-          messages: chat.messages.map(message => ({
+          messages: chat.messages.map((message: any) => ({
             _id: message._id,
             senderId: message.senderId,
             content: message.content,
@@ -63,23 +76,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ message: 'Chat not found' });
       }
 
-      if (!chat.participants.includes(session.user.id)) {
+      if (!chat.participants.includes(user?._id as string)) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
       // Add new message
       const newMessage = {
-        senderId: session.user.id,
+        senderId: user?._id as string,
         content: content.trim(),
         timestamp: new Date(),
-        readBy: [session.user.id] // Sender has read their own message
+        readBy: [user?._id as string] // Sender has read their own message
       };
 
       chat.messages.push(newMessage);
       chat.lastMessage = {
         content: content.trim(),
         timestamp: new Date(),
-        senderId: session.user.id
+        senderId: user?._id as string
       };
 
       await chat.save();
@@ -94,5 +107,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } else {
     res.status(405).json({ message: 'Method not allowed' });
+  }
+  } catch (error) {
+    console.error('Chat messages API error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 }

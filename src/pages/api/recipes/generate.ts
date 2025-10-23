@@ -5,7 +5,13 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  timeout: 50000, // 50 second timeout for OpenAI requests
 });
+
+// Increase API route timeout (works on Vercel)
+export const config = {
+  maxDuration: 60, // 60 seconds (requires Vercel Pro for >10s)
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -13,10 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+    // const session = await getServerSession(req, res, authOptions);
+    // if (!session?.user?.id) {
+    //   return res.status(401).json({ message: 'Unauthorized' });
+    // }
 
     const { ingredients, count = 10, offset = 0 } = req.body;
 
@@ -24,8 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Ingredients array is required' });
     }
 
-    // Limit count to prevent JSON parsing issues
-    const safeCount = Math.min(count, 5);
+    // Limit count to prevent JSON parsing issues and timeout
+    const safeCount = Math.min(count, 3); // Reduced from 5 to 3 for faster response
 
     const ingredientsList = ingredients.join(', ');
     
@@ -41,6 +47,11 @@ Minden recepthez add meg:
 7. Nehézségi szintet (Könnyű/Közepes/Nehéz)
 8. Kategóriát (reggeli/ebéd/vacsora/uzsonna/desszert)
 9. Kalória/adag számítást
+10. Fehérje per adag
+11. Szénhidrát per adag
+12. Zsír per adag
+13. Nyers anyagok
+14. Micro és makro adatok
 
 FONTOS: Minden hozzávalóhoz add meg a pontos mennyiséget és mértékegységet (pl. "300 g csirkemell", "2 db édesburgonya", "3 db tojás", "1 teáskanál só").
 
@@ -72,6 +83,21 @@ Válasz JSON tömb formátumban, pontosan ezzel a struktúrával:
     "difficulty": "Könnyű",
     "category": "vacsora",
     "caloriesPerServing": 350,
+    "proteinPerServing": 20,
+    "carbsPerServing": 30,
+    "fatPerServing": 10,
+    "fiberPerServing": 5,
+    "microNutrients": {
+      "vitaminA": 100,
+      "vitaminC": 100,
+      "vitaminD": 100,
+    },
+    "macroNutrients": {
+      "protein": 20,
+      "carbs": 30,
+      "fat": 10,
+      "fiber": 5,
+    },
     "tags": ["címke1", "címke2"]
   }
 ]
@@ -101,8 +127,8 @@ Generálj pontosan ${safeCount} különböző receptet. Legyenek változatosak �
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 3000, // Reduced to prevent truncation
-      temperature: 0.7, // Slightly lower for more consistent formatting
+      max_tokens: 2000, // Reduced from 3000 to speed up response time
+      temperature: 0.5, // Lower for faster, more consistent formatting
     });
 
     const content = response.choices[0].message.content;
@@ -139,7 +165,8 @@ Generálj pontosan ${safeCount} különböző receptet. Legyenek változatosak �
         console.log('Successfully parsed after fixing JSON');
       } catch (secondError) {
         console.error('Still failed to parse after fixes:', secondError);
-        throw new Error(`Invalid JSON response from OpenAI: ${parseError.message}`);
+        const errorMsg = parseError instanceof Error ? parseError.message : 'Unknown parsing error';
+        throw new Error(`Invalid JSON response from OpenAI: ${errorMsg}`);
       }
     }
     
@@ -176,24 +203,50 @@ Generálj pontosan ${safeCount} különböző receptet. Legyenek változatosak �
       prepTime: parseTimeToMinutes(recipe.cookingTime),
       cookTime: parseTimeToMinutes(recipe.cookingTime),
       totalTime: parseTimeToMinutes(recipe.cookingTime),
+      
+      // Nutritional information per serving
       caloriesPerServing: recipe.caloriesPerServing || 0,
+      proteinPerServing: recipe.proteinPerServing || 0,
+      carbsPerServing: recipe.carbsPerServing || 0,
+      fatPerServing: recipe.fatPerServing || 0,
+      fiberPerServing: recipe.fiberPerServing || 0,
+      
+      // Legacy nutrition object (for backward compatibility)
       nutrition: {
         calories: recipe.caloriesPerServing || 0,
-        protein: null,
-        carbs: null,
-        fat: null,
-        fiber: null
+        protein: recipe.proteinPerServing || null,
+        carbs: recipe.carbsPerServing || null,
+        fat: recipe.fatPerServing || null,
+        fiber: recipe.fiberPerServing || null
       },
-      userId: session.user.id,
+      
+      // Macro nutrients
+      macroNutrients: recipe.macroNutrients || {
+        protein: recipe.proteinPerServing || 0,
+        carbs: recipe.carbsPerServing || 0,
+        fat: recipe.fatPerServing || 0,
+        fiber: recipe.fiberPerServing || 0
+      },
+      
+      // Micro nutrients
+      microNutrients: recipe.microNutrients || {
+        vitaminA: 0,
+        vitaminC: 0,
+        vitaminD: 0
+      },
+      
+      userId: 'asd',
       createdAt: new Date(),
       updatedAt: new Date(),
+      
       // Ensure Hungarian content
       title: recipe.title || 'Recept',
       description: recipe.description || 'Finom recept',
       category: recipe.category || 'vacsora',
       difficulty: recipe.difficulty || 'Könnyű',
       instructions: recipe.instructions || ['Nincs elérhető utasítás ehhez a recepthez.'],
-      ingredients: recipe.ingredients || []
+      ingredients: recipe.ingredients || [],
+      tags: recipe.tags || []
     }));
 
     res.status(200).json({
@@ -206,6 +259,18 @@ Generálj pontosan ${safeCount} különböző receptet. Legyenek változatosak �
 
   } catch (error) {
     console.error('OpenAI recipe generation error:', error);
+    
+    // Check if it's a timeout error
+    if (error instanceof Error) {
+      if (error.message.includes('timeout') || error.message.includes('timed out')) {
+        return res.status(504).json({ 
+          success: false, 
+          error: 'Request timed out. Try reducing the number of recipes or ingredients.',
+          code: 'TIMEOUT'
+        });
+      }
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     res.status(500).json({ 
       success: false, 

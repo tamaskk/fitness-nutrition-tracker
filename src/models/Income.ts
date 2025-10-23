@@ -6,6 +6,8 @@ export interface IncomeDocument extends Document {
   category: string;
   description: string;
   date: Date;
+  location?: string;
+  paymentMethod: 'cash' | 'card' | 'transfer';
   source?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +38,15 @@ const IncomeSchema = new Schema<IncomeDocument>({
     type: Date,
     required: true,
     default: Date.now,
+  },
+  location: {
+    type: String,
+    trim: true,
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['cash', 'card', 'transfer'],
+    default: 'cash',
   },
   source: {
     type: String,
