@@ -5,9 +5,13 @@ import User from '@/models/User';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { getUserFromToken } from '@/utils/auth';
+import connectDB from '@/lib/mongodb';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    // Connect to MongoDB first
+    await connectDB();
+    console.log('MongoDB connected');
     const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
     
