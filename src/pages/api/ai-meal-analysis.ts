@@ -42,16 +42,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('AI meal analysis request received');
     const tokenUser = getUserFromToken(req);
+    console.log('tokenUser', tokenUser);
     const session = await getServerSession(req, res, authOptions);
-    
+    console.log('session', session);
     const userEmail = tokenUser?.email || session?.user?.email;
-    
+    console.log('userEmail', userEmail);
     if (!userEmail) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
+    console.log('userEmail found');
     const user = await User.findOne({ email: userEmail });
+    console.log('user', user);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
