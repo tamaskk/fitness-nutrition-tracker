@@ -8,6 +8,7 @@ import formidable from 'formidable';
 import fs from 'fs';
 import { getUserFromToken } from '@/utils/auth';
 import User from '@/models/User';
+import connectDB from '@/lib/mongodb';
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -43,6 +44,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('AI meal analysis request received');
+    
+    // Connect to MongoDB first
+    await connectDB();
+    console.log('MongoDB connected');
+    
     const tokenUser = getUserFromToken(req);
     console.log('tokenUser', tokenUser);
     const session = await getServerSession(req, res, authOptions);
