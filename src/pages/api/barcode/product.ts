@@ -6,6 +6,7 @@ import User from '@/models/User';
 import connectDB from '@/lib/mongodb';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    console.log('Barcode product lookup request received');
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -34,6 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get barcode from query parameters
     const { barcode } = req.query;
 
+    console.log('barcode', barcode);
+
     if (!barcode || typeof barcode !== 'string') {
       return res.status(400).json({ 
         error: 'Barcode is required',
@@ -45,6 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Call Open Food Facts API
     const openFoodFactsUrl = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
+    console.log('openFoodFactsUrl', openFoodFactsUrl);
     const response = await fetch(openFoodFactsUrl);
 
     if (!response.ok) {
