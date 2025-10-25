@@ -3,24 +3,37 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from './auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
 import Recipe from '@/models/Recipe';
+import User from '@/models/User';
+import { getUserFromToken } from '@/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    await connectToDatabase();
+
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    await connectToDatabase();
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    } 
+
+    const userId = user._id as string;
+
 
     if (req.method === 'GET') {
-      console.log('GET /api/recipes - Session user ID:', session.user.id);
-      console.log('Session user object:', session.user);
+      console.log('GET /api/recipes - Session user ID:', userId);
       
       const { search, tags, mealType, limit = '20' } = req.query;
       
       let query: any = {
-        userId: session.user.id, // Only get recipes for the current user
+        userId: userId, // Only get recipes for the current user
       };
       
       console.log('Query for recipes:', query);
@@ -90,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'Title and ingredients are required' });
       }
 
-      console.log('Session user ID:', session.user.id);
+      console.log('Session user ID:', userId);
 
       // Helper function to convert time string to number
       const parseTimeToMinutes = (timeValue: any): number => {
@@ -106,7 +119,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
 
       const recipeData = {
-        userId: session.user.id,
+        userId: userId,
         title,
         ingredients,
         steps: steps || [],
@@ -139,11 +152,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       console.log('Deleting recipe with ID:', id);
-      console.log('User ID:', session.user.id);
+      console.log('User ID:', userId);
 
       const recipe = await Recipe.findOneAndDelete({
         _id: id,
-        userId: session.user.id, // Only allow deleting own recipes
+        userId: userId, // Only allow deleting own recipes
       });
 
       if (!recipe) {
@@ -195,7 +208,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const recipe = await Recipe.findOneAndUpdate(
         {
           _id: id,
-          userId: session.user.id, // Only allow updating own recipes
+          userId: userId, // Only allow updating own recipes
         },
         {
           title,

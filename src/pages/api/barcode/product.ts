@@ -17,20 +17,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
     console.log('MongoDB connected');
 
-    // Authentication (optional - remove if you want it public)
-    const tokenUser = getUserFromToken(req);
-    const session = await getServerSession(req, res, authOptions);
+    // // Authentication (optional - remove if you want it public)
+    // const tokenUser = getUserFromToken(req);
+    // const session = await getServerSession(req, res, authOptions);
     
-    const userEmail = tokenUser?.email || session?.user?.email;
+    // const userEmail = tokenUser?.email || session?.user?.email;
     
-    if (!userEmail) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+    // if (!userEmail) {
+    //   return res.status(401).json({ message: 'Unauthorized' });
+    // }
 
-    const user = await User.findOne({ email: userEmail });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    // const user = await User.findOne({ email: userEmail });
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found' });
+    // }
 
     // Get barcode from query parameters
     const { barcode } = req.query;
@@ -148,6 +148,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         lastModified: product.last_modified_t ? new Date(product.last_modified_t * 1000).toISOString() : null
       }
     };
+
+    console.log('productInfo', productInfo);
 
     console.log(`✅ Product found: ${productInfo.product.name}`);
 
