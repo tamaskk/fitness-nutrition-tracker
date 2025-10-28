@@ -84,6 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       maxSpeed: activity.max_speed, // m/s
       averageHeartrate: activity.average_heartrate,
       maxHeartrate: activity.max_heartrate,
+      kilojoules: activity.kilojoules,
     }));
 
     res.status(200).json({
