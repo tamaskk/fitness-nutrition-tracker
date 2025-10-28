@@ -29,7 +29,12 @@ import {
   Heart,
   AlertTriangle,
   Moon,
-  Sun
+  Sun,
+  Activity,
+  Link,
+  Unlink,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -50,6 +55,8 @@ const ProfilePage = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
+  const [stravaConnected, setStravaConnected] = useState(false);
+  const [stravaData, setStravaData] = useState<any>(null);
   
   const { preferences, updatePreference } = useUserPreferences();
   const { theme, toggleTheme } = useTheme();
@@ -78,7 +85,31 @@ const ProfilePage = () => {
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) router.push('/login');
-    else fetchUserData();
+    else {
+      fetchUserData();
+      checkStravaConnection();
+      
+      // Check for Strava OAuth success/error in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('strava_success') === 'true') {
+        toast.success('Strava connected successfully!');
+        // Clean URL
+        window.history.replaceState({}, '', '/profile');
+      } else if (urlParams.get('strava_error')) {
+        const error = urlParams.get('strava_error');
+        const errorMessages: { [key: string]: string } = {
+          denied: 'Strava authorization denied',
+          no_code: 'No authorization code received',
+          config: 'Strava not configured. Please contact support.',
+          exchange_failed: 'Failed to exchange authorization code',
+          user_not_found: 'User not found',
+          unknown: 'Unknown error occurred',
+        };
+        toast.error(errorMessages[error || 'unknown'] || 'Failed to connect Strava');
+        // Clean URL
+        window.history.replaceState({}, '', '/profile');
+      }
+    }
   }, [session, status, router]);
 
   const fetchUserData = async () => {
@@ -206,6 +237,46 @@ const ProfilePage = () => {
       toast.error('Error updating preferences');
     } finally {
       setIsUpdatingPreferences(false);
+    }
+  };
+
+  const checkStravaConnection = async () => {
+    try {
+      const response = await fetch('/api/strava/connect');
+      if (response.ok) {
+        const data = await response.json();
+        setStravaConnected(data.connected);
+        if (data.connected) {
+          setStravaData(data.stravaConnection);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking Strava connection:', error);
+    }
+  };
+
+  const handleStravaConnect = () => {
+    // Redirect to OAuth authorization endpoint
+    window.location.href = '/api/strava/oauth/authorize';
+  };
+
+  const handleStravaDisconnect = async () => {
+    if (!confirm('Are you sure you want to disconnect Strava?')) return;
+
+    try {
+      const response = await fetch('/api/strava/connect', {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Strava disconnected successfully');
+        setStravaConnected(false);
+        setStravaData(null);
+      } else {
+        toast.error('Failed to disconnect Strava');
+      }
+    } catch (error) {
+      toast.error('Error disconnecting Strava');
     }
   };
 
@@ -735,6 +806,61 @@ const ProfilePage = () => {
                     Delete Account
                   </button>
                 </div>
+              </div>
+
+              {/* Strava Integration */}
+              <div className="bg-white dark:bg-zinc-950 shadow-lg rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <Activity className="h-5 w-5 text-orange-600 mr-2" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Strava Integration</h3>
+                  </div>
+                  {stravaConnected ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+
+                {stravaConnected && stravaData ? (
+                  <div className="space-y-3">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                      <p className="text-sm text-green-800 dark:text-green-200 font-medium mb-1">
+                        ✓ Connected
+                      </p>
+                      {stravaData.username && (
+                        <p className="text-xs text-green-700 dark:text-green-300">
+                          @{stravaData.username}
+                        </p>
+                      )}
+                      {stravaData.connectedAt && (
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                          Connected: {new Date(stravaData.connectedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleStravaDisconnect}
+                      className="w-full flex items-center justify-center px-4 py-2 border border-orange-300 dark:border-orange-600 rounded-lg text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                    >
+                      <Unlink className="h-4 w-4 mr-2" />
+                      Disconnect Strava
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Connect your Strava account to sync your activities automatically.
+                    </p>
+                    <button
+                      onClick={handleStravaConnect}
+                      className="w-full flex items-center justify-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
+                    >
+                      <Link className="h-4 w-4 mr-2" />
+                      Connect with Strava
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Account Stats */}

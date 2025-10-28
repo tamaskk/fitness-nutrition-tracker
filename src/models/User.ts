@@ -167,6 +167,14 @@ const UserSchema = new Schema({
       default: Date.now,
     },
   },
+  stravaConnection: {
+    accessToken: { type: String },
+    refreshToken: { type: String },
+    athleteId: { type: String },
+    username: { type: String },
+    connectedAt: { type: Date },
+    lastSyncedAt: { type: Date },
+  },
   createdAt: {
     type: Date,
     default: Date.now,

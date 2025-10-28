@@ -90,6 +90,14 @@ export interface User {
     };
     createdAt?: Date;
   };
+  stravaConnection?: {
+    accessToken?: string;
+    refreshToken?: string;
+    athleteId?: string;
+    username?: string;
+    connectedAt?: Date;
+    lastSyncedAt?: Date;
+  };
   createdAt: Date;
 }
 
