@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
+
+// JWT secret - in production, this should be in environment variables
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -76,13 +80,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = await User.create(userData);
     console.log('User created successfully:', user.toObject());
 
+    // Generate JWT token (auto-login after signup)
+    const token = jwt.sign(
+      {
+        userId: (user as any)._id.toString(),
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: '7d', // Token expires in 7 days
+      }
+    );
+
+    console.log('User registered and logged in automatically');
+
     res.status(201).json({
       message: 'User created successfully',
+      token,
       user: {
         id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        country: user.country,
+        language: user.language,
+        preferences: user.preferences,
+        birthday: user.birthday,
+        gender: user.gender,
+        weight: user.weight,
+        height: user.height,
+        dailyCalorieGoal: user.dailyCalorieGoal,
       },
     });
   } catch (error) {

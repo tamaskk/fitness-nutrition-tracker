@@ -328,7 +328,12 @@ JSON formátum:
             "title": "Név",
             "description": "Leírás",
             "ingredients": [{"name": "X", "amount": "100", "unit": "g"}],
-            "instructions": ["1. lépés", "2. lépés"],
+            "instructions": [
+              {
+                "step": "Mit kell csinálni ebben a lépésben",
+                "ingredient": "Az ehhez szükséges hozzávalók (pl. '100g liszt, 2 tojás')"
+              }
+            ],
             "caloriesPerServing": 350,
             "proteinPerServing": 20,
             "carbsPerServing": 30,
@@ -357,7 +362,7 @@ ${previousDays.length > 0 ? '- ⚠️ KRITIKUS: NE GENERÁLD újra a fenti étel
     messages: [
       {
         role: "system",
-        content: "Táplálkozási tanácsadó. JSON válasz magyarul. KRITIKUS: Ha kapsz listát korábbi ételekről, SOHA ne ismételd őket! Minden receptnek TELJESEN ÚJNAK és EGYEDINEK kell lennie. Variálj alapanyagokban, főzési módszerekben és konyhákban."
+        content: "Táplálkozási tanácsadó. JSON válasz magyarul. KRITIKUS: Ha kapsz listát korábbi ételekről, SOHA ne ismételd őket! Minden receptnek TELJESEN ÚJNAK és EGYEDINEK kell lennie. Variálj alapanyagokban, főzési módszerekben és konyhákban. FONTOS: Az 'instructions' tömb elemei objektumok legyenek 'step' (utasítás) és 'ingredient' (hozzávalók) mezőkkel!"
       },
       {
         role: "user",

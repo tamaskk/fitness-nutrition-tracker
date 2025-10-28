@@ -87,9 +87,14 @@ Válasz JSON tömb formátumban, pontosan ezzel a struktúrával:
       {"name": "hozzávaló neve", "amount": "mennyiség", "unit": "mértékegység"}
     ],
     "instructions": [
-      "1. lépés: részletes utasítás",
-      "2. lépés: részletes utasítás",
-      "3. lépés: részletes utasítás"
+      {
+        "step": "Részletes utasítás mit kell csinálni ebben a lépésben",
+        "ingredient": "Az ehhez a lépéshez szükséges hozzávalók listája (pl. '300g csirkemell, 1 teáskanál só')"
+      },
+      {
+        "step": "Következő lépés részletes utasítása",
+        "ingredient": "Az ehhez a lépéshez szükséges hozzávalók"
+      }
     ],
     "cookingTime": "30 perc",
     "servings": 4,
@@ -132,7 +137,7 @@ Generálj pontosan ${safeCount} különböző receptet. Legyenek változatosak �
       messages: [
         {
           role: "system",
-          content: "Te egy professzionális szakács és receptfejlesztő vagy. Mindig érvényes JSON tömböket adj vissza a megadott struktúrával. Minden szöveg legyen magyarul. Számítsd ki a kalória/adag értéket minden recepthez. MINDEN hozzávalóhoz add meg a pontos mennyiséget és mértékegységet (pl. '300 g csirkemell', '2 db édesburgonya'). FONTOS: A JSON válaszban ne használj sortöréseket a szövegekben, és minden idézőjelet escape-elj (\\\")."
+          content: "Te egy professzionális szakács és receptfejlesztő vagy. Mindig érvényes JSON tömböket adj vissza a megadott struktúrával. Minden szöveg legyen magyarul. Számítsd ki a kalória/adag értéket minden recepthez. MINDEN hozzávalóhoz add meg a pontos mennyiséget és mértékegységet (pl. '300 g csirkemell', '2 db édesburgonya'). FONTOS: Az 'instructions' tömb elemei objektumok legyenek 'step' és 'ingredient' mezőkkel! A JSON válaszban ne használj sortöréseket a szövegekben, és minden idézőjelet escape-elj (\\\")."
         },
         {
           role: "user",

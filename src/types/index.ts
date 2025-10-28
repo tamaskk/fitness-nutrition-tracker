@@ -64,6 +64,32 @@ export interface User {
     unit?: 'cm' | 'ft';
   };
   dailyCalorieGoal?: number;
+  goal?: {
+    goalType?: 'lose_weight' | 'gain_weight' | 'build_muscle' | 'maintain_weight' | 'improve_fitness' | 'tone_body';
+    targetWeight?: number;
+    durationDays?: number;
+    plan?: {
+      maintenanceCalories?: number;
+      goalCaloriesStart?: number;
+      goalCaloriesEnd?: number;
+      averageDailyDeficitOrSurplusKcal?: number;
+      expectedTotalWeightChangeKg?: number;
+      targetWeightKg?: number;
+      calorieSchedule?: Array<{
+        period: string;
+        caloriesToConsume: number;
+        caloriesToBurn: number;
+        netCalories: number;
+        averageWeeklyWeightChangeKg: number;
+      }>;
+      progressMilestones?: Array<{
+        period: string;
+        targetWeightKg: number;
+      }>;
+      notes?: string[];
+    };
+    createdAt?: Date;
+  };
   createdAt: Date;
 }
 
@@ -104,8 +130,25 @@ export interface Recipe {
   externalId?: string;
   title: string;
   ingredients: { name: string; quantity?: string; grams?: number }[];
-  steps?: string[];
+  steps?: { step: string; ingredient?: string }[]; // ingredient is optional for backwards compatibility
   caloriesPerServing?: number;
+  proteinPerServing?: number;
+  carbsPerServing?: number;
+  fatPerServing?: number;
+  fiberPerServing?: number;
+  macroNutrients?: {
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  };
+  microNutrients?: {
+    vitaminA?: number;
+    vitaminC?: number;
+    vitaminD?: number;
+    calcium?: number;
+    iron?: number;
+  };
   servings?: number;
   tags?: string[];
   imageUrl?: string;

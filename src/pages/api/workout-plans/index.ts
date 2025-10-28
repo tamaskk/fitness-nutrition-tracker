@@ -99,8 +99,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           secondaryMuscles: ex.secondaryMuscles || [],
           instructions: ex.instructions || [],
           notes: ex.notes || '',
-          sets: Array.isArray(ex.sets) ? ex.sets.map((s: any) => ({
-            setNumber: s.setNumber,
+          sets: Array.isArray(ex.sets) ? ex.sets.map((s: any, index: number) => ({
+            setNumber: s.setNumber !== undefined ? s.setNumber : index + 1,
             weight: typeof s.weight === 'number' ? s.weight : Number(s.weight) || 10,
             reps: typeof s.reps === 'number' ? s.reps : Number(s.reps) || 0,
             restSeconds: typeof s.restSeconds === 'number' ? s.restSeconds : Number(s.restSeconds) || 60,

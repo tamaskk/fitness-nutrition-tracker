@@ -53,6 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (req.method === 'POST') {
       const { name, mealType, quantityGrams, calories, protein, carbs, fat, date } = req.body;
 
+      console.log('POST /api/meals - Body:', req.body);
+
       if (!name || !mealType || !calories) {
         return res.status(400).json({ message: 'Name, meal type, and calories are required' });
       }

@@ -1,9 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { User } from '@/types';
 
+// Force clear the model cache before defining the schema
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
 export interface UserDocument extends Omit<User, '_id'>, Document {}
 
-const UserSchema = new Schema<UserDocument>({
+const UserSchema = new Schema({
   email: {
     type: String,
     required: true,
@@ -119,6 +124,48 @@ const UserSchema = new Schema<UserDocument>({
     min: 500,
     max: 10000,
     default: 2000,
+  },
+  goal: {
+    goalType: {
+      type: String,
+      enum: ['lose_weight', 'gain_weight', 'build_muscle', 'maintain_weight', 'improve_fitness', 'tone_body'],
+      default: 'maintain_weight',
+    },
+    targetWeight: {
+      type: Number,
+      min: 1,
+      max: 1000,
+    },
+    durationDays: {
+      type: Number,
+      min: 1,
+      max: 1825, // Up to 5 years
+    },
+    // AI-generated plan details
+    plan: {
+      maintenanceCalories: { type: Number },
+      goalCaloriesStart: { type: Number },
+      goalCaloriesEnd: { type: Number },
+      averageDailyDeficitOrSurplusKcal: { type: Number },
+      expectedTotalWeightChangeKg: { type: Number },
+      targetWeightKg: { type: Number },
+      calorieSchedule: [{
+        period: { type: String },
+        caloriesToConsume: { type: Number },
+        caloriesToBurn: { type: Number },
+        netCalories: { type: Number },
+        averageWeeklyWeightChangeKg: { type: Number },
+      }],
+      progressMilestones: [{
+        period: { type: String },
+        targetWeightKg: { type: Number },
+      }],
+      notes: [{ type: String }],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   createdAt: {
     type: Date,

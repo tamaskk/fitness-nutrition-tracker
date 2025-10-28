@@ -76,7 +76,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title, 
         ingredients, 
         steps, 
-        caloriesPerServing, 
+        caloriesPerServing,
+        proteinPerServing,
+        carbsPerServing,
+        fatPerServing,
+        fiberPerServing,
+        macroNutrients,
+        microNutrients,
         servings, 
         tags, 
         imageUrl, 
@@ -90,6 +96,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ingredients,
         steps,
         caloriesPerServing,
+        proteinPerServing,
+        carbsPerServing,
+        fatPerServing,
+        fiberPerServing,
+        macroNutrients,
+        microNutrients,
         servings,
         tags,
         imageUrl,
@@ -118,12 +130,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return 0;
       };
 
+      // Helper function to normalize steps format (handle both old and new formats)
+      const normalizeSteps = (steps: any[]): Array<{ step: string; ingredient: string }> => {
+        if (!steps || !Array.isArray(steps)) return [];
+        
+        return steps.map((stepItem) => {
+          // New format: object with step and ingredient
+          if (typeof stepItem === 'object' && stepItem.step) {
+            return {
+              step: stepItem.step,
+              ingredient: stepItem.ingredient || '', // Default to empty string if not provided
+            };
+          }
+          // Old format: plain string
+          if (typeof stepItem === 'string') {
+            return {
+              step: stepItem,
+              ingredient: '', // No ingredient info in old format
+            };
+          }
+          // Fallback for unexpected format
+          return {
+            step: String(stepItem),
+            ingredient: '',
+          };
+        });
+      };
+
       const recipeData = {
         userId: userId,
         title,
         ingredients,
-        steps: steps || [],
+        steps: normalizeSteps(steps || []),
         caloriesPerServing: caloriesPerServing || 0,
+        proteinPerServing: proteinPerServing || 0,
+        carbsPerServing: carbsPerServing || 0,
+        fatPerServing: fatPerServing || 0,
+        fiberPerServing: fiberPerServing || 0,
+        macroNutrients: macroNutrients || undefined,
+        microNutrients: microNutrients || undefined,
         servings: servings || 1,
         tags: tags || [],
         imageUrl,
@@ -176,7 +221,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title, 
         ingredients, 
         steps, 
-        caloriesPerServing, 
+        caloriesPerServing,
+        proteinPerServing,
+        carbsPerServing,
+        fatPerServing,
+        fiberPerServing,
+        macroNutrients,
+        microNutrients,
         servings, 
         tags, 
         imageUrl, 
@@ -202,6 +253,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return 0;
       };
 
+      // Helper function to normalize steps format (handle both old and new formats)
+      const normalizeSteps = (steps: any[]): Array<{ step: string; ingredient: string }> => {
+        if (!steps || !Array.isArray(steps)) return [];
+        
+        return steps.map((stepItem) => {
+          // New format: object with step and ingredient
+          if (typeof stepItem === 'object' && stepItem.step) {
+            return {
+              step: stepItem.step,
+              ingredient: stepItem.ingredient || '', // Default to empty string if not provided
+            };
+          }
+          // Old format: plain string
+          if (typeof stepItem === 'string') {
+            return {
+              step: stepItem,
+              ingredient: '', // No ingredient info in old format
+            };
+          }
+          // Fallback for unexpected format
+          return {
+            step: String(stepItem),
+            ingredient: '',
+          };
+        });
+      };
+
       console.log('Updating recipe with ID:', id);
       console.log('Update data:', req.body);
 
@@ -213,8 +291,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         {
           title,
           ingredients,
-          steps: steps || [],
+          steps: normalizeSteps(steps || []),
           caloriesPerServing: caloriesPerServing || 0,
+          proteinPerServing: proteinPerServing || 0,
+          carbsPerServing: carbsPerServing || 0,
+          fatPerServing: fatPerServing || 0,
+          fiberPerServing: fiberPerServing || 0,
+          macroNutrients: macroNutrients || undefined,
+          microNutrients: microNutrients || undefined,
           servings: servings || 1,
           tags: tags || [],
           imageUrl,

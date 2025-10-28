@@ -3,7 +3,7 @@ import { Recipe } from '@/types';
 
 export interface RecipeDocument extends Omit<Recipe, '_id'>, Document {}
 
-const RecipeSchema = new Schema<RecipeDocument>({
+const RecipeSchema = new Schema({
   userId: {
     type: String,
     required: true,
@@ -33,12 +33,54 @@ const RecipeSchema = new Schema<RecipeDocument>({
     },
   }],
   steps: [{
-    type: String,
-    trim: true,
+    step: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    ingredient: {
+      type: String,
+      required: false, // Optional for backwards compatibility
+      trim: true,
+      default: '',
+    },
   }],
   caloriesPerServing: {
     type: Number,
     min: 0,
+  },
+  proteinPerServing: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  carbsPerServing: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  fatPerServing: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  fiberPerServing: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  macroNutrients: {
+    protein: { type: Number, min: 0, default: 0 },
+    carbs: { type: Number, min: 0, default: 0 },
+    fat: { type: Number, min: 0, default: 0 },
+    fiber: { type: Number, min: 0, default: 0 },
+  },
+  microNutrients: {
+    vitaminA: { type: Number, min: 0 },
+    vitaminC: { type: Number, min: 0 },
+    vitaminD: { type: Number, min: 0 },
+    calcium: { type: Number, min: 0 },
+    iron: { type: Number, min: 0 },
   },
   servings: {
     type: Number,
