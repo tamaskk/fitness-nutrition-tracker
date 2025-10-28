@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // Redirect URI - where Strava will send the user after authorization
-  const REDIRECT_URI = `${process.env.NEXTAUTH_URL || 'https://fitness-nutrition-tracker-beryl.vercel.app'}/api/strava/oauth/callback`;
+  const REDIRECT_URI = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/strava/oauth/callback`;
   
   // Build Strava authorization URL
   const authUrl = new URL('https://www.strava.com/oauth/authorize');

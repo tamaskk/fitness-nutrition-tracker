@@ -33,12 +33,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Strava not connected. Please connect your Strava account first.' });
     }
 
-    // Get query parameters for pagination
-    const { page = '1', per_page = '30' } = req.query;
+    // Get query parameters
+    const { page = '1', per_page = '30', before, after } = req.query;
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    params.append('page', page as string);
+    params.append('per_page', per_page as string);
+    if (before) params.append('before', before as string);
+    if (after) params.append('after', after as string);
 
     // Fetch activities from Strava API
     const stravaResponse = await fetch(
-      `https://www.strava.com/api/v3/athlete/activities?page=${page}&per_page=${per_page}`,
+      `https://www.strava.com/api/v3/athlete/activities?${params.toString()}`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
