@@ -3,19 +3,31 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import connectDB from '@/lib/mongodb';
 import WorkoutSession from '@/models/WorkoutSession';
+import { getUserFromToken } from '@/utils/auth';
+import User from '@/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Check for JWT token first (for mobile app), then NextAuth session (for web app)
+  await connectDB();
+  const tokenUser = getUserFromToken(req);
   const session = await getServerSession(req, res, authOptions);
-
-  if (!session?.user?.id) {
+  
+  const userEmail = tokenUser?.email || session?.user?.email;
+  
+  if (!userEmail) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  const user = await User.findOne({ email: userEmail });
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  const userId = user._id;
+
   try {
-    await connectDB();
 
     if (req.method === 'GET') {
-      const sessions = await WorkoutSession.find({ userId: session.user.id })
+      const sessions = await WorkoutSession.find({ userId })
         .sort({ startTime: -1 })
         .limit(50);
 
@@ -30,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const workoutSession = new WorkoutSession({
-        userId: session.user.id,
+        userId,
         workoutId,
         workoutName,
         startTime: new Date(startTime),
@@ -64,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (notes) updateData.notes = notes;
 
       const workoutSession = await WorkoutSession.findOneAndUpdate(
-        { _id: id, userId: session.user.id },
+        { _id: id, userId },
         updateData,
         { new: true }
       );
@@ -85,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const workoutSession = await WorkoutSession.findOneAndDelete({
         _id: id,
-        userId: session.user.id
+        userId
       });
 
       if (!workoutSession) {

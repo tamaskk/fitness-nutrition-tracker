@@ -16,14 +16,44 @@ export const config = {
   maxDuration: 180, // 3 minutes (requires Vercel Pro for >10s)
 };
 
+// Helper function to calculate date ranges for periods
+function calculatePeriodDates(periodString: string, goalCreatedAt: Date, periodIndex: number) {
+  const isWeekly = periodString.toLowerCase().includes('week');
+  const startDate = new Date(goalCreatedAt);
+  
+  if (isWeekly) {
+    // For weekly periods: add weeks
+    startDate.setDate(startDate.getDate() + (periodIndex * 7));
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6); // 7 days period (inclusive)
+    return { startDate, endDate };
+  } else {
+    // For monthly periods: add months
+    startDate.setMonth(startDate.getMonth() + periodIndex);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
+    endDate.setDate(endDate.getDate() - 1); // Last day of the month period
+    return { startDate, endDate };
+  }
+}
+
 const SYSTEM_PROMPT = `
 You are a professional fitness and nutrition planner AI.
-Your task is to create a realistic calorie plan and progress roadmap based on user input.
+Your task is to create a realistic, personalized calorie plan and progress roadmap based on user input.
 
 The user will provide:
 - Current weight (in kg)
 - Goal (lose_weight, gain_weight, maintain_weight)
 - Duration (in days or months, can be 2m, 3m, 6m, 1y, 2y, or custom between 60–1825 days)
+- Optional: Onboarding questionnaire answers (fitness level, exercise frequency, dietary habits, sleep, stress, health conditions, etc.)
+
+When onboarding answers are provided, use them to personalize the plan:
+- Adjust calorie calculations based on their activity level and exercise frequency
+- Consider dietary restrictions and eating habits
+- Account for sleep quality and stress levels
+- Adapt recommendations based on health conditions or limitations
+- Tailor the intensity and progression based on their fitness experience
+- Provide specific notes addressing their unique challenges and goals
 
 You must calculate:
 1. Maintenance calories (roughly 31 × bodyweight in kg for average activity)
@@ -39,9 +69,7 @@ You must calculate:
 
 Rules:
 - If duration ≤ 3 months (90 days) → make weekly schedule (max 12-13 periods).
-- If duration > 3 months and ≤ 1 year (365 days) → make monthly schedule (max 12 periods).
-- If duration > 1 year (365 days) → make quarterly schedule (every 3 months, max 8 periods).
-- For very long durations, focus on quarterly milestones to keep response concise.
+- If duration > 3 months → make monthly schedule (max 12 periods).
 - All numeric values must be realistic (no extreme deficits or surpluses).
 - Calorie burn should be realistic daily exercise (200-600 kcal/day depending on intensity).
 - Output valid JSON only.
@@ -64,7 +92,7 @@ JSON FORMAT:
     "target_weight_kg": number,
     "calorie_schedule": [
       {
-        "period": "Week 1" | "Month 1" | "Quarter 1" | ...,
+        "period": "Week 1" | "Month 1" ...,
         "calories_to_consume": number,
         "calories_to_burn": number,
         "net_calories": number,
@@ -73,7 +101,7 @@ JSON FORMAT:
     ],
     "progress_milestones": [
       {
-        "period": "Week 1" | "Month 1" | "Quarter 1" | ...,
+        "period": "Week 1" | "Month 1" ...,
         "target_weight_kg": number
       }
     ],
@@ -99,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const tokenUser = getUserFromToken(req);
   const session = await getServerSession(req, res, authOptions);
   
-  const userEmail = tokenUser?.email || session?.user?.email;
+  const userEmail = tokenUser?.email || session?.user?.email || req.body.userEmail;
   
   if (!userEmail) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -109,15 +137,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDatabase();
 
     if (req.method === 'POST') {
-      const { goalType, targetWeight, durationDays } = req.body as {
-        goalType: 'lose_weight' | 'gain_weight' | 'build_muscle' | 'maintain_weight' | 'improve_fitness' | 'tone_body';
-        targetWeight: number;
-        durationDays: number;
-      };
-
-      if (!goalType || !targetWeight || !durationDays) {
-        return res.status(400).json({ message: 'goalType, targetWeight, and durationDays are required' });
-      }
       
       const user = await User.findOne({ email: userEmail });
       if (!user) {
@@ -130,7 +149,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'User weight is required. Please update your profile first.' });
       }
 
-      console.log('Generating AI plan for:', { currentWeight, goalType, durationDays });
+
+      // Build onboarding context from user answers
+      let onboardingContext = '';
+      if (user.onboardingAnswers && Array.isArray(user.onboardingAnswers) && user.onboardingAnswers.length > 0) {
+        onboardingContext = '\n\nUser Background & Preferences (from onboarding questionnaire):\n';
+        user.onboardingAnswers.forEach((qa: any) => {
+          onboardingContext += `- ${qa.question}: ${qa.answer}\n`;
+        });
+        onboardingContext += '\nPlease consider these answers when creating the personalized fitness plan.';
+      }
 
       // Generate AI plan using OpenAI
       let aiGeneratedPlan;
@@ -145,10 +173,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               role: "user",
               content: `User input: 
               weight: ${currentWeight} kg,
-              goal: ${goalType},
-              duration: ${durationDays} days
-              
-              Note: ${durationDays > 365 ? 'Use QUARTERLY schedule (Quarter 1, Quarter 2, etc.) since duration is over 1 year.' : durationDays > 90 ? 'Use MONTHLY schedule.' : 'Use WEEKLY schedule.'}`
+              Use the following context to create a personalized plan: ${onboardingContext}`
             },
           ],
         });
@@ -184,10 +209,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Save goal with AI-generated plan
+      const goalCreatedAt = new Date();
+      
       user.goal = {
-        goalType,
-        targetWeight,
-        durationDays,
         plan: {
           maintenanceCalories: aiGeneratedPlan.maintenance_calories,
           goalCaloriesStart: aiGeneratedPlan.goal_calories_start,
@@ -195,20 +219,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           averageDailyDeficitOrSurplusKcal: aiGeneratedPlan.average_daily_deficit_or_surplus_kcal,
           expectedTotalWeightChangeKg: aiGeneratedPlan.expected_total_weight_change_kg,
           targetWeightKg: aiGeneratedPlan.target_weight_kg,
-          calorieSchedule: aiGeneratedPlan.calorie_schedule?.map((item: any) => ({
-            period: item.period,
-            caloriesToConsume: item.calories_to_consume,
-            caloriesToBurn: item.calories_to_burn,
-            netCalories: item.net_calories,
-            averageWeeklyWeightChangeKg: item.average_weekly_weight_change_kg,
-          })) || [],
-          progressMilestones: aiGeneratedPlan.progress_milestones?.map((item: any) => ({
-            period: item.period,
-            targetWeightKg: item.target_weight_kg,
-          })) || [],
+          calorieSchedule: aiGeneratedPlan.calorie_schedule?.map((item: any, index: number) => {
+            const { startDate, endDate } = calculatePeriodDates(item.period, goalCreatedAt, index);
+            return {
+              period: item.period,
+              caloriesToConsume: item.calories_to_consume,
+              caloriesToBurn: item.calories_to_burn,
+              netCalories: item.net_calories,
+              averageWeeklyWeightChangeKg: item.average_weekly_weight_change_kg,
+              startDate,
+              endDate,
+            };
+          }) || [],
+          progressMilestones: aiGeneratedPlan.progress_milestones?.map((item: any, index: number) => {
+            const { startDate, endDate } = calculatePeriodDates(item.period, goalCreatedAt, index);
+            return {
+              period: item.period,
+              targetWeightKg: item.target_weight_kg,
+              startDate,
+              endDate,
+            };
+          }) || [],
           notes: aiGeneratedPlan.notes || [],
         },
-        createdAt: new Date(),
+        createdAt: goalCreatedAt,
       };
       
       await user.save();

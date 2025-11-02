@@ -14,45 +14,16 @@ export interface User {
     shoppingList: boolean;
     priceMonitor: boolean;
     finance: boolean;
+    marketing?: boolean;
+    tips?: boolean;
+    updates?: boolean;
   };
-  onboardingAnswers: {
-    mealPlans: {
-      goal?: string;
-      cookingTime?: string;
-      dietaryRestrictions?: string;
-      notifications?: 'email' | 'in-app' | 'both' | 'none';
-    };
-    recipes: {
-      recipeType?: string;
-      cookingFrequency?: string;
-      priority?: string;
-      notifications?: 'email' | 'in-app' | 'both' | 'none';
-    };
-    trainings: {
-      fitnessGoal?: string;
-      trainingLocation?: string;
-      trainingFrequency?: string;
-      notifications?: 'email' | 'in-app' | 'both' | 'none';
-    };
-    shoppingList: {
-      planningStyle?: string;
-      shoppingPriority?: string;
-      shoppingFrequency?: string;
-      notifications?: 'email' | 'in-app' | 'both' | 'none';
-    };
-    priceMonitor: {
-      productsToTrack?: string;
-      priceComparisonPriority?: string;
-      priceCheckFrequency?: string;
-      notifications?: 'email' | 'in-app' | 'both' | 'none';
-    };
-    finance: {
-      financialGoal?: string;
-      currentManagement?: string;
-      toolImportance?: string;
-      notifications?: 'email' | 'in-app' | 'both' | 'none';
-    };
-  };
+  onboardingAnswers: Array<{
+    id: string;
+    question: string;
+    answer: string;
+  }>;
+  onboardingCompletedAt?: Date;
   birthday: Date;
   gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
   weight?: {
@@ -81,11 +52,16 @@ export interface User {
         caloriesToBurn: number;
         netCalories: number;
         averageWeeklyWeightChangeKg: number;
+        startDate?: Date;
+        endDate?: Date;
       }>;
       progressMilestones?: Array<{
         period: string;
         targetWeightKg: number;
+        startDate?: Date;
+        endDate?: Date;
       }>;
+
       notes?: string[];
     };
     createdAt?: Date;
@@ -95,6 +71,16 @@ export interface User {
     refreshToken?: string;
     athleteId?: string;
     username?: string;
+    connectedAt?: Date;
+    lastSyncedAt?: Date;
+  };
+  googleFitConnection?: {
+    accessToken?: string;
+    refreshToken?: string;
+    scope?: string;
+    tokenType?: string;
+    expiryDate?: Date;
+    googleUserId?: string;
     connectedAt?: Date;
     lastSyncedAt?: Date;
   };

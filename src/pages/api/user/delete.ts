@@ -8,6 +8,7 @@ import MealEntry from '@/models/MealEntry';
 import Expense from '@/models/Expense';
 import Income from '@/models/Income';
 import ShoppingListItem from '@/models/ShoppingListItem';
+import { getUserFromToken } from '@/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'DELETE') {
@@ -15,9 +16,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.id) {
+    
+    const userEmail = tokenUser?.email || session?.user?.email;
+    
+    if (!userEmail) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const { confirm } = req.query;
@@ -27,17 +37,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await connectToDatabase();
 
-    const userId = session.user.id;
-
     await Promise.all([
-      Recipe.deleteMany({ userId }),
-      MealEntry.deleteMany({ userId }),
-      Expense.deleteMany({ userId }),
-      Income.deleteMany({ userId }),
-      ShoppingListItem.deleteMany({ userId }),
+      Recipe.deleteMany({ userId: user._id }),
+      MealEntry.deleteMany({ userId: user._id }),
+      Expense.deleteMany({ userId: user._id }),
+      Income.deleteMany({ userId: user._id }),
+      ShoppingListItem.deleteMany({ userId: user._id }),
     ]);
 
-    await User.findByIdAndDelete(userId);
+    await User.findByIdAndDelete(user._id);
 
     return res.status(200).json({ message: 'Account and associated data deleted' });
   } catch (error) {

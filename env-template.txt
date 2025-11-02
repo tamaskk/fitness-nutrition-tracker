@@ -7,6 +7,10 @@ MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/f
 NEXTAUTH_URL=https://your-app-name.vercel.app
 NEXTAUTH_SECRET=your-nextauth-secret-here
 
+# Google OAuth & Fit API (Optional - for Google Sign-In and Fitness data)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
 # Admin Access (REQUIRED for admin features)
 ADMIN_EMAIL=your-admin-email@example.com
 ADMIN_PASSWORD=your-admin-password-here

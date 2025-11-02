@@ -13,9 +13,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { email, password, firstName, lastName, country, language, birthday, gender, weight, height } = req.body;
+    const { 
+      email, 
+      password, 
+      firstName, 
+      lastName, 
+      country, 
+      language, 
+      birthday, 
+      gender, 
+      weight, 
+      height,
+      dailyCalorieGoal,
+      preferences,
+      onboardingAnswers
+    } = req.body;
 
-    console.log('Signup API received data:', { email, firstName, lastName, country, language, birthday, gender, weight, height });
+    console.log('Signup API received data:', req.body);
+
+    console.log('STRINGIFIED:', JSON.stringify(req.body));
 
     if (!email || !password || !firstName || !lastName || !country || !language || !birthday) {
       console.log('Missing required fields:', { 
@@ -27,10 +43,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         hasLanguage: !!language,
         hasBirthday: !!birthday
       });
+      console.log('1');
       return res.status(400).json({ message: 'All required fields are required' });
     }
 
     if (password.length < 6) {
+      console.log('2');
       return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
 
@@ -39,46 +57,81 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('3');
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create user with default preferences
-    const userData = {
+    // Create user with all provided data
+    const userData: any = {
       email,
       passwordHash,
       firstName,
       lastName,
       country,
       language,
-      ...(birthday && { birthday: new Date(birthday) }),
-      ...(gender && { gender }),
-      ...(weight && { weight }),
-      ...(height && { height }),
-      preferences: {
-        mealPlans: false,
-        recipes: false,
-        trainings: false,
-        shoppingList: false,
-        priceMonitor: false,
-        finance: false,
-      },
-      onboardingAnswers: {
-        mealPlans: {},
-        recipes: {},
-        trainings: {},
-        shoppingList: {},
-        priceMonitor: {},
-        finance: {},
-      },
-      dailyCalorieGoal: 2000, // Default calorie goal
+      birthday: new Date(birthday),
+      dailyCalorieGoal: dailyCalorieGoal || 2000,
     };
+
+    // Add optional fields if provided
+    if (gender) {
+      userData.gender = gender;
+    }
+
+    if (weight) {
+      userData.weight = {
+        value: weight.value,
+        unit: weight.unit || 'kg'
+      };
+    }
+
+    if (height) {
+      userData.height = {
+        value: height.value,
+        unit: height.unit || 'cm'
+      };
+    }
+
+    // Save user preferences (merge with defaults)
+    userData.preferences = {
+      mealPlans: preferences?.mealPlans ?? false,
+      recipes: preferences?.recipes ?? false,
+      trainings: preferences?.trainings ?? false,
+      shoppingList: preferences?.shoppingList ?? false,
+      priceMonitor: preferences?.priceMonitor ?? false,
+      finance: preferences?.finance ?? false,
+      marketing: preferences?.marketing ?? false,
+      tips: preferences?.tips ?? true,
+      updates: preferences?.updates ?? true,
+    };
+
+    // Save onboarding answers - direct array format
+    if (onboardingAnswers) {
+      // Check if it's already a direct array or nested in questionnaire
+      if (Array.isArray(onboardingAnswers)) {
+        userData.onboardingAnswers = onboardingAnswers;
+        if (onboardingAnswers.length > 0) {
+          userData.onboardingCompletedAt = new Date();
+        }
+      } else if (onboardingAnswers.questionnaire && Array.isArray(onboardingAnswers.questionnaire)) {
+        userData.onboardingAnswers = onboardingAnswers.questionnaire;
+        if (onboardingAnswers.questionnaire.length > 0) {
+          userData.onboardingCompletedAt = new Date();
+        }
+      } else {
+        userData.onboardingAnswers = [];
+      }
+    } else {
+      // Fallback to empty array
+      userData.onboardingAnswers = [];
+    }
 
     console.log('Creating user with data:', userData);
     const user = await User.create(userData);
-    console.log('User created successfully:', user.toObject());
+    console.log('User created successfully:', user._id);
 
     // Generate JWT token (auto-login after signup)
     const token = jwt.sign(
@@ -112,6 +165,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         weight: user.weight,
         height: user.height,
         dailyCalorieGoal: user.dailyCalorieGoal,
+        onboardingAnswers: user.onboardingAnswers,
+        onboardingCompletedAt: (user as any).onboardingCompletedAt,
       },
     });
   } catch (error) {

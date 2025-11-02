@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { 
@@ -45,7 +45,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const ProfilePage = () => {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   
   const [userData, setUserData] = useState<UserType | null>(null);
@@ -57,6 +57,7 @@ const ProfilePage = () => {
   const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
   const [stravaConnected, setStravaConnected] = useState(false);
   const [stravaData, setStravaData] = useState<any>(null);
+  const [googleFitConnected, setGoogleFitConnected] = useState(false);
   
   const { preferences, updatePreference } = useUserPreferences();
   const { theme, toggleTheme } = useTheme();
@@ -88,6 +89,7 @@ const ProfilePage = () => {
     else {
       fetchUserData();
       checkStravaConnection();
+      checkGoogleFitConnection();
       
       // Check for Strava OAuth success/error in URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -107,6 +109,13 @@ const ProfilePage = () => {
         };
         toast.error(errorMessages[error || 'unknown'] || 'Failed to connect Strava');
         // Clean URL
+        window.history.replaceState({}, '', '/profile');
+      }
+
+      // Check for Google Fit OAuth success
+      if (urlParams.get('google_fit_success') === 'true') {
+        toast.success('Google Fit connected successfully!');
+        setGoogleFitConnected(true);
         window.history.replaceState({}, '', '/profile');
       }
     }
@@ -277,6 +286,30 @@ const ProfilePage = () => {
       }
     } catch (error) {
       toast.error('Error disconnecting Strava');
+    }
+  };
+
+  const checkGoogleFitConnection = async () => {
+    // We consider Google Fit connected if the NextAuth session contains an access token
+    setGoogleFitConnected(!!session?.accessToken);
+  };
+
+  const handleGoogleFitConnect = () => {
+    // Redirect to Google OAuth via NextAuth
+    signIn('google', { callbackUrl: '/profile?google_fit_success=true' });
+  };
+
+  const handleGoogleFitDisconnect = async () => {
+    try {
+      const res = await fetch('/api/google-fit/disconnect', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to disconnect');
+
+      // Clear session access token so UI updates immediately
+      await update({ accessToken: null, refreshToken: null });
+      setGoogleFitConnected(false);
+      toast.success('Google Fit disconnected');
+    } catch (e) {
+      toast.error('Failed to disconnect Google Fit');
     }
   };
 
@@ -858,6 +891,56 @@ const ProfilePage = () => {
                     >
                       <Link className="h-4 w-4 mr-2" />
                       Connect with Strava
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Google Fit Integration */}
+              <div className="bg-white dark:bg-zinc-950 shadow-lg rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <Activity className="h-5 w-5 text-green-600 mr-2" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Google Fit Integration</h3>
+                  </div>
+                  {googleFitConnected ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+
+                {googleFitConnected ? (
+                  <div className="space-y-3">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                      <p className="text-sm text-green-800 dark:text-green-200 font-medium mb-1">
+                        ✓ Connected
+                      </p>
+                      {session?.user?.name && (
+                        <p className="text-xs text-green-700 dark:text-green-300">
+                          {session.user.name}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleGoogleFitDisconnect}
+                      className="w-full flex items-center justify-center px-4 py-2 border border-green-300 dark:border-green-600 rounded-lg text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    >
+                      <Unlink className="h-4 w-4 mr-2" />
+                      Disconnect Google Fit
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Connect Google Fit to import steps, heart rate, and more.
+                    </p>
+                    <button
+                      onClick={handleGoogleFitConnect}
+                      className="w-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                    >
+                      <Link className="h-4 w-4 mr-2" />
+                      Connect Google Fit
                     </button>
                   </div>
                 )}

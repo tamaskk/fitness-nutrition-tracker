@@ -19,6 +19,8 @@ declare module 'next-auth' {
       lastName?: string;
       isAdmin?: boolean;
     };
+    accessToken?: string;
+    refreshToken?: string;
   }
 
   interface User {
@@ -36,6 +38,8 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     isAdmin?: boolean;
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
 

@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import connectToDatabase from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
 
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDatabase();
 
     // Handle admin user - get or create admin user for proper ObjectId
-    let userId = session.user.id;
+    let userId: any = session.user.id;
     if (userId === 'admin') {
       const adminUser = await User.findOne({ email: process.env.ADMIN_EMAIL });
       if (adminUser) {
@@ -31,6 +32,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           notifications: []
         });
       }
+    }
+
+    // If the userId is not a valid ObjectId (e.g., Google OAuth subject id),
+    // return an empty list instead of throwing a cast error.
+    if (!mongoose.Types.ObjectId.isValid(String(userId))) {
+      return res.status(200).json({ success: true, notifications: [] });
     }
 
     const notifications = await Notification.find({ userId })

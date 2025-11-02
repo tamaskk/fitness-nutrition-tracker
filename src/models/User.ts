@@ -48,44 +48,22 @@ const UserSchema = new Schema({
     shoppingList: { type: Boolean, default: false },
     priceMonitor: { type: Boolean, default: false },
     finance: { type: Boolean, default: false },
+    // 🆕 NEW: Add these three preferences for notifications
+    marketing: { type: Boolean, default: false },
+    tips: { type: Boolean, default: true },
+    updates: { type: Boolean, default: true },
   },
-  onboardingAnswers: {
-    mealPlans: {
-      goal: { type: String },
-      cookingTime: { type: String },
-      dietaryRestrictions: { type: String },
-      notifications: { type: String, enum: ['email', 'in-app', 'both', 'none'], default: 'none' },
-    },
-    recipes: {
-      recipeType: { type: String },
-      cookingFrequency: { type: String },
-      priority: { type: String },
-      notifications: { type: String, enum: ['email', 'in-app', 'both', 'none'], default: 'none' },
-    },
-    trainings: {
-      fitnessGoal: { type: String },
-      trainingLocation: { type: String },
-      trainingFrequency: { type: String },
-      notifications: { type: String, enum: ['email', 'in-app', 'both', 'none'], default: 'none' },
-    },
-    shoppingList: {
-      planningStyle: { type: String },
-      shoppingPriority: { type: String },
-      shoppingFrequency: { type: String },
-      notifications: { type: String, enum: ['email', 'in-app', 'both', 'none'], default: 'none' },
-    },
-    priceMonitor: {
-      productsToTrack: { type: String },
-      priceComparisonPriority: { type: String },
-      priceCheckFrequency: { type: String },
-      notifications: { type: String, enum: ['email', 'in-app', 'both', 'none'], default: 'none' },
-    },
-    finance: {
-      financialGoal: { type: String },
-      currentManagement: { type: String },
-      toolImportance: { type: String },
-      notifications: { type: String, enum: ['email', 'in-app', 'both', 'none'], default: 'none' },
-    },
+  // Onboarding answers: Direct array of question objects (no _id for subdocuments)
+  onboardingAnswers: [{
+    id: { type: String, required: true },
+    question: { type: String, required: true },
+    answer: { type: String, required: true },
+    _id: false, // Disable automatic _id generation for subdocuments
+  }],
+  // 🆕 NEW: Track when user completed the new onboarding questionnaire
+  onboardingCompletedAt: {
+    type: Date,
+    default: null,
   },
   birthday: {
     type: Date,
@@ -155,10 +133,14 @@ const UserSchema = new Schema({
         caloriesToBurn: { type: Number },
         netCalories: { type: Number },
         averageWeeklyWeightChangeKg: { type: Number },
+        startDate: { type: Date },
+        endDate: { type: Date },
       }],
       progressMilestones: [{
         period: { type: String },
         targetWeightKg: { type: Number },
+        startDate: { type: Date },
+        endDate: { type: Date },
       }],
       notes: [{ type: String }],
     },
@@ -175,11 +157,25 @@ const UserSchema = new Schema({
     connectedAt: { type: Date },
     lastSyncedAt: { type: Date },
   },
+  googleFitConnection: {
+    accessToken: { type: String },
+    refreshToken: { type: String },
+    scope: { type: String },
+    tokenType: { type: String },
+    expiryDate: { type: Date },
+    googleUserId: { type: String },
+    connectedAt: { type: Date },
+    lastSyncedAt: { type: Date },
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+// Add indexes for better query performance
+UserSchema.index({ email: 1 });
+UserSchema.index({ createdAt: -1 });
 
 // Clear the model cache to ensure schema changes are applied
 delete mongoose.models.User;

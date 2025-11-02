@@ -5,13 +5,31 @@ import User from '@/models/User';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { getUserFromToken } from '@/utils/auth';
-import connectDB from '@/lib/mongodb';
+
+// Simple in-memory rate limiter (per process) to mitigate rapid repeated calls
+const requestCounts = new Map<string, { count: number; firstTs: number }>();
+const RATE_LIMIT_WINDOW_MS = 2000; // 2 seconds
+const RATE_LIMIT_MAX_REQUESTS = 6; // max requests per window per key
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Connect to MongoDB first
-    await connectDB();
-    console.log('MongoDB connected');
+    // Basic rate limiting by IP + user agent
+    const rateKey = `${req.headers['x-forwarded-for'] || req.socket.remoteAddress}-${req.headers['user-agent']}`;
+    if (rateKey) {
+      const now = Date.now();
+      const entry = requestCounts.get(rateKey);
+      if (!entry || now - entry.firstTs > RATE_LIMIT_WINDOW_MS) {
+        requestCounts.set(rateKey, { count: 1, firstTs: now });
+      } else {
+        entry.count += 1;
+        if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
+          return res.status(429).json({ message: 'Too many requests' });
+        }
+      }
+    }
+
+    // Ensure DB connection (cached across hot reloads)
+    await connectToDatabase();
     const tokenUser = getUserFromToken(req);
     const session = await getServerSession(req, res, authOptions);
     
@@ -28,12 +46,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId = user._id;
 
-    await connectToDatabase();
+    // DB is connected above; no need to connect again
 
     if (req.method === 'GET') {
       const { page = '1', limit = '20' } = req.query;
-      const pageNum = parseInt(page as string);
-      const limitNum = parseInt(limit as string);
+      const pageNum = Number.parseInt(page as string, 10) || 1;
+      const limitNum = Math.min(Number.parseInt(limit as string, 10) || 20, 200);
       const skip = (pageNum - 1) * limitNum;
 
       const sessions = await WorkoutSession.find({ userId })
@@ -44,6 +62,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .lean();
 
       const total = await WorkoutSession.countDocuments({ userId });
+      // Optional caching headers for intermediary caches (won't cache on client fetch by default)
+      res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=30');
       return res.status(200).json({
         success: true,
         data: sessions,
