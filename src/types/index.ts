@@ -52,6 +52,7 @@ export interface User {
         caloriesToBurn: number;
         netCalories: number;
         averageWeeklyWeightChangeKg: number;
+        monthlyWeightChangeKg?: number;
         startDate?: Date;
         endDate?: Date;
       }>;

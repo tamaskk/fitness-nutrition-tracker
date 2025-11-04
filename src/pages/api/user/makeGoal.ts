@@ -70,9 +70,51 @@ You must calculate:
 Rules:
 - If duration ≤ 3 months (90 days) → make weekly schedule (max 12-13 periods).
 - If duration > 3 months → make monthly schedule (max 12 periods).
+- This duration is in the user answers which question is "Mennyi idő alatt szeretnéd ezt elérni?" so look for that and use that as the duration.
 - All numeric values must be realistic (no extreme deficits or surpluses).
 - Calorie burn should be realistic daily exercise (200-600 kcal/day depending on intensity).
 - Output valid JSON only.
+
+CRITICAL - WEIGHT CALCULATION CONSISTENCY (FOLLOW THESE EXACT STEPS):
+
+STEP 1: Determine the weight change per month
+- Formula: weight_change_per_month = expected_total_weight_change_kg / number_of_months
+- Example: -40 kg / 6 months = -6.67 kg/month
+
+STEP 2: Calculate average_weekly_weight_change_kg and monthly_weight_change_kg
+- Formula: average_weekly_weight_change_kg = weight_change_per_month / 4
+- Formula: monthly_weight_change_kg = weight_change_per_month (this is the MONTHLY weight change)
+- Example: 
+  * weight_change_per_month = -6.67 kg/month
+  * average_weekly_weight_change_kg = -6.67 / 4 = -1.67 kg/week
+  * monthly_weight_change_kg = -6.67 kg/month
+- Use the same values for ALL months!
+
+STEP 3: Calculate CUMULATIVE progress milestones
+- Use formula: milestone_N = current_weight + (weight_change_per_month × N)
+- Example for 6 months, 110 kg → 70 kg (-40 kg):
+  * Month 1: 110 + (-6.67 × 1) = 103.33 kg
+  * Month 2: 110 + (-6.67 × 2) = 96.66 kg
+  * Month 3: 110 + (-6.67 × 3) = 89.99 kg
+  * Month 4: 110 + (-6.67 × 4) = 83.32 kg
+  * Month 5: 110 + (-6.67 × 5) = 76.65 kg
+  * Month 6: 110 + (-6.67 × 6) = 70.00 kg ✓
+
+MANDATORY CHECKS BEFORE OUTPUTTING JSON:
+✓ Every month must have the SAME average_weekly_weight_change_kg value!
+✓ Last milestone MUST equal target_weight_kg exactly!
+✓ Difference between consecutive milestones should be roughly equal (weight_change_per_month)
+✓ NO huge jumps in any period - weight loss must be evenly distributed!
+✓ Verify: |current_weight - target_weight_kg| = |expected_total_weight_change_kg|
+
+WRONG EXAMPLE (DO NOT DO THIS):
+- Month 5: 103.33 kg, Month 6: 70 kg = -33.33 kg in one month ❌ DANGEROUS!
+
+CORRECT EXAMPLE for 40 kg over 12 months:
+- weight_change_per_month: -40 / 12 = -3.33 kg/month
+- average_weekly_weight_change_kg: -3.33 / 4 = -0.83 kg/week
+- All 12 months have -0.83 kg/week
+- Month 1: 106.67, Month 2: 103.34, ..., Month 12: 70.00 kg ✓
 
 JSON FORMAT:
 
@@ -96,7 +138,8 @@ JSON FORMAT:
         "calories_to_consume": number,
         "calories_to_burn": number,
         "net_calories": number,
-        "average_weekly_weight_change_kg": number
+        "average_weekly_weight_change_kg": number,
+        "monthly_weight_change_kg": number (for monthly schedules, this is the weight change for THIS month, equals average_weekly_weight_change_kg × 4)
       }
     ],
     "progress_milestones": [
@@ -112,12 +155,42 @@ JSON FORMAT:
 }
 
 Be sure to calculate everything realistically, e.g.:
-- For weight loss: 0.4–0.7 kg/week
+- For weight loss: 0.4–1.0 kg/week (adjust based on total duration and goal)
 - For weight gain: 0.2–0.4 kg/week
 - Calories to consume: typically 1500-3000 kcal/day depending on goal and weight
 - Calories to burn: typically 200-600 kcal/day from exercise (30-60 min activity)
 - Net calories = calories_to_consume - calories_to_burn
 - Include 8–12 total notes covering both nutrition and exercise.
+
+WEIGHT CHANGE CALCULATION - USE THESE EXACT FORMULAS:
+
+1. weight_change_per_month = expected_total_weight_change_kg / number_of_months
+2. average_weekly_weight_change_kg = weight_change_per_month / 4
+3. milestone_N = current_weight + (weight_change_per_month × N)
+4. Verify: milestone_last = target_weight_kg
+
+Example A: -40 kg over 6 months (starting 110 kg):
+- weight_change_per_month = -40 / 6 = -6.67 kg/month
+- average_weekly_weight_change_kg = -6.67 / 4 = -1.67 kg/week
+- monthly_weight_change_kg = -6.67 kg/month
+- All 6 months use: -1.67 kg/week AND -6.67 kg/month (same values for all!)
+- Milestones:
+  * Month 1: 110 + (-6.67 × 1) = 103.33 kg
+  * Month 2: 110 + (-6.67 × 2) = 96.66 kg
+  * Month 3: 110 + (-6.67 × 3) = 89.99 kg
+  * Month 4: 110 + (-6.67 × 4) = 83.32 kg
+  * Month 5: 110 + (-6.67 × 5) = 76.65 kg
+  * Month 6: 110 + (-6.67 × 6) = 70.00 kg ✓ (equals target_weight_kg)
+
+Example B: -40 kg over 12 months (starting 110 kg):
+- weight_change_per_month = -40 / 12 = -3.33 kg/month
+- average_weekly_weight_change_kg = -3.33 / 4 = -0.83 kg/week
+- monthly_weight_change_kg = -3.33 kg/month
+- All 12 months use: -0.83 kg/week AND -3.33 kg/month (same values for all!)
+- Milestones:
+  * Month 1: 110 + (-3.33 × 1) = 106.67 kg
+  * Month 6: 110 + (-3.33 × 6) = 90.00 kg
+  * Month 12: 110 + (-3.33 × 12) = 70.00 kg ✓ (equals target_weight_kg)
 
 Output **only valid JSON** — no explanations or formatting outside the JSON.
 `;
@@ -227,6 +300,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               caloriesToBurn: item.calories_to_burn,
               netCalories: item.net_calories,
               averageWeeklyWeightChangeKg: item.average_weekly_weight_change_kg,
+              monthlyWeightChangeKg: item.monthly_weight_change_kg,
               startDate,
               endDate,
             };

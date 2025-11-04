@@ -133,6 +133,7 @@ const UserSchema = new Schema({
         caloriesToBurn: { type: Number },
         netCalories: { type: Number },
         averageWeeklyWeightChangeKg: { type: Number },
+        monthlyWeightChangeKg: { type: Number },
         startDate: { type: Date },
         endDate: { type: Date },
       }],
